@@ -67,7 +67,11 @@ const state = {
     braindump: false,
     journal: false,
     dontlist: false,
-    review: false
+    review: false,
+    ibadah: false,
+    bestweek: false,
+    learning: false,
+    wellbeing: false
   },
   // QUEUE SYSTEM - Pending actions untuk sync ke server
   pendingQueue: [],
@@ -86,7 +90,11 @@ const state = {
     ultraFocus: 90,
     shortBreak: 5,
     dailyTarget: 8
-  }
+  },
+  // Batch 3: Best Week, Learning, Wellbeing
+  bestWeek: {},
+  learnings: [],
+  wellbeingTrends: []
 };
 
 // Habit Sunnah Rasulullah untuk ASN
@@ -321,6 +329,29 @@ function showPage(pageName, navEl) {
         loadReviewPage();
       }
       state.pageLoaded.review = true;
+      break;
+    case 'ibadah':
+      renderSholatGrid();
+      state.pageLoaded.ibadah = true;
+      break;
+    case 'bestweek':
+      if (!state.pageLoaded.bestweek) {
+        loadBestWeek();
+      }
+      showBestWeekDay(1);
+      state.pageLoaded.bestweek = true;
+      break;
+    case 'learning':
+      if (!state.pageLoaded.learning) {
+        loadLearnings();
+      }
+      state.pageLoaded.learning = true;
+      break;
+    case 'wellbeing':
+      if (!state.pageLoaded.wellbeing) {
+        loadWellbeingTrends();
+      }
+      state.pageLoaded.wellbeing = true;
       break;
     case 'settings':
       document.getElementById('settingUserId').textContent = CONFIG.USER_ID;
@@ -1402,7 +1433,7 @@ function refreshAllData() {
   syncPendingQueue();
   
   state.cache = { dailySync: 0, goals: 0, kanban: 0, visions: 0, stats: 0 };
-  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false, review: false };
+  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
 }
@@ -2155,209 +2186,499 @@ function getWeekNumber(d) {
 }
 
 // ============================================
-// BATCH 2: MILESTONE FUNCTIONS
+// JOURNAL - UPDATED FOR HOME PAGE
 // ============================================
-function showGoalMilestones() {
-  // Hide goals list, show milestones
-  document.getElementById('goalsList').style.display = 'none';
-  document.getElementById('goalMilestonesSection').style.display = 'block';
-  
-  // Update tab active state
-  document.querySelectorAll('#goalTabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('#goalTabs .tab-btn')[2].classList.add('active');
-  
-  loadMilestones();
+function openJournalForm(type) {
+  openModal('journal-' + type);
 }
 
-async function loadMilestones() {
-  try {
-    // Get milestones from goals
-    const goals = state.goals || [];
-    let allMilestones = [];
-    
-    for (const goal of goals) {
-      if (goal.milestones && goal.milestones.length > 0) {
-        allMilestones = allMilestones.concat(
-          goal.milestones.map(m => ({ ...m, goal_title: goal.title }))
-        );
-      }
-    }
-    
-    state.milestones = allMilestones;
-    renderMilestones();
-  } catch (err) {
-    console.error('Failed to load milestones:', err);
+function renderHomeJournals() {
+  // Morning
+  const morningCard = document.getElementById('journalMorningCard');
+  const morningStatus = document.getElementById('journalMorningStatus');
+  const morningContent = document.getElementById('journalMorningContent');
+  
+  if (morningCard && state.journals.morning) {
+    const m = state.journals.morning.parsed || {};
+    morningStatus.textContent = '✓ Ditulis';
+    morningStatus.className = 'status done';
+    morningContent.innerHTML = `
+      <div class="content">
+        <div class="label">🙏 Syukur:</div>
+        <div>${escapeHtml(m.gratitude || '-')}</div>
+        <div class="label">🎯 Fokus:</div>
+        <div>${escapeHtml(m.focus || '-')}</div>
+        <div class="label">✨ Afirmasi:</div>
+        <div>${escapeHtml(m.affirmation || '-')}</div>
+      </div>
+      <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Edit</button>
+    `;
+  }
+  
+  // Evening
+  const eveningCard = document.getElementById('journalEveningCard');
+  const eveningStatus = document.getElementById('journalEveningStatus');
+  const eveningContent = document.getElementById('journalEveningContent');
+  
+  if (eveningCard && state.journals.evening) {
+    const e = state.journals.evening.parsed || {};
+    eveningStatus.textContent = '✓ Ditulis';
+    eveningStatus.className = 'status done';
+    eveningContent.innerHTML = `
+      <div class="content">
+        <div class="label">🏆 Wins:</div>
+        <div>${escapeHtml(e.wins || '-')}</div>
+        <div class="label">🔧 Improve:</div>
+        <div>${escapeHtml(e.improve || '-')}</div>
+        <div class="label">💡 Pelajaran:</div>
+        <div>${escapeHtml(e.lesson || '-')}</div>
+      </div>
+      <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('evening')">✏️ Edit</button>
+    `;
   }
 }
 
-function renderMilestones() {
-  const container = document.getElementById('milestonesList');
-  if (!container) return;
+// ============================================
+// BATCH 3: BEST WEEK TEMPLATE
+// ============================================
+async function loadBestWeek() {
+  try {
+    const data = await apiGet('getBestWeek');
+    state.bestWeek = {};
+    if (data && data.length > 0) {
+      data.forEach(t => {
+        const parsed = parseJSON(t.data) || {};
+        if (parsed.hari) {
+          state.bestWeek[parsed.hari] = parsed.jadwal || [];
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Failed to load best week:', err);
+  }
+}
+
+function showBestWeekDay(day) {
+  // Update tabs
+  const tabs = document.querySelectorAll('#bestWeekTabs .tab-btn');
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', i + 1 === day);
+  });
   
-  const milestones = state.milestones || [];
+  const container = document.getElementById('bestWeekContent');
+  const jadwal = state.bestWeek[day] || [];
   
-  if (milestones.length === 0) {
+  if (jadwal.length === 0) {
     container.innerHTML = `
       <div class="empty-state" style="padding: 20px;">
-        <p style="color: var(--gray-500); font-size: 13px;">Belum ada milestone. Tambahkan untuk tracking progress goal.</p>
+        <p>Belum ada jadwal untuk hari ini</p>
+        <button class="btn-submit btn-secondary" style="width: auto; margin-top: 12px;" onclick="openBestWeekEdit(${day})">+ Atur Jadwal</button>
       </div>
     `;
     return;
   }
   
-  // Sort by week
-  milestones.sort((a, b) => (a.week || 1) - (b.week || 1));
-  
-  container.innerHTML = milestones.map(m => `
-    <div class="milestone-item ${m.completed ? 'done' : ''}" data-id="${m.milestone_id}">
-      <div class="checkbox" onclick="toggleMilestone('${m.milestone_id}')">
-        ${m.completed ? '✓' : ''}
-      </div>
-      <div class="content">
-        <div class="title">${escapeHtml(m.title)}</div>
-        <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">
-          ${m.goal_title ? escapeHtml(m.goal_title) : ''}
+  container.innerHTML = `
+    <div style="font-size: 13px; line-height: 2;">
+      ${jadwal.map(item => `
+        <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--gray-100);">
+          <span style="font-weight: 600; color: var(--primary); min-width: 50px;">${item.waktu}</span>
+          <span>${escapeHtml(item.aktivitas)}</span>
         </div>
-      </div>
-      <span class="week-badge">W${m.week || 1}</span>
+      `).join('')}
     </div>
-  `).join('');
+    <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="openBestWeekEdit(${day})">✏️ Edit</button>
+  `;
 }
 
-function openAddMilestoneModal() {
-  // Populate goal select if needed
-  const goals = state.goals || [];
-  if (goals.length === 0) {
-    showToast('Tambahkan goal dulu', 'error');
+function openBestWeekEdit(day) {
+  // Simple prompt-based edit for now
+  const jadwal = state.bestWeek[day] || [];
+  const current = jadwal.map(j => `${j.waktu} - ${j.aktivitas}`).join('\n');
+  
+  const input = prompt(
+    `Jadwal Hari ${day} (format: HH:MM - Aktivitas, satu per baris):\n\nContoh:\n03:30 - Tahajud\n04:30 - Subuh\n05:00 - Tilawah`,
+    current
+  );
+  
+  if (input === null) return;
+  
+  const lines = input.split('\n').filter(l => l.trim());
+  const newJadwal = lines.map(line => {
+    const parts = line.split(' - ');
+    return {
+      waktu: parts[0]?.trim() || '',
+      aktivitas: parts.slice(1).join(' - ').trim() || ''
+    };
+  }).filter(j => j.waktu && j.aktivitas);
+  
+  state.bestWeek[day] = newJadwal;
+  
+  addToQueue('saveBestWeek', {
+    dayNumber: day,
+    jadwal: newJadwal
+  });
+  
+  showBestWeekDay(day);
+  showToast('Jadwal tersimpan! ✓', 'success');
+}
+
+// ============================================
+// BATCH 3: LEARNING TRACKER
+// ============================================
+async function loadLearnings() {
+  try {
+    const data = await apiGet('getLearning');
+    state.learnings = data || [];
+    renderLearnings();
+  } catch (err) {
+    console.error('Failed to load learnings:', err);
+    state.learnings = [];
+    renderLearnings();
+  }
+}
+
+function renderLearnings() {
+  const container = document.getElementById('learningList');
+  if (!container) return;
+  
+  const items = state.learnings || [];
+  
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 24px;">
+        <p>Belum ada learning yang di-track</p>
+      </div>
+    `;
     return;
   }
   
-  document.getElementById('milestoneTitle').value = '';
-  document.getElementById('milestoneGoalId').value = goals[0]?.goal_id || '';
-  openModal('milestone');
+  container.innerHTML = items.map(item => {
+    const data = parseJSON(item.data) || {};
+    const progress = parseInt(item.progress) || 0;
+    
+    return `
+      <div class="card" style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <div style="font-size: 15px; font-weight: 700;">${escapeHtml(item.name)}</div>
+            <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">${escapeHtml(data.sumber || '')}</div>
+          </div>
+          <button onclick="deleteLearning('${item.template_id}')" style="background: none; border: none; cursor: pointer; font-size: 16px;">🗑️</button>
+        </div>
+        ${data.target ? `<div style="font-size: 12px; color: var(--gray-600); margin-bottom: 12px;">🎯 ${escapeHtml(data.target)}</div>` : ''}
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+            <div style="width: ${progress}%; height: 100%; background: var(--success); border-radius: 4px;"></div>
+          </div>
+          <span style="font-size: 13px; font-weight: 600; color: var(--success);">${progress}%</span>
+        </div>
+        <div style="margin-top: 12px;">
+          <input type="range" min="0" max="100" value="${progress}" 
+            style="width: 100%;" 
+            onchange="updateLearningProgress('${item.template_id}', this.value)">
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-function submitMilestone() {
-  const title = document.getElementById('milestoneTitle')?.value.trim();
-  const week = document.getElementById('milestoneWeek')?.value || '1';
-  const goalId = document.getElementById('milestoneGoalId')?.value;
+function submitLearning() {
+  const name = document.getElementById('learningName')?.value.trim();
+  const sumber = document.getElementById('learningSumber')?.value.trim();
+  const target = document.getElementById('learningTarget')?.value.trim();
   
-  if (!title) {
-    showToast('Isi judul milestone', 'error');
+  if (!name) {
+    showToast('Isi topik learning', 'error');
     return;
   }
   
   const tempId = 'temp_' + Date.now();
   
-  const newMilestone = {
-    milestone_id: tempId,
-    goal_id: goalId,
-    title: title,
-    week: parseInt(week),
-    completed: false
+  const newItem = {
+    template_id: tempId,
+    name: name,
+    data: JSON.stringify({ topik: name, sumber, target }),
+    progress: '0%',
+    status: 'active'
   };
   
-  state.milestones = [...(state.milestones || []), newMilestone];
+  state.learnings = [...(state.learnings || []), newItem];
   
-  addToQueue('addMilestone', {
-    goal_id: goalId,
-    data: { title, week: parseInt(week) }
+  addToQueue('saveLearning', {
+    data: { name, sumber, target, topik: name }
   });
   
-  closeModal('milestone');
-  renderMilestones();
-  showToast('Milestone ditambahkan! ✓', 'success');
+  document.getElementById('learningName').value = '';
+  document.getElementById('learningSumber').value = '';
+  document.getElementById('learningTarget').value = '';
+  
+  closeModal('learning-add');
+  renderLearnings();
+  showToast('Learning ditambahkan! ✓', 'success');
 }
 
-function toggleMilestone(milestoneId) {
-  const milestone = state.milestones.find(m => m.milestone_id === milestoneId);
-  if (!milestone) return;
-  
-  milestone.completed = !milestone.completed;
-  
-  addToQueue('toggleMilestone', {
-    milestone_id: milestoneId,
-    completed: milestone.completed
-  });
-  
-  renderMilestones();
-  showToast(milestone.completed ? 'Milestone selesai! ✓' : 'Milestone dibuka kembali', 'success');
-}
-
-// Reset to goals list view
-function filterGoals(filter) {
-  document.getElementById('goalsList').style.display = 'block';
-  document.getElementById('goalMilestonesSection').style.display = 'none';
-  
-  // Update tab active state
-  const tabs = document.querySelectorAll('#goalTabs .tab-btn');
-  tabs.forEach(btn => btn.classList.remove('active'));
-  if (filter === 'active') tabs[0].classList.add('active');
-  else if (filter === 'all') tabs[1].classList.add('active');
-  
-  renderGoals(filter);
-}
-
-// ============================================
-// BATCH 2: POMODORO SETTINGS FUNCTIONS
-// ============================================
-async function loadPomodoroSettings() {
-  try {
-    const settings = await apiGet('getPomodoroSettings');
-    if (settings) {
-      state.pomodoroSettings = {
-        pomodoro: settings.pomodoro_duration || 25,
-        deepWork: settings.deep_work_duration || 60,
-        ultraFocus: settings.ultra_focus_duration || 90,
-        shortBreak: settings.short_break || 5,
-        dailyTarget: settings.daily_target || 8
-      };
-      updatePomodoroLabels();
-    }
-  } catch (err) {
-    console.error('Failed to load pomodoro settings:', err);
+function updateLearningProgress(templateId, progress) {
+  const item = state.learnings.find(l => l.template_id === templateId);
+  if (item) {
+    item.progress = progress + '%';
+    
+    addToQueue('updateLearning', {
+      template_id: templateId,
+      updates: { progress: progress + '%' }
+    });
+    
+    showToast('Progress updated', 'success');
   }
 }
 
-function updatePomodoroLabels() {
-  const s = state.pomodoroSettings;
+function deleteLearning(templateId) {
+  if (!confirm('Hapus learning ini?')) return;
   
-  const label25 = document.getElementById('pomodoroLabel25');
-  const label60 = document.getElementById('pomodoroLabel60');
-  const label90 = document.getElementById('pomodoroLabel90');
+  state.learnings = state.learnings.filter(l => l.template_id !== templateId);
+  renderLearnings();
   
-  if (label25) label25.textContent = s.pomodoro + ' menit';
-  if (label60) label60.textContent = s.deepWork + ' menit';
-  if (label90) label90.textContent = s.ultraFocus + ' menit';
-  
-  // Update POMODORO_TYPES
-  POMODORO_TYPES.POMODORO_25.duration = s.pomodoro * 60;
-  POMODORO_TYPES.DEEP_WORK_60.duration = s.deepWork * 60;
-  POMODORO_TYPES.DEEP_WORK_90.duration = s.ultraFocus * 60;
+  addToQueue('deleteLearning', { template_id: templateId });
+  showToast('Dihapus', 'success');
 }
 
-function savePomodoroSettings() {
-  const pomodoro = parseInt(document.getElementById('settingPomodoro')?.value) || 25;
-  const deepWork = parseInt(document.getElementById('settingDeepWork')?.value) || 60;
-  const ultraFocus = parseInt(document.getElementById('settingUltraFocus')?.value) || 90;
-  const shortBreak = parseInt(document.getElementById('settingShortBreak')?.value) || 5;
-  const dailyTarget = parseInt(document.getElementById('settingDailyTarget')?.value) || 8;
+// ============================================
+// BATCH 3: WELLBEING TRENDS
+// ============================================
+async function loadWellbeingTrends() {
+  try {
+    const data = await apiGet('getWellbeingTrends', { weeks: 12 });
+    state.wellbeingTrends = data || [];
+    renderWellbeingTrends();
+  } catch (err) {
+    console.error('Failed to load wellbeing:', err);
+    state.wellbeingTrends = [];
+    renderWellbeingTrends();
+  }
+}
+
+function renderWellbeingTrends() {
+  const chartContainer = document.getElementById('wellbeingChart');
+  const avgEnergy = document.getElementById('wellbeingAvgEnergy');
+  const avgSatisfaction = document.getElementById('wellbeingAvgSatisfaction');
   
-  state.pomodoroSettings = { pomodoro, deepWork, ultraFocus, shortBreak, dailyTarget };
+  if (!chartContainer) return;
   
-  addToQueue('updatePomodoroSettings', {
-    data: {
-      pomodoro_duration: pomodoro,
-      deep_work_duration: deepWork,
-      ultra_focus_duration: ultraFocus,
-      short_break: shortBreak,
-      daily_target: dailyTarget
-    }
+  const trends = state.wellbeingTrends || [];
+  
+  if (trends.length === 0) {
+    chartContainer.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p>Isi Weekly Review untuk melihat tren</p>
+      </div>
+    `;
+    if (avgEnergy) avgEnergy.textContent = '-';
+    if (avgSatisfaction) avgSatisfaction.textContent = '-';
+    return;
+  }
+  
+  // Calculate averages
+  let totalEnergy = 0, totalSat = 0, countEnergy = 0, countSat = 0;
+  trends.forEach(t => {
+    if (t.energy) { totalEnergy += parseInt(t.energy); countEnergy++; }
+    if (t.satisfaction) { totalSat += parseInt(t.satisfaction); countSat++; }
   });
   
-  updatePomodoroLabels();
-  closeModal('pomodoro-settings');
-  showToast('Settings tersimpan! ✓', 'success');
+  if (avgEnergy) avgEnergy.textContent = countEnergy > 0 ? (totalEnergy / countEnergy).toFixed(1) : '-';
+  if (avgSatisfaction) avgSatisfaction.textContent = countSat > 0 ? (totalSat / countSat).toFixed(1) : '-';
+  
+  // Simple bar chart
+  const maxVal = 10;
+  chartContainer.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      ${trends.slice(0, 8).reverse().map(t => `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; color: var(--gray-500); min-width: 30px;">W${t.week}</span>
+          <div style="flex: 1; display: flex; gap: 4px;">
+            <div style="height: 16px; width: ${(parseInt(t.energy || 0) / maxVal) * 100}%; background: var(--warning); border-radius: 2px;" title="Energi: ${t.energy}"></div>
+          </div>
+          <div style="flex: 1; display: flex; gap: 4px;">
+            <div style="height: 16px; width: ${(parseInt(t.satisfaction || 0) / maxVal) * 100}%; background: var(--success); border-radius: 2px;" title="Kepuasan: ${t.satisfaction}"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 11px; color: var(--gray-500);">
+      <span>⚡ Energi</span>
+      <span>😊 Kepuasan</span>
+    </div>
+  `;
+}
+
+// ============================================
+// GOAL CARD - EXPANDABLE WITH MILESTONES & TASKS
+// ============================================
+function renderGoals(filter = 'active') {
+  const container = document.getElementById('goalsList');
+  if (!container) return;
+  
+  let goals = state.goals || [];
+  
+  if (filter === 'active') {
+    goals = goals.filter(g => g.status === 'active');
+  }
+  
+  // Sort by rank
+  goals.sort((a, b) => (a.rank || 99) - (b.rank || 99));
+  
+  if (goals.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span class="icon">🎯</span>
+        <p>Belum ada goal. Tambahkan goal 12 minggu Anda!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = goals.map((goal, index) => {
+    const milestones = goal.milestones || [];
+    const tasks = (state.kanban ? [...(state.kanban.todo || []), ...(state.kanban.progress || []), ...(state.kanban.done || [])] : [])
+      .filter(t => t.goal_id === goal.goal_id);
+    
+    const completedMilestones = milestones.filter(m => m.completed).length;
+    const completedTasks = tasks.filter(t => t.status === 'done').length;
+    const progress = milestones.length > 0 
+      ? Math.round((completedMilestones / milestones.length) * 100)
+      : (tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0);
+    
+    const rankClass = index === 0 ? 'r1' : (index === 1 ? 'r2' : (index === 2 ? 'r3' : ''));
+    
+    return `
+      <div class="goal-card" id="goal-${goal.goal_id}">
+        <div class="goal-card-header" onclick="toggleGoalCard('${goal.goal_id}')">
+          <div class="goal-card-top">
+            <div class="goal-rank ${rankClass}">#${index + 1}</div>
+            <div class="goal-info">
+              <div class="goal-title">${escapeHtml(goal.title)}</div>
+              <div class="goal-meta">Q${goal.quarter} ${goal.year} • ${milestones.length} milestone • ${tasks.length} task</div>
+            </div>
+            <span class="goal-expand">▼</span>
+          </div>
+          <div class="goal-progress">
+            <div class="goal-progress-bar" style="width: ${progress}%;"></div>
+          </div>
+          <div class="goal-progress-text">
+            <span>Progress</span>
+            <span>${progress}%</span>
+          </div>
+        </div>
+        
+        <div class="goal-card-body">
+          <div class="goal-card-content">
+            <!-- Milestones Section -->
+            <div class="goal-section">
+              <div class="goal-section-header">
+                <span class="goal-section-title">📌 Milestones (${completedMilestones}/${milestones.length})</span>
+                <span class="goal-section-action" onclick="event.stopPropagation(); openMilestoneModal('${goal.goal_id}')">+ Tambah</span>
+              </div>
+              ${milestones.length === 0 ? '<p style="font-size: 12px; color: var(--gray-400);">Belum ada milestone</p>' : ''}
+              ${milestones.map(m => `
+                <div class="milestone-mini ${m.completed ? 'done' : ''}">
+                  <div class="check" onclick="event.stopPropagation(); toggleMilestone('${m.milestone_id}')">${m.completed ? '✓' : ''}</div>
+                  <span class="text">${escapeHtml(m.title)}</span>
+                  <span class="week">W${m.week || 1}</span>
+                </div>
+              `).join('')}
+            </div>
+            
+            <!-- Tasks Section -->
+            <div class="goal-section">
+              <div class="goal-section-header">
+                <span class="goal-section-title">📋 Tasks (${completedTasks}/${tasks.length})</span>
+                <span class="goal-section-action" onclick="event.stopPropagation(); openTaskModalForGoal('${goal.goal_id}')">+ Tambah</span>
+              </div>
+              ${tasks.length === 0 ? '<p style="font-size: 12px; color: var(--gray-400);">Belum ada task</p>' : ''}
+              ${tasks.slice(0, 5).map(t => `
+                <div class="task-mini">
+                  <span class="priority ${t.priority || 'medium'}"></span>
+                  <span class="title">${escapeHtml(t.title)}</span>
+                  <span class="status ${t.status}">${t.status === 'done' ? 'Done' : (t.status === 'progress' ? 'Progress' : 'Todo')}</span>
+                </div>
+              `).join('')}
+              ${tasks.length > 5 ? `<p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">+${tasks.length - 5} task lainnya</p>` : ''}
+            </div>
+            
+            <!-- Actions -->
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+              <button class="btn-submit btn-secondary" style="flex: 1; padding: 10px;" onclick="event.stopPropagation(); showPage('kanban')">📊 Kanban</button>
+              <button class="btn-submit btn-secondary" style="flex: 1; padding: 10px;" onclick="event.stopPropagation(); deleteGoal('${goal.goal_id}')">🗑️ Hapus</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleGoalCard(goalId) {
+  const card = document.getElementById('goal-' + goalId);
+  if (card) {
+    card.classList.toggle('expanded');
+  }
+}
+
+function openMilestoneModal(goalId) {
+  document.getElementById('milestoneGoalId').value = goalId;
+  document.getElementById('milestoneTitle').value = '';
+  openModal('milestone');
+}
+
+function openTaskModalForGoal(goalId) {
+  populateGoalSelect();
+  document.getElementById('taskGoal').value = goalId;
+  document.getElementById('taskTitle').value = '';
+  openModal('task');
+}
+
+function deleteGoal(goalId) {
+  if (!confirm('Hapus goal ini beserta semua milestone dan task-nya?')) return;
+  
+  state.goals = state.goals.filter(g => g.goal_id !== goalId);
+  renderGoals();
+  
+  addToQueue('deleteGoal', { goal_id: goalId });
+  showToast('Goal dihapus', 'success');
+}
+
+// ============================================
+// UPDATE MENU BADGES
+// ============================================
+function updateMenuBadges() {
+  // Sholat badge
+  const sholatBadge = document.getElementById('menuSholatBadge');
+  if (sholatBadge && state.dailySync?.stats) {
+    sholatBadge.textContent = `${state.dailySync.stats.sholat_completed || 0}/8`;
+  }
+  
+  // Habit badge
+  const habitBadge = document.getElementById('menuHabitBadge');
+  if (habitBadge && state.dailySync?.stats) {
+    habitBadge.textContent = `${state.dailySync.stats.habits_completed || 0}/${state.dailySync.stats.habits_total || 11}`;
+  }
+  
+  // Brain dump badge
+  const brainBadge = document.getElementById('menuBrainDumpBadge');
+  if (brainBadge) {
+    brainBadge.textContent = (state.brainDumps || []).length;
+  }
+  
+  // Don't list badge
+  const dontBadge = document.getElementById('menuDontBadge');
+  if (dontBadge) {
+    dontBadge.textContent = (state.dontList || []).length;
+  }
+  
+  // Learning badge
+  const learningBadge = document.getElementById('menuLearningBadge');
+  if (learningBadge) {
+    learningBadge.textContent = (state.learnings || []).length;
+  }
 }
 
 // ============================================
@@ -2366,6 +2687,7 @@ function savePomodoroSettings() {
 document.addEventListener('DOMContentLoaded', () => {
   loadAllData();
   loadPomodoroSettings();
+  loadJournalToday().then(() => renderHomeJournals());
 });
 
 // Register service worker

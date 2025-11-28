@@ -13,7 +13,6 @@
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   
-  <!-- Optimized Font Loading - reduced weights -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
@@ -49,26 +48,13 @@
       
       --spiritual: #6A1B9A;
       --spiritual-light: #F3E5F5;
-      --health: #00838F;
-      --health-light: #E0F7FA;
-      --mind: #EF6C00;
-      --mind-light: #FFF3E0;
-      --social: #C2185B;
-      --social-light: #FCE4EC;
-      --wealth: #558B2F;
-      --wealth-light: #F1F8E9;
-      --career: #1565C0;
-      --career-light: #E3F2FD;
       
       --gradient-header: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
       --gradient-spiritual: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%);
-      --gradient-success: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
-      --gradient-accent: linear-gradient(135deg, #E65100 0%, #FF6F00 100%);
       
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
       --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
       --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-      --shadow-xl: 0 12px 48px rgba(0,0,0,0.15);
       
       --radius-sm: 8px;
       --radius-md: 12px;
@@ -81,833 +67,428 @@
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    /* Skeleton Loading */
-    .skeleton {
-      background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
-      background-size: 200% 100%;
-      animation: skeleton-loading 1.5s infinite;
-      border-radius: var(--radius-sm);
-    }
-    .skeleton-title { height: 20px; width: 70%; margin-bottom: 8px; }
-    .skeleton-text { height: 14px; width: 90%; }
-    .skeleton-item { padding: 16px; background: white; border-radius: var(--radius-md); margin-bottom: 12px; }
-    @keyframes skeleton-loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* Pomodoro Timer Styles */
-    .pomodoro-start-container { text-align: center; padding: 20px 0; }
-    .pomodoro-icon { font-size: 64px; margin-bottom: 16px; }
-    .pomodoro-types { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
-    .pomodoro-type-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 20px 24px; background: white; border: 2px solid var(--gray-200);
-      border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;
-      min-width: 100px;
-    }
-    .pomodoro-type-btn:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    .pomodoro-type-icon { font-size: 32px; }
-    .pomodoro-type-name { font-size: 13px; font-weight: 600; color: var(--gray-700); }
-    
-    .quick-pomodoro-goals { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-    .quick-goal-btn {
-      display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-      background: white; border: 2px solid var(--gray-200); border-radius: var(--radius-md);
-      cursor: pointer; transition: all 0.2s; text-align: left;
-    }
-    .quick-goal-btn:hover { border-color: var(--primary); background: var(--info-light); }
-    .quick-goal-rank {
-      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; font-weight: 700; font-size: 14px;
-      background: var(--warning); color: white;
-    }
-    .quick-goal-title { flex: 1; font-weight: 600; font-size: 14px; }
-    
-    .pomodoro-active-container { text-align: center; padding: 20px 0; }
-    .pomodoro-timer-ring { position: relative; width: 240px; height: 240px; margin: 0 auto 24px; }
-    .pomodoro-timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .pomodoro-timer-ring .timer-bg { fill: none; stroke: var(--gray-200); stroke-width: 8; }
-    .pomodoro-timer-ring .timer-progress { fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-    .timer-display {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      text-align: center;
-    }
-    .timer-time { font-size: 48px; font-weight: 700; color: var(--gray-800); }
-    .timer-label { font-size: 14px; color: var(--gray-500); margin-top: 4px; }
-    
-    .pomodoro-task { margin: 24px 0; padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); }
-    .pomodoro-task-label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
-    .pomodoro-task-name { font-size: 16px; font-weight: 600; }
-    
-    .pomodoro-controls { display: flex; gap: 12px; justify-content: center; }
-    .pomodoro-ctrl-btn {
-      display: flex; align-items: center; gap: 8px; padding: 14px 28px;
-      border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .pomodoro-ctrl-btn.primary { background: var(--primary); color: white; }
-    .pomodoro-ctrl-btn.secondary { background: var(--gray-200); color: var(--gray-700); }
-    .pomodoro-ctrl-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    
-    .pomodoro-complete { text-align: center; padding: 40px 20px; }
-    .complete-icon { font-size: 72px; margin-bottom: 16px; }
-    
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--gray-100);
       color: var(--gray-900);
+      line-height: 1.5;
       min-height: 100vh;
       padding-bottom: 80px;
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.5;
     }
-    
-    /* Typography */
-    .arabic { font-family: var(--font-arabic); font-size: 1.2em; direction: rtl; }
-    .text-xs { font-size: 11px; }
-    .text-sm { font-size: 13px; }
-    .text-base { font-size: 14px; }
-    .text-lg { font-size: 16px; }
-    .text-xl { font-size: 18px; }
-    .text-2xl { font-size: 24px; }
-    .font-medium { font-weight: 500; }
-    .font-semibold { font-weight: 600; }
-    .font-bold { font-weight: 700; }
     
     /* Header */
     .header {
       background: var(--gradient-header);
       color: white;
-      padding: 16px 20px 24px;
+      padding: 16px 20px 20px;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
-    
-    .header-top { display: flex; justify-content: space-between; align-items: center; }
-    .header h1 { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .header-date { 
-      font-size: 12px; 
-      background: rgba(255,255,255,0.2); 
-      padding: 8px 16px; 
-      border-radius: var(--radius-full); 
-      font-weight: 600;
-      backdrop-filter: blur(10px);
-    }
-    
-    .header-greeting {
-      margin-top: 16px;
-      padding: 16px;
-      background: rgba(255,255,255,0.1);
-      border-radius: var(--radius-md);
-      backdrop-filter: blur(10px);
-    }
-    
-    .header-greeting .arabic {
-      font-size: 20px;
-      text-align: center;
-      margin-bottom: 8px;
-      opacity: 0.95;
-    }
-    
-    .header-greeting .translation {
-      font-size: 12px;
-      text-align: center;
-      opacity: 0.8;
-      font-style: italic;
-    }
-    
-    .header-stats { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-    .stat-item {
-      display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
-      background: rgba(255,255,255,0.15); padding: 10px 16px; border-radius: var(--radius-full);
-      backdrop-filter: blur(10px);
-    }
-    .stat-item .value { font-weight: 700; }
-    
-    /* Main */
-    .main { padding: 20px; max-width: 900px; margin: 0 auto; }
-    
-    /* Card */
-    .card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.3s;
-    }
-    .card:hover { box-shadow: var(--shadow-md); }
-    .card-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .card-title { 
-      font-size: 16px; 
-      font-weight: 700; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
-      color: var(--gray-800);
-    }
-    .card-action { 
-      font-size: 13px; 
-      color: var(--primary); 
-      font-weight: 600; 
-      cursor: pointer;
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      transition: all 0.2s;
-    }
-    .card-action:hover { background: var(--info-light); }
-    
-    /* Section */
-    .section-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-500);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin: 28px 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--gray-200);
-    }
-    
-    /* Sholat Tracker */
-    .sholat-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    
-    .sholat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px 8px;
-      border-radius: var(--radius-md);
-      background: var(--gray-50);
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-    }
-    
-    .sholat-item::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: var(--radius-md);
-      background: var(--gradient-spiritual);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .sholat-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-    .sholat-item:active { transform: scale(0.95); }
-    
-    .sholat-item.done {
-      background: var(--success-light);
-      border-color: var(--success);
-    }
-    .sholat-item.done::before { opacity: 0; }
-    
-    .sholat-item .icon { font-size: 28px; margin-bottom: 8px; position: relative; z-index: 1; }
-    .sholat-item .name { 
-      font-size: 11px; 
-      font-weight: 700; 
-      color: var(--gray-600); 
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      position: relative;
-      z-index: 1;
-    }
-    .sholat-item.done .name { color: var(--success); }
-    .sholat-item .time { 
-      font-size: 10px; 
-      color: var(--gray-500); 
-      margin-top: 4px;
-      font-weight: 500;
-      position: relative;
-      z-index: 1;
-    }
-    .sholat-item.done .time { color: var(--success); }
-    
-    .sholat-item .streak {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: var(--accent);
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: var(--radius-full);
-    }
-    
-    /* Habit Rosulullah */
-    .habit-rosul {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .habit-rosul-item {
-      display: flex;
-      align-items: center;
-      padding: 16px;
-      background: linear-gradient(135deg, var(--spiritual-light) 0%, white 100%);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: all 0.3s;
-      border: 2px solid transparent;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .habit-rosul-item::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: var(--spiritual);
-    }
-    
-    .habit-rosul-item:hover { 
-      transform: translateX(4px); 
-      box-shadow: var(--shadow-md);
-      border-color: var(--spiritual-light);
-    }
-    
-    .habit-rosul-item.done {
-      background: var(--success-light);
-      border-color: var(--success);
-    }
-    .habit-rosul-item.done::before { background: var(--success); }
-    
-    .habit-rosul-checkbox {
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--gray-300);
-      border-radius: var(--radius-full);
-      margin-right: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 14px;
-      font-weight: bold;
-      transition: all 0.3s;
-      background: white;
-    }
-    
-    .habit-rosul-item.done .habit-rosul-checkbox {
-      background: var(--success);
-      border-color: var(--success);
-      color: white;
-    }
-    
-    .habit-rosul-info { flex: 1; }
-    .habit-rosul-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-    .habit-rosul-arabic { font-family: var(--font-arabic); font-size: 14px; color: var(--spiritual); margin-bottom: 4px; }
-    .habit-rosul-benefit { font-size: 12px; color: var(--gray-600); }
-    .habit-rosul-item.done .habit-rosul-name { color: var(--success); }
-    
-    .habit-rosul-time {
-      font-size: 11px;
-      background: var(--spiritual);
-      color: white;
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
-      font-weight: 600;
-    }
-    .habit-rosul-item.done .habit-rosul-time { background: var(--success); }
-    
-    /* Quick Actions */
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-    
-    .action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 12px;
-      background: white;
-      border: none;
-      border-radius: var(--radius-lg);
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: var(--shadow-sm);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .action-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--gradient-header);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .action-btn:hover { 
-      transform: translateY(-4px); 
-      box-shadow: var(--shadow-lg);
-    }
-    .action-btn:hover::before { opacity: 0.05; }
-    .action-btn:active { transform: scale(0.95); }
-    
-    .action-btn .icon { font-size: 30px; margin-bottom: 10px; position: relative; z-index: 1; }
-    .action-btn .label { 
-      font-size: 12px; 
-      font-weight: 600; 
-      color: var(--gray-700);
-      position: relative;
-      z-index: 1;
-    }
-    
-    .action-btn.primary {
-      background: var(--gradient-header);
-    }
-    .action-btn.primary::before { display: none; }
-    .action-btn.primary .label { color: white; }
-    
-    .action-btn.accent {
-      background: var(--gradient-accent);
-    }
-    .action-btn.accent::before { display: none; }
-    .action-btn.accent .label { color: white; }
-    
-    /* Vision Pyramid */
-    .vision-pyramid {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .vision-level {
-      background: white;
-      border-radius: var(--radius-md);
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border-left: 4px solid var(--primary);
-      position: relative;
-    }
-    
-    .vision-level:hover { 
-      transform: translateX(4px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    .vision-level.level-10 { border-left-color: var(--spiritual); background: linear-gradient(90deg, var(--spiritual-light) 0%, white 30%); }
-    .vision-level.level-3 { border-left-color: var(--secondary); background: linear-gradient(90deg, rgba(0,105,92,0.1) 0%, white 30%); }
-    .vision-level.level-1 { border-left-color: var(--primary); background: linear-gradient(90deg, var(--info-light) 0%, white 30%); }
-    .vision-level.level-quarter { border-left-color: var(--accent); background: linear-gradient(90deg, var(--warning-light) 0%, white 30%); }
-    
-    .vision-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .vision-period { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-    .vision-level.level-10 .vision-period { color: var(--spiritual); }
-    .vision-level.level-3 .vision-period { color: var(--secondary); }
-    .vision-level.level-1 .vision-period { color: var(--primary); }
-    .vision-level.level-quarter .vision-period { color: var(--accent); }
-    
-    .vision-edit { font-size: 12px; color: var(--gray-500); }
-    .vision-content { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
-    .vision-empty { font-size: 13px; color: var(--gray-400); font-style: italic; }
-    
-    /* Pairwise Comparison */
-    .pairwise-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .pairwise-progress {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    
-    .pairwise-progress-bar {
-      height: 8px;
-      background: var(--gray-200);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .pairwise-progress-fill {
-      height: 100%;
-      background: var(--gradient-success);
-      transition: width 0.5s;
-    }
-    
-    .pairwise-vs {
-      display: flex;
-      gap: 16px;
-      align-items: stretch;
-    }
-    
-    .pairwise-option {
-      flex: 1;
-      padding: 24px 20px;
-      background: white;
-      border: 3px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      cursor: pointer;
-      transition: all 0.3s;
-      text-align: center;
-    }
-    
-    .pairwise-option:hover {
-      border-color: var(--primary);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-    }
-    
-    .pairwise-option:active {
-      transform: scale(0.98);
-    }
-    
-    .pairwise-option.selected {
-      border-color: var(--success);
-      background: var(--success-light);
-    }
-    
-    .pairwise-option-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--gray-800);
-    }
-    
-    .pairwise-option-desc {
-      font-size: 13px;
-      color: var(--gray-600);
-      line-height: 1.5;
-    }
-    
-    .pairwise-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--gray-400);
-    }
-    
-    .pairwise-result {
-      background: var(--success-light);
-      border: 2px solid var(--success);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-    }
-    
-    .pairwise-result-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--success);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .pairwise-rank-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .pairwise-rank-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: white;
-      border-radius: var(--radius-sm);
-    }
-    
-    .pairwise-rank-number {
-      width: 28px;
-      height: 28px;
-      background: var(--success);
-      color: white;
-      border-radius: var(--radius-full);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-    }
-    
-    .pairwise-rank-item:nth-child(1) .pairwise-rank-number { background: #FFD700; color: var(--gray-800); }
-    .pairwise-rank-item:nth-child(2) .pairwise-rank-number { background: #C0C0C0; color: var(--gray-800); }
-    .pairwise-rank-item:nth-child(3) .pairwise-rank-number { background: #CD7F32; color: white; }
-    
-    .pairwise-rank-title { flex: 1; font-size: 14px; font-weight: 600; }
-    
-    /* Kanban Board */
-    .kanban-container {
-      display: flex;
-      gap: 16px;
-      overflow-x: auto;
-      padding-bottom: 20px;
-      margin: 0 -20px;
-      padding: 0 20px;
-      scroll-snap-type: x mandatory;
-    }
-    
-    .kanban-column {
-      min-width: 300px;
-      max-width: 320px;
-      flex-shrink: 0;
-      background: var(--gray-100);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      scroll-snap-align: start;
-    }
-    
-    .kanban-header {
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--gray-200);
     }
+    .header-top h1 { font-size: 20px; font-weight: 700; }
+    .header-date { font-size: 13px; opacity: 0.9; }
     
-    .kanban-title {
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .kanban-column.backlog .kanban-title { color: var(--gray-600); }
-    .kanban-column.todo .kanban-title { color: var(--primary); }
-    .kanban-column.progress .kanban-title { color: var(--warning); }
-    .kanban-column.done .kanban-title { color: var(--success); }
-    
-    .kanban-count {
-      font-size: 12px;
-      background: var(--gray-300);
-      color: var(--gray-700);
-      padding: 4px 12px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-    }
-    
-    .kanban-tasks { min-height: 120px; }
-    
-    .task-card {
-      background: white;
-      border-radius: var(--radius-md);
-      padding: 16px;
+    .header-greeting {
+      text-align: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
       margin-bottom: 12px;
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-      transition: all 0.3s;
-      border-left: 4px solid var(--gray-300);
-      position: relative;
     }
-    
-    .task-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
+    .header-greeting .arabic {
+      font-family: var(--font-arabic);
+      font-size: 22px;
+      margin-bottom: 4px;
     }
-    
-    .task-card.priority-high { border-left-color: var(--danger); }
-    .task-card.priority-medium { border-left-color: var(--warning); }
-    .task-card.priority-low { border-left-color: var(--gray-400); }
-    .task-card.from-pairwise { border-left-color: var(--spiritual); background: linear-gradient(90deg, var(--spiritual-light) 0%, white 20%); }
-    
-    .task-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; line-height: 1.4; }
-    .task-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    
-    .task-label {
-      font-size: 10px;
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
-      font-weight: 600;
-    }
-    .task-label.priority-high { background: var(--danger-light); color: var(--danger); }
-    .task-label.priority-medium { background: var(--warning-light); color: var(--warning); }
-    .task-label.priority-low { background: var(--gray-200); color: var(--gray-600); }
-    .task-label.from-pairwise { background: var(--spiritual-light); color: var(--spiritual); }
-    
-    .task-due {
+    .header-greeting .translation {
       font-size: 11px;
-      color: var(--gray-500);
+      opacity: 0.8;
+    }
+    
+    .header-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-stats .stats-left {
+      display: flex;
+      gap: 16px;
+    }
+    .header-stats .stat-item {
+      font-size: 13px;
       display: flex;
       align-items: center;
       gap: 4px;
-      font-weight: 500;
     }
-    .task-due.overdue { color: var(--danger); font-weight: 600; }
+    .header-stats .stat-item .value { font-weight: 700; }
     
-    .task-actions {
+    .header-stats .quick-icons {
       display: flex;
       gap: 8px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--gray-100);
     }
-    
-    .task-action-btn {
-      flex: 1;
-      padding: 10px;
+    .quick-icon-btn {
+      width: 36px;
+      height: 36px;
       border: none;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.15);
+      font-size: 18px;
       cursor: pointer;
       transition: all 0.2s;
-      background: var(--gray-100);
-      color: var(--gray-700);
-    }
-    .task-action-btn:hover { background: var(--gray-200); }
-    .task-action-btn.primary { background: var(--primary); color: white; }
-    .task-action-btn.primary:hover { background: var(--primary-dark); }
-    .task-action-btn.success { background: var(--success); color: white; }
-    .task-action-btn.success:hover { background: #1B5E20; }
-    
-    .add-task-btn {
-      width: 100%;
-      padding: 14px;
-      border: 2px dashed var(--gray-300);
-      border-radius: var(--radius-md);
-      background: transparent;
-      color: var(--gray-500);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
     }
-    .add-task-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--info-light);
+    .quick-icon-btn:hover { background: rgba(255,255,255,0.25); }
+    .quick-icon-btn:active { transform: scale(0.95); }
+    
+    .sync-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-full);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      animation: pulse-sync 2s infinite;
+    }
+    @keyframes pulse-sync {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
     
-    /* Goal Card */
-    .goal-card {
+    /* Main */
+    .main { padding: 20px; }
+    
+    /* Cards */
+    .card {
       background: white;
       border-radius: var(--radius-lg);
       padding: 20px;
       margin-bottom: 16px;
       box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 16px; font-weight: 700; }
+    .card-action {
+      font-size: 13px;
+      color: var(--primary);
       cursor: pointer;
-      transition: all 0.3s;
-      border-left: 5px solid var(--primary);
-      position: relative;
+      font-weight: 600;
     }
     
-    .goal-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin: 24px 0 12px;
     }
     
-    .goal-card.rank-1 { border-left-color: #FFD700; }
-    .goal-card.rank-2 { border-left-color: #C0C0C0; }
-    .goal-card.rank-3 { border-left-color: #CD7F32; }
+    /* Journal Cards */
+    .journal-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .journal-card.morning { border-left: 4px solid var(--warning); }
+    .journal-card.evening { border-left: 4px solid var(--spiritual); }
+    .journal-card .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .journal-card .title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .journal-card .status {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+    }
+    .journal-card .status.done { background: var(--success-light); color: var(--success); }
+    .journal-card .status.pending { background: var(--gray-100); color: var(--gray-500); }
+    .journal-card .content {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--gray-700);
+    }
+    .journal-card .content .label {
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-top: 8px;
+    }
+    .journal-card .content .label:first-child { margin-top: 0; }
+    .journal-card textarea {
+      width: 100%;
+      min-height: 50px;
+      padding: 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-family: inherit;
+      resize: none;
+      margin-bottom: 8px;
+    }
+    .journal-card textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
     
-    .goal-rank {
-      position: absolute;
-      top: -8px;
-      left: -8px;
-      width: 32px;
-      height: 32px;
+    /* Focus Card */
+    .focus-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .focus-item:hover { background: var(--gray-100); }
+    .focus-item .rank {
+      width: 28px;
+      height: 28px;
       background: var(--primary);
       color: white;
       border-radius: var(--radius-full);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
-      box-shadow: var(--shadow-md);
+      flex-shrink: 0;
+    }
+    .focus-item .rank.gold { background: linear-gradient(135deg, #FFD700, #FFA000); }
+    .focus-item .rank.silver { background: linear-gradient(135deg, #C0C0C0, #9E9E9E); }
+    .focus-item .rank.bronze { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    .focus-item .info { flex: 1; }
+    .focus-item .title { font-size: 14px; font-weight: 600; }
+    .focus-item .meta { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+    .focus-item .start-btn {
+      padding: 8px 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
     }
     
-    .goal-card.rank-1 .goal-rank { background: #FFD700; color: var(--gray-800); }
-    .goal-card.rank-2 .goal-rank { background: #C0C0C0; color: var(--gray-800); }
-    .goal-card.rank-3 .goal-rank { background: #CD7F32; }
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 8px;
+      background: white;
+      border: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .action-btn .icon { font-size: 28px; margin-bottom: 8px; }
+    .action-btn .label { font-size: 11px; font-weight: 600; color: var(--gray-700); }
+    .action-btn.primary { background: var(--primary); }
+    .action-btn.primary .label { color: white; }
     
-    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .goal-title { font-size: 17px; font-weight: 700; color: var(--gray-800); flex: 1; padding-right: 16px; }
-    .goal-quarter { 
-      font-size: 11px; 
-      background: var(--primary); 
+    /* Goal Card - Expandable */
+    .goal-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .goal-card-header {
+      padding: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .goal-card-header:hover { background: var(--gray-50); }
+    .goal-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .goal-rank {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
       color: white;
-      padding: 4px 12px;
-      border-radius: var(--radius-full);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .goal-rank.r1 { background: linear-gradient(135deg, #FFD700, #FFA000); }
+    .goal-rank.r2 { background: linear-gradient(135deg, #C0C0C0, #757575); }
+    .goal-rank.r3 { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    .goal-info { flex: 1; }
+    .goal-title { font-size: 15px; font-weight: 700; color: var(--gray-800); }
+    .goal-meta { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+    .goal-expand { font-size: 18px; color: var(--gray-400); transition: transform 0.3s; }
+    .goal-card.expanded .goal-expand { transform: rotate(180deg); }
+    .goal-progress {
+      height: 6px;
+      background: var(--gray-200);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .goal-progress-bar {
+      height: 100%;
+      background: var(--success);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .goal-progress-text {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Goal Expandable Content */
+    .goal-card-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      border-top: 1px solid var(--gray-100);
+    }
+    .goal-card.expanded .goal-card-body {
+      max-height: 1000px;
+    }
+    .goal-card-content { padding: 16px; }
+    .goal-section {
+      margin-bottom: 16px;
+    }
+    .goal-section:last-child { margin-bottom: 0; }
+    .goal-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .goal-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .goal-section-action {
+      font-size: 11px;
+      color: var(--primary);
+      cursor: pointer;
       font-weight: 600;
     }
     
-    .goal-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 16px; line-height: 1.6; }
-    
-    .goal-progress-container { margin-bottom: 12px; }
-    .goal-progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .goal-progress-label { font-size: 12px; color: var(--gray-500); font-weight: 500; }
-    .goal-progress-value { font-size: 12px; color: var(--primary); font-weight: 700; }
-    .goal-progress { background: var(--gray-200); border-radius: var(--radius-full); height: 10px; overflow: hidden; }
-    .goal-progress-bar { background: var(--gradient-success); height: 100%; transition: width 0.5s; border-radius: var(--radius-full); }
-    
-    .goal-stats {
+    /* Milestone in Goal */
+    .milestone-mini {
       display: flex;
-      gap: 16px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+    }
+    .milestone-mini.done { background: var(--success-light); }
+    .milestone-mini .check {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gray-300);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
       font-size: 12px;
+    }
+    .milestone-mini.done .check {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    .milestone-mini .text {
+      flex: 1;
+      font-size: 13px;
+    }
+    .milestone-mini.done .text {
+      text-decoration: line-through;
       color: var(--gray-500);
     }
-    .goal-stat { display: flex; align-items: center; gap: 4px; }
-    .goal-stat-value { font-weight: 700; color: var(--gray-700); }
-    
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+    .milestone-mini .week {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--info-light);
+      color: var(--info);
+      border-radius: var(--radius-full);
     }
     
-    .stat-box {
-      padding: 24px 20px;
-      background: white;
-      border-radius: var(--radius-lg);
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.3s;
+    /* Task Mini in Goal */
+    .task-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      font-size: 12px;
     }
-    .stat-box:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-    
-    .stat-value { font-size: 36px; font-weight: 800; color: var(--primary); }
-    .stat-label { font-size: 11px; color: var(--gray-500); margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .stat-box.success .stat-value { color: var(--success); }
-    .stat-box.warning .stat-value { color: var(--warning); }
-    .stat-box.spiritual .stat-value { color: var(--spiritual); }
+    .task-mini .priority {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .task-mini .priority.high { background: var(--danger); }
+    .task-mini .priority.medium { background: var(--warning); }
+    .task-mini .priority.low { background: var(--success); }
+    .task-mini .title { flex: 1; }
+    .task-mini .status {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: var(--gray-200);
+      color: var(--gray-600);
+    }
+    .task-mini .status.done { background: var(--success-light); color: var(--success); }
+    .task-mini .status.progress { background: var(--warning-light); color: var(--warning); }
     
     /* Bottom Nav */
     .bottom-nav {
@@ -922,57 +503,29 @@
       box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
       z-index: 100;
     }
-    
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 8px 12px;
       color: var(--gray-500);
-      text-decoration: none;
       font-size: 10px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
       border: none;
       background: none;
       border-radius: var(--radius-sm);
+      transition: all 0.2s;
     }
-    
     .nav-item:hover { background: var(--gray-100); }
     .nav-item.active { color: var(--primary); }
     .nav-item .icon { font-size: 26px; margin-bottom: 4px; }
     
-    /* Sync Button di Header */
-    .sync-btn {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 14px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: var(--radius-full);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      animation: pulse-sync 2s infinite;
-      transition: all 0.2s;
-    }
-    .sync-btn:hover {
-      transform: scale(1.05);
-      animation: none;
-    }
-    @keyframes pulse-sync {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-    
-    /* Modal - Posisi Tengah */
+    /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -980,100 +533,68 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s;
-      backdrop-filter: blur(4px);
       padding: 20px;
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
-    
     .modal {
       background: white;
       border-radius: var(--radius-xl);
       width: 100%;
-      max-width: 480px;
+      max-width: 440px;
       max-height: 85vh;
       overflow-y: auto;
-      transform: scale(0.9) translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-      box-shadow: var(--shadow-xl);
+      transform: scale(0.9);
+      transition: transform 0.3s;
     }
-    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
-    
+    .modal-overlay.active .modal { transform: scale(1); }
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--gray-200);
+      padding: 20px;
+      border-bottom: 1px solid var(--gray-100);
       position: sticky;
       top: 0;
       background: white;
-      z-index: 10;
+      z-index: 1;
     }
-    
     .modal-title { font-size: 18px; font-weight: 700; }
-    
     .modal-close {
-      background: var(--gray-100);
+      width: 32px;
+      height: 32px;
       border: none;
-      font-size: 20px;
-      color: var(--gray-600);
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
+      background: var(--gray-100);
       border-radius: var(--radius-full);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
+      cursor: pointer;
+      font-size: 16px;
     }
-    .modal-close:hover { background: var(--gray-200); transform: rotate(90deg); }
+    .modal-body { padding: 20px; }
     
-    .modal-body { padding: 24px; }
-    
-    /* Form */
-    .form-group { margin-bottom: 20px; }
-    .form-label { 
-      display: block; 
-      font-size: 13px; 
-      font-weight: 600; 
-      color: var(--gray-700); 
-      margin-bottom: 8px;
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
     }
-    .form-hint { font-size: 11px; color: var(--gray-500); margin-top: 4px; }
-    
     .form-input {
       width: 100%;
-      padding: 14px 18px;
+      padding: 12px 14px;
       border: 2px solid var(--gray-200);
       border-radius: var(--radius-md);
-      font-size: 15px;
+      font-size: 14px;
       font-family: inherit;
-      transition: all 0.2s;
-      background: var(--gray-50);
+      transition: border-color 0.2s;
     }
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      background: white;
-      box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
-    }
-    .form-input::placeholder { color: var(--gray-400); }
-    .form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
-    
-    .form-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%239E9E9E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 20px;
-      padding-right: 44px;
-    }
-    
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-input:focus { outline: none; border-color: var(--primary); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-select { background: white; cursor: pointer; }
     
     .btn-submit {
       width: 100%;
-      padding: 16px;
+      padding: 14px 24px;
       background: var(--gradient-header);
       color: white;
       border: none;
@@ -1081,19 +602,16 @@
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s;
       box-shadow: var(--shadow-md);
+      transition: all 0.2s;
     }
-    .btn-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-    .btn-submit:active { transform: scale(0.98); }
-    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    
+    .btn-submit:hover { transform: translateY(-2px); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary {
       background: var(--gray-100);
       color: var(--gray-700);
       box-shadow: none;
     }
-    .btn-secondary:hover { background: var(--gray-200); box-shadow: none; }
     
     /* Toast */
     .toast {
@@ -1103,64 +621,130 @@
       transform: translateX(-50%) translateY(100px);
       background: var(--gray-900);
       color: white;
-      padding: 16px 28px;
+      padding: 14px 24px;
       border-radius: var(--radius-full);
       font-size: 14px;
       font-weight: 500;
       opacity: 0;
-      transition: all 0.4s;
+      transition: all 0.3s;
       z-index: 300;
-      box-shadow: var(--shadow-xl);
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.success { background: var(--success); }
     .toast.error { background: var(--danger); }
-    .toast.warning { background: var(--warning); }
     
-    /* Loading */
-    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; }
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 4px solid var(--gray-200);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    /* Kanban */
+    .kanban-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
     }
-    .loading-text { margin-top: 16px; font-size: 14px; color: var(--gray-500); }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
+    .kanban-column {
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      min-width: 140px;
+    }
+    .kanban-column-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-600);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kanban-column-header .count {
+      background: var(--gray-200);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+    }
+    .kanban-task {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+    }
+    .kanban-task .title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .kanban-task .meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
       color: var(--gray-500);
     }
-    .empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state p { font-size: 14px; line-height: 1.6; }
-    .empty-state .btn { margin-top: 20px; display: inline-block; padding: 12px 24px; }
+    .kanban-task .priority {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    /* Menu */
+    .menu-grid { display: flex; flex-direction: column; gap: 12px; }
+    .menu-group {
+      background: white;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .menu-group-title {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--gray-50);
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--gray-100);
+      transition: background 0.2s;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:hover { background: var(--gray-50); }
+    .menu-item .left { display: flex; align-items: center; gap: 12px; }
+    .menu-item .icon {
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+      border-radius: var(--radius-md);
+    }
+    .menu-item .info .title { font-size: 14px; font-weight: 600; }
+    .menu-item .info .subtitle { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+    .menu-item .right { display: flex; align-items: center; gap: 8px; }
+    .menu-item .badge {
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .menu-item .badge.success { background: var(--success-light); color: var(--success); }
+    .menu-item .badge.info { background: var(--info-light); color: var(--info); }
+    .menu-item .arrow { color: var(--gray-400); }
     
     /* Pages */
     .page { display: none; }
     .page.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     
     /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-      padding: 4px 0;
-      scrollbar-width: none;
-    }
-    .tabs::-webkit-scrollbar { display: none; }
-    
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
     .tab-btn {
-      padding: 12px 20px;
+      padding: 10px 18px;
       border: none;
       border-radius: var(--radius-full);
       background: var(--gray-100);
@@ -1168,301 +752,198 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
       white-space: nowrap;
+      transition: all 0.2s;
     }
-    .tab-btn:hover { background: var(--gray-200); }
     .tab-btn.active { background: var(--primary); color: white; }
     
-    /* Responsive */
-    @media (max-width: 480px) {
-      .quick-actions { grid-template-columns: repeat(2, 1fr); }
-      .sholat-container { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-      .stats-grid { grid-template-columns: 1fr 1fr; }
-      .form-row { grid-template-columns: 1fr; }
-      .pairwise-vs { flex-direction: column; }
-      .pairwise-divider { transform: rotate(90deg); margin: 8px 0; }
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--gray-500);
     }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
     
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--gray-100); }
-    ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
-    
-    /* ==================== BATCH 1: Brain Dump, Jurnal, Don't List ==================== */
-    
-    /* Brain Dump */
-    .brain-dump-input { position: relative; margin-bottom: 20px; }
-    .brain-dump-input textarea {
-      width: 100%; min-height: 80px; padding: 16px;
-      border: 2px solid var(--gray-200); border-radius: var(--radius-md);
-      font-size: 15px; font-family: inherit; resize: none; transition: all 0.2s;
+    /* Sholat Grid (untuk page ibadah) */
+    .sholat-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
-    .brain-dump-input textarea:focus {
-      outline: none; border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
-    }
-    .brain-dump-input .char-count {
-      position: absolute; bottom: 8px; right: 12px;
-      font-size: 11px; color: var(--gray-400);
-    }
-    .brain-dump-list { display: flex; flex-direction: column; gap: 12px; }
-    .brain-dump-item {
-      background: white; border-radius: var(--radius-md); padding: 16px;
-      box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary);
-    }
-    .brain-dump-item .content {
-      font-size: 14px; line-height: 1.6; color: var(--gray-800); margin-bottom: 12px;
-    }
-    .brain-dump-item .meta {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 12px; color: var(--gray-500);
-    }
-    .brain-dump-item .actions { display: flex; gap: 8px; }
-    .brain-dump-item .actions button {
-      padding: 6px 12px; border: none; border-radius: var(--radius-sm);
-      font-size: 11px; cursor: pointer; transition: all 0.2s;
-    }
-    .brain-dump-item .actions .btn-task { background: var(--info-light); color: var(--info); }
-    .brain-dump-item .actions .btn-task:hover { background: var(--info); color: white; }
-    .brain-dump-item .actions .btn-delete { background: var(--gray-100); color: var(--gray-600); }
-    .brain-dump-item .actions .btn-delete:hover { background: var(--danger-light); color: var(--danger); }
-    
-    /* Journal */
-    .journal-section {
-      background: white; border-radius: var(--radius-lg); padding: 20px;
-      margin-bottom: 16px; box-shadow: var(--shadow-sm);
-    }
-    .journal-section.morning { border-left: 4px solid var(--warning); }
-    .journal-section.evening { border-left: 4px solid var(--spiritual); }
-    .journal-section .section-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-    }
-    .journal-section .section-title {
-      font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;
-    }
-    .journal-section .section-status {
-      font-size: 12px; padding: 4px 12px; border-radius: var(--radius-full);
-    }
-    .journal-section .section-status.done { background: var(--success-light); color: var(--success); }
-    .journal-section .section-status.pending { background: var(--gray-100); color: var(--gray-600); }
-    .journal-content { font-size: 14px; line-height: 1.8; color: var(--gray-700); }
-    .journal-content .label {
-      font-weight: 600; color: var(--gray-800); margin-top: 12px; margin-bottom: 4px;
-    }
-    .journal-content .label:first-child { margin-top: 0; }
-    .journal-form textarea {
-      width: 100%; min-height: 60px; padding: 12px;
-      border: 2px solid var(--gray-200); border-radius: var(--radius-md);
-      font-size: 14px; font-family: inherit; resize: none; margin-bottom: 12px;
-    }
-    .journal-form textarea:focus { outline: none; border-color: var(--primary); }
-    
-    /* Don't List */
-    .dont-list-container { display: flex; flex-direction: column; gap: 16px; }
-    .dont-category {
-      background: white; border-radius: var(--radius-lg);
-      overflow: hidden; box-shadow: var(--shadow-sm);
-    }
-    .dont-category-header {
-      padding: 14px 16px; font-weight: 700; font-size: 14px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .dont-category.fokus .dont-category-header { background: var(--info-light); color: var(--info); }
-    .dont-category.waktu .dont-category-header { background: var(--warning-light); color: var(--warning); }
-    .dont-category.energi .dont-category-header { background: var(--success-light); color: var(--success); }
-    .dont-category.kebiasaan .dont-category-header { background: var(--spiritual-light); color: var(--spiritual); }
-    .dont-category-items { padding: 8px; }
-    .dont-item {
-      display: flex; align-items: flex-start; gap: 12px; padding: 12px;
-      border-radius: var(--radius-md); transition: background 0.2s;
-    }
-    .dont-item:hover { background: var(--gray-50); }
-    .dont-item .icon { font-size: 20px; flex-shrink: 0; }
-    .dont-item .content { flex: 1; }
-    .dont-item .item-text { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
-    .dont-item .item-reason { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
-    .dont-item .actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
-    .dont-item:hover .actions { opacity: 1; }
-    .dont-item .actions button {
-      padding: 6px; border: none; background: transparent;
-      cursor: pointer; border-radius: var(--radius-sm); transition: background 0.2s;
-    }
-    .dont-item .actions button:hover { background: var(--gray-200); }
-    
-    /* Menu Page */
-    .menu-grid { display: flex; flex-direction: column; gap: 12px; }
-    .menu-group {
-      background: white; border-radius: var(--radius-lg);
-      overflow: hidden; box-shadow: var(--shadow-sm);
-    }
-    .menu-group-title {
-      padding: 12px 16px; font-size: 12px; font-weight: 700;
-      color: var(--gray-500); text-transform: uppercase;
-      letter-spacing: 0.5px; background: var(--gray-50);
-    }
-    .menu-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px; cursor: pointer; transition: background 0.2s;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .menu-item:last-child { border-bottom: none; }
-    .menu-item:hover { background: var(--gray-50); }
-    .menu-item:active { background: var(--gray-100); }
-    .menu-item .left { display: flex; align-items: center; gap: 14px; }
-    .menu-item .icon {
-      font-size: 24px; width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--gray-100); border-radius: var(--radius-md);
-    }
-    .menu-item .info .title { font-size: 15px; font-weight: 600; color: var(--gray-800); }
-    .menu-item .info .subtitle { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
-    .menu-item .right { display: flex; align-items: center; gap: 8px; }
-    .menu-item .badge {
-      padding: 4px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;
-    }
-    .menu-item .badge.success { background: var(--success-light); color: var(--success); }
-    .menu-item .badge.warning { background: var(--warning-light); color: var(--warning); }
-    .menu-item .badge.info { background: var(--info-light); color: var(--info); }
-    .menu-item .arrow { color: var(--gray-400); font-size: 18px; }
-    
-    /* Brain Dump Quick Button */
-    .brain-dump-quick-btn {
-      width: 44px; height: 44px;
-      border: none; border-radius: var(--radius-full);
-      background: rgba(255,255,255,0.2);
-      font-size: 22px;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-      flex-shrink: 0;
-    }
-    .brain-dump-quick-btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: scale(1.1);
-    }
-    .brain-dump-quick-btn:active {
-      transform: scale(0.95);
-    }
-    
-    /* Review History Item */
-    .review-history-item {
-      padding: 16px;
+    .sholat-item {
+      text-align: center;
+      padding: 12px 8px;
       background: var(--gray-50);
       border-radius: var(--radius-md);
-      margin-bottom: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .review-history-item:hover {
-      background: var(--gray-100);
-    }
-    .review-history-item .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .review-history-item .week {
-      font-weight: 700;
-      color: var(--gray-800);
-    }
-    .review-history-item .date {
-      font-size: 12px;
-      color: var(--gray-500);
-    }
-    .review-history-item .scores {
-      display: flex;
-      gap: 12px;
-      font-size: 13px;
-    }
-    .review-history-item .scores span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .sholat-item.done { background: var(--success-light); }
+    .sholat-item .icon { font-size: 24px; margin-bottom: 4px; }
+    .sholat-item .name { font-size: 11px; font-weight: 600; }
+    .sholat-item .time { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
     
-    /* Milestone Item */
-    .milestone-item {
+    /* Habit Item */
+    .habit-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px;
+      padding: 14px;
       background: var(--gray-50);
       border-radius: var(--radius-md);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
-    .milestone-item.done {
-      background: var(--success-light);
-    }
-    .milestone-item .checkbox {
-      width: 24px;
-      height: 24px;
+    .habit-item.done { background: var(--success-light); }
+    .habit-checkbox {
+      width: 28px;
+      height: 28px;
       border: 2px solid var(--gray-300);
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      font-size: 16px;
       transition: all 0.2s;
-      flex-shrink: 0;
     }
-    .milestone-item .checkbox:hover {
-      border-color: var(--primary);
-    }
-    .milestone-item.done .checkbox {
+    .habit-item.done .habit-checkbox {
       background: var(--success);
       border-color: var(--success);
       color: white;
     }
-    .milestone-item .content {
-      flex: 1;
-    }
-    .milestone-item .title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-800);
-    }
-    .milestone-item.done .title {
-      text-decoration: line-through;
-      color: var(--gray-500);
-    }
-    .milestone-item .week-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      background: var(--info-light);
-      color: var(--info);
-      border-radius: var(--radius-full);
-    }
+    .habit-info { flex: 1; }
+    .habit-name { font-size: 14px; font-weight: 600; }
+    .habit-arabic { font-family: var(--font-arabic); font-size: 13px; color: var(--gray-600); }
+    .habit-time { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
     
-    /* Pomodoro Settings Card */
-    .settings-card {
+    /* Review & Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .stat-box {
+      text-align: center;
+      padding: 16px 8px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+    }
+    .stat-box .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+    .stat-box .label { font-size: 10px; color: var(--gray-500); margin-top: 4px; }
+    
+    /* Vision Pyramid */
+    .vision-pyramid { display: flex; flex-direction: column; gap: 12px; }
+    .vision-level {
       background: white;
       border-radius: var(--radius-lg);
       padding: 16px;
-      margin-bottom: 12px;
+      cursor: pointer;
       box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
     }
-    .settings-card .setting-row {
+    .vision-level:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .vision-level.level-10 { border-left: 4px solid var(--spiritual); }
+    .vision-level.level-3 { border-left: 4px solid var(--primary); }
+    .vision-level.level-1 { border-left: 4px solid var(--success); }
+    .vision-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--gray-100);
+      margin-bottom: 8px;
     }
-    .settings-card .setting-row:last-child {
-      border-bottom: none;
+    .vision-period { font-size: 14px; font-weight: 700; }
+    .vision-edit { font-size: 12px; color: var(--primary); }
+    .vision-content { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+    .vision-empty { color: var(--gray-400); font-style: italic; }
+    
+    /* Pairwise */
+    .pairwise-vs {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
     }
-    .settings-card .setting-label {
-      font-size: 14px;
-      color: var(--gray-700);
+    .pairwise-option {
+      flex: 1;
+      padding: 20px;
+      background: white;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
     }
-    .settings-card .setting-value {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary);
+    .pairwise-option:hover { border-color: var(--primary); background: var(--info-light); }
+    .pairwise-option .title { font-size: 14px; font-weight: 600; }
+    .pairwise-divider {
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-400);
+    }
+    
+    /* Pomodoro */
+    .pomodoro-timer {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .pomodoro-circle {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+    .pomodoro-circle svg { transform: rotate(-90deg); }
+    .pomodoro-circle .time {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .pomodoro-circle .time .digits { font-size: 48px; font-weight: 700; }
+    .pomodoro-circle .time .label { font-size: 13px; color: var(--gray-500); }
+    .pomodoro-types {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .pomodoro-type-btn {
+      padding: 12px 20px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .pomodoro-type-btn:hover { border-color: var(--primary); }
+    .pomodoro-type-btn.active { border-color: var(--primary); background: var(--info-light); }
+    .pomodoro-type-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+    .pomodoro-type-name { font-size: 12px; font-weight: 600; }
+    
+    /* Loading */
+    .loading { display: flex; justify-content: center; padding: 32px; }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .quick-actions { grid-template-columns: repeat(4, 1fr); }
+      .sholat-container { grid-template-columns: repeat(4, 1fr); }
+      .kanban-container { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -1472,7 +953,6 @@
     <div class="header-top">
       <h1>🌙 Sync Planner</h1>
       <div style="display: flex; align-items: center; gap: 8px;">
-        <!-- Sync Button - muncul jika ada pending -->
         <button class="sync-btn" id="syncButton" onclick="forceSyncNow()" style="display: none;">
           🔄 <span id="syncBtnCount">0</span>
         </button>
@@ -1480,21 +960,20 @@
       </div>
     </div>
     <div class="header-greeting">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-          <div class="translation">"Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang"</div>
-        </div>
-        <button class="brain-dump-quick-btn" onclick="openQuickBrainDump()" title="Brain Dump">
-          🧠
-        </button>
-      </div>
+      <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <div class="translation">"Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang"</div>
     </div>
     <div class="header-stats">
-      <div class="stat-item">🕌 <span class="value" id="sholatCount">0/8</span></div>
-      <div class="stat-item">📿 <span class="value" id="habitCount">0/0</span></div>
-      <div class="stat-item">🍅 <span class="value" id="pomodoroCount">0</span></div>
-      <div class="stat-item">⏱️ <span class="value" id="focusMinutes">0m</span></div>
+      <div class="stats-left">
+        <div class="stat-item">🕌 <span class="value" id="sholatCount">0/8</span></div>
+        <div class="stat-item">📿 <span class="value" id="habitCount">0/11</span></div>
+        <div class="stat-item">🍅 <span class="value" id="pomodoroCount">0</span></div>
+        <div class="stat-item">⏱️ <span class="value" id="focusMinutes">0m</span></div>
+      </div>
+      <div class="quick-icons">
+        <button class="quick-icon-btn" onclick="openQuickBrainDump()" title="Brain Dump">🧠</button>
+        <button class="quick-icon-btn" onclick="showPage('dontlist')" title="Don't List">🚫</button>
+      </div>
     </div>
   </header>
   
@@ -1502,14 +981,26 @@
   <main class="main">
     <!-- ==================== PAGE: HOME ==================== -->
     <div class="page active" id="page-home">
-      <!-- Sholat Tracker -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">🕌 Sholat & Ibadah</span>
-          <span class="card-action" onclick="showPage('habits')">Lihat Semua →</span>
+      <!-- Jurnal Pagi -->
+      <div class="journal-card morning" id="journalMorningCard">
+        <div class="header">
+          <div class="title">☀️ Jurnal Pagi</div>
+          <span class="status pending" id="journalMorningStatus">Belum ditulis</span>
         </div>
-        <div class="sholat-container" id="sholatGrid">
-          <div class="loading"><div class="spinner"></div></div>
+        <div id="journalMorningContent">
+          <div class="content" style="color: var(--gray-400); font-style: italic;">
+            Mulai hari dengan rasa syukur dan fokus yang jelas...
+          </div>
+          <button class="btn-submit" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Tulis Jurnal Pagi</button>
+        </div>
+      </div>
+      
+      <!-- Fokus Hari Ini -->
+      <div class="section-title">🎯 Fokus Hari Ini</div>
+      <div class="card" id="todayFocus">
+        <div class="empty-state" style="padding: 20px;">
+          <p>Tentukan prioritas dengan Pairwise</p>
+          <button class="btn-submit btn-secondary" style="width: auto; margin-top: 12px;" onclick="showPage('pairwise')">⚖️ Atur Prioritas</button>
         </div>
       </div>
       
@@ -1520,146 +1011,89 @@
           <span class="icon">🍅</span>
           <span class="label">Fokus</span>
         </button>
-        <button class="action-btn accent" onclick="showPage('pairwise')">
-          <span class="icon">⚖️</span>
-          <span class="label">Prioritas</span>
-        </button>
         <button class="action-btn" onclick="openModal('task')">
           <span class="icon">📋</span>
           <span class="label">Task</span>
         </button>
-        <button class="action-btn" onclick="showPage('vision')">
+        <button class="action-btn" onclick="openModal('goal')">
           <span class="icon">🎯</span>
-          <span class="label">Visi</span>
+          <span class="label">Goal</span>
+        </button>
+        <button class="action-btn" onclick="showPage('kanban')">
+          <span class="icon">📊</span>
+          <span class="label">Kanban</span>
         </button>
       </div>
       
-      <!-- Habit Rosulullah -->
-      <div class="section-title">📿 Sunnah Rasulullah ﷺ</div>
-      <div class="card" style="padding: 16px;">
-        <div class="habit-rosul" id="habitRosulList">
-          <div class="loading"><div class="spinner"></div></div>
+      <!-- Jurnal Malam -->
+      <div class="section-title">🌙 Refleksi Hari Ini</div>
+      <div class="journal-card evening" id="journalEveningCard">
+        <div class="header">
+          <div class="title">🌙 Jurnal Malam</div>
+          <span class="status pending" id="journalEveningStatus">Belum ditulis</span>
         </div>
-      </div>
-      
-      <!-- Today's Focus -->
-      <div class="section-title">🎯 Fokus Hari Ini</div>
-      <div class="card" id="todayFocus">
-        <div class="empty-state">
-          <span class="icon">⚖️</span>
-          <p>Tentukan prioritas dengan Pairwise Comparison</p>
-          <button class="btn-submit" style="width: auto; margin-top: 16px;" onclick="showPage('pairwise')">Mulai Prioritas</button>
+        <div id="journalEveningContent">
+          <div class="content" style="color: var(--gray-400); font-style: italic;">
+            Refleksikan hari ini sebelum istirahat...
+          </div>
+          <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('evening')">✏️ Tulis Jurnal Malam</button>
         </div>
       </div>
     </div>
     
-    <!-- ==================== PAGE: VISION ==================== -->
-    <div class="page" id="page-vision">
-      <div class="section-title">🏔️ Piramida Visi & Goal</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Tentukan visi jangka panjang hingga target 3 bulan. Setiap level harus mendukung pencapaian level di atasnya.
-      </p>
+    <!-- ==================== PAGE: POMODORO ==================== -->
+    <div class="page" id="page-pomodoro">
+      <div class="section-title">🍅 Pomodoro Timer</div>
       
-      <div class="vision-pyramid" id="visionPyramid">
-        <div class="vision-level level-10" onclick="openModal('vision-10')">
-          <div class="vision-header">
-            <span class="vision-period">🌟 Visi 10 Tahun</span>
-            <span class="vision-edit">✏️ Edit</span>
-          </div>
-          <div class="vision-content" id="vision10Content">
-            <span class="vision-empty">Tap untuk menentukan visi 10 tahun...</span>
-          </div>
-        </div>
-        
-        <div class="vision-level level-3" onclick="openModal('vision-3')">
-          <div class="vision-header">
-            <span class="vision-period">🎯 Target 3 Tahun</span>
-            <span class="vision-edit">✏️ Edit</span>
-          </div>
-          <div class="vision-content" id="vision3Content">
-            <span class="vision-empty">Tap untuk menentukan target 3 tahun...</span>
-          </div>
-        </div>
-        
-        <div class="vision-level level-1" onclick="openModal('vision-1')">
-          <div class="vision-header">
-            <span class="vision-period">📅 Target 1 Tahun</span>
-            <span class="vision-edit">✏️ Edit</span>
-          </div>
-          <div class="vision-content" id="vision1Content">
-            <span class="vision-empty">Tap untuk menentukan target 1 tahun...</span>
-          </div>
-        </div>
-        
-        <div class="vision-level level-quarter" onclick="showPage('goals')">
-          <div class="vision-header">
-            <span class="vision-period">🚀 Goal 12 Minggu (Q4 2025)</span>
-            <span class="vision-edit">Lihat →</span>
-          </div>
-          <div class="vision-content" id="visionQuarterContent">
-            <span class="vision-empty">Lihat dan kelola goal 12 minggu...</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="section-title">💡 Panduan Menetapkan Visi</div>
       <div class="card">
-        <div style="font-size: 13px; color: var(--gray-700); line-height: 1.8;">
-          <p><strong>1. Visi 10 Tahun:</strong> Bayangkan diri Anda 10 tahun ke depan. Apa yang ingin dicapai dalam karir, keluarga, spiritualitas, dan kesehatan?</p>
-          <p style="margin-top: 12px;"><strong>2. Target 3 Tahun:</strong> Milestone penting menuju visi 10 tahun. Fokus pada 2-3 bidang utama.</p>
-          <p style="margin-top: 12px;"><strong>3. Target 1 Tahun:</strong> Langkah konkret yang bisa diukur. Gunakan format SMART.</p>
-          <p style="margin-top: 12px;"><strong>4. Goal 12 Minggu:</strong> Sprint intensif untuk mencapai hasil nyata. Maksimal 3 goal prioritas.</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- ==================== PAGE: PAIRWISE ==================== -->
-    <div class="page" id="page-pairwise">
-      <div class="section-title">⚖️ Pairwise Comparison</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Bandingkan setiap pasangan goal untuk menentukan prioritas. Pilih yang LEBIH PENTING untuk fokus saat ini.
-      </p>
-      
-      <div id="pairwiseContainer">
-        <div class="empty-state">
-          <span class="icon">🎯</span>
-          <p>Tambahkan minimal 2 goal untuk memulai perbandingan</p>
-          <button class="btn-submit" style="width: auto; margin-top: 16px;" onclick="showPage('goals')">Ke Halaman Goals</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- ==================== PAGE: GOALS ==================== -->
-    <div class="page" id="page-goals">
-      <div class="section-title">🎯 Goal 12 Minggu</div>
-      
-      <div class="tabs" id="goalTabs">
-        <button class="tab-btn active" onclick="filterGoals('active')">Aktif</button>
-        <button class="tab-btn" onclick="filterGoals('all')">Semua</button>
-        <button class="tab-btn" onclick="showGoalMilestones()">📌 Milestones</button>
-      </div>
-      
-      <div id="goalsList">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-      
-      <div id="goalMilestonesSection" style="display: none;">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">📌 Milestones</span>
-            <button class="btn-submit btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openAddMilestoneModal()">+ Tambah</button>
-          </div>
-          <div id="milestonesList">
-            <div class="empty-state" style="padding: 20px;">
-              <p style="color: var(--gray-500); font-size: 13px;">Belum ada milestone. Tambahkan untuk tracking progress goal.</p>
+        <div id="pomodoroContent">
+          <div class="pomodoro-timer" id="pomodoroStart">
+            <div style="font-size: 48px; margin-bottom: 16px;">🍅</div>
+            <h2 style="font-size: 20px; margin-bottom: 8px;">Mulai Sesi Fokus</h2>
+            <p style="color: var(--gray-500); margin-bottom: 24px; font-size: 13px;">Pilih durasi dan mulai fokus</p>
+            
+            <div class="pomodoro-types">
+              <button class="pomodoro-type-btn" onclick="selectPomodoroType('POMODORO_25')">
+                <span class="pomodoro-type-icon">🍅</span>
+                <span class="pomodoro-type-name" id="pomodoroLabel25">25m</span>
+              </button>
+              <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_60')">
+                <span class="pomodoro-type-icon">🧠</span>
+                <span class="pomodoro-type-name" id="pomodoroLabel60">60m</span>
+              </button>
+              <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_90')">
+                <span class="pomodoro-type-icon">🚀</span>
+                <span class="pomodoro-type-name" id="pomodoroLabel90">90m</span>
+              </button>
             </div>
+            
+            <button class="btn-submit btn-secondary" style="margin-top: 12px; width: auto;" onclick="openModal('pomodoro-settings')">
+              ⚙️ Atur Durasi
+            </button>
           </div>
         </div>
       </div>
       
-      <button class="btn-submit" style="margin-top: 20px;" onclick="openModal('goal')">
-        + Tambah Goal Baru
-      </button>
+      <!-- Stats -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">📊 Statistik Hari Ini</span>
+        </div>
+        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="stat-box">
+            <div class="value" id="pomodoroTodayCount">0</div>
+            <div class="label">Sesi</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="pomodoroTodayMinutes">0m</div>
+            <div class="label">Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="pomodoroTodayTarget">0/8</div>
+            <div class="label">Target</div>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- ==================== PAGE: KANBAN ==================== -->
@@ -1667,80 +1101,30 @@
       <div class="section-title">📊 Kanban Board</div>
       
       <div class="tabs" id="kanbanTabs">
-        <button class="tab-btn active" onclick="filterKanban('')">Semua Task</button>
+        <button class="tab-btn active" onclick="filterKanban('')">Semua</button>
       </div>
       
       <div class="kanban-container" id="kanbanBoard">
         <div class="loading"><div class="spinner"></div></div>
       </div>
+      
+      <button class="btn-submit" style="margin-top: 16px;" onclick="openModal('task')">+ Tambah Task</button>
     </div>
     
-    <!-- ==================== PAGE: HABITS ==================== -->
-    <div class="page" id="page-habits">
-      <div class="section-title">📿 Habit Sunnah Rasulullah ﷺ</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Amalan harian berdasarkan sunnah yang disesuaikan untuk ASN. Konsistensi adalah kunci - mulai dari yang kecil.
-      </p>
+    <!-- ==================== PAGE: GOALS ==================== -->
+    <div class="page" id="page-goals">
+      <div class="section-title">🎯 Goal 12 Minggu</div>
       
       <div class="tabs">
-        <button class="tab-btn active" onclick="filterHabits('all')">Semua</button>
-        <button class="tab-btn" onclick="filterHabits('PAGI')">🌅 Pagi</button>
-        <button class="tab-btn" onclick="filterHabits('SIANG')">☀️ Siang</button>
-        <button class="tab-btn" onclick="filterHabits('MALAM')">🌙 Malam</button>
+        <button class="tab-btn active" onclick="filterGoals('active')">Aktif</button>
+        <button class="tab-btn" onclick="filterGoals('all')">Semua</button>
       </div>
       
-      <div id="habitFullList">
+      <div id="goalsList">
         <div class="loading"><div class="spinner"></div></div>
       </div>
-    </div>
-    
-    <!-- ==================== PAGE: STATS ==================== -->
-    <div class="page" id="page-stats">
-      <div class="section-title">📈 Statistik & Progress</div>
       
-      <div class="tabs">
-        <button class="tab-btn active" onclick="loadStats('week')">Minggu Ini</button>
-        <button class="tab-btn" onclick="loadStats('month')">Bulan Ini</button>
-      </div>
-      
-      <div id="statsContainer">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-    </div>
-    
-    <!-- ==================== PAGE: POMODORO ==================== -->
-    <div class="page" id="page-pomodoro">
-      <div class="section-title">🍅 Pomodoro Timer</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Teknik fokus dengan interval waktu. Pilih durasi dan task yang akan dikerjakan.
-      </p>
-      
-      <div class="card" id="pomodoroContainer">
-        <div class="pomodoro-start-container">
-          <div class="pomodoro-icon">🍅</div>
-          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Mulai Sesi Fokus</h2>
-          <p style="color: var(--gray-600); margin-bottom: 24px;">Pilih durasi dan task yang akan dikerjakan</p>
-          
-          <div class="pomodoro-types">
-            <button class="pomodoro-type-btn" onclick="selectPomodoroType('POMODORO_25')">
-              <span class="pomodoro-type-icon">🍅</span>
-              <span class="pomodoro-type-name" id="pomodoroLabel25">25 menit</span>
-            </button>
-            <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_60')">
-              <span class="pomodoro-type-icon">🧠</span>
-              <span class="pomodoro-type-name" id="pomodoroLabel60">60 menit</span>
-            </button>
-            <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_90')">
-              <span class="pomodoro-type-icon">🚀</span>
-              <span class="pomodoro-type-name" id="pomodoroLabel90">90 menit</span>
-            </button>
-          </div>
-          
-          <button class="btn-submit btn-secondary" style="margin-top: 16px; font-size: 13px;" onclick="openModal('pomodoro-settings')">
-            ⚙️ Atur Durasi
-          </button>
-        </div>
-      </div>
+      <button class="btn-submit" style="margin-top: 16px;" onclick="openModal('goal')">+ Tambah Goal</button>
     </div>
     
     <!-- ==================== PAGE: MENU ==================== -->
@@ -1748,14 +1132,28 @@
       <div class="section-title">☰ Menu</div>
       
       <div class="menu-grid">
+        <!-- Ibadah -->
         <div class="menu-group">
-          <div class="menu-group-title">📿 Ibadah & Habit</div>
+          <div class="menu-group-title">📿 Ibadah & Sunnah</div>
+          <div class="menu-item" onclick="showPage('ibadah')">
+            <div class="left">
+              <span class="icon">🕌</span>
+              <div class="info">
+                <div class="title">Tracker Sholat</div>
+                <div class="subtitle">Log sholat 5 waktu + sunnah</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge success" id="menuSholatBadge">0/8</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
           <div class="menu-item" onclick="showPage('habits')">
             <div class="left">
               <span class="icon">📿</span>
               <div class="info">
                 <div class="title">Sunnah Rasulullah ﷺ</div>
-                <div class="subtitle">Habit dan ritual harian</div>
+                <div class="subtitle">Habit harian berbasis sunnah</div>
               </div>
             </div>
             <div class="right">
@@ -1765,6 +1163,7 @@
           </div>
         </div>
         
+        <!-- Visi -->
         <div class="menu-group">
           <div class="menu-group-title">🔮 Visi & Perencanaan</div>
           <div class="menu-item" onclick="showPage('vision')">
@@ -1772,7 +1171,7 @@
               <span class="icon">🔮</span>
               <div class="info">
                 <div class="title">Piramida Visi</div>
-                <div class="subtitle">Visi 10 tahun, 3 tahun, 1 tahun</div>
+                <div class="subtitle">Visi 10, 3, 1 tahun</div>
               </div>
             </div>
             <div class="right"><span class="arrow">›</span></div>
@@ -1782,21 +1181,32 @@
               <span class="icon">⚖️</span>
               <div class="info">
                 <div class="title">Pairwise Comparison</div>
-                <div class="subtitle">Prioritaskan goal dengan perbandingan</div>
+                <div class="subtitle">Prioritaskan goal</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+          <div class="menu-item" onclick="showPage('bestweek')">
+            <div class="left">
+              <span class="icon">📆</span>
+              <div class="info">
+                <div class="title">Best Week Template</div>
+                <div class="subtitle">Jadwal ideal mingguan</div>
               </div>
             </div>
             <div class="right"><span class="arrow">›</span></div>
           </div>
         </div>
         
+        <!-- Capture -->
         <div class="menu-group">
-          <div class="menu-group-title">🧠 Capture & Jurnal</div>
+          <div class="menu-group-title">🧠 Capture</div>
           <div class="menu-item" onclick="showPage('braindump')">
             <div class="left">
               <span class="icon">🧠</span>
               <div class="info">
                 <div class="title">Brain Dump</div>
-                <div class="subtitle">Tulis semua pikiran, proses nanti</div>
+                <div class="subtitle">Capture semua pikiran</div>
               </div>
             </div>
             <div class="right">
@@ -1804,23 +1214,6 @@
               <span class="arrow">›</span>
             </div>
           </div>
-          <div class="menu-item" onclick="showPage('journal')">
-            <div class="left">
-              <span class="icon">📝</span>
-              <div class="info">
-                <div class="title">Jurnal Harian</div>
-                <div class="subtitle">Refleksi pagi dan malam</div>
-              </div>
-            </div>
-            <div class="right">
-              <span class="badge" id="menuJournalBadge">-</span>
-              <span class="arrow">›</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="menu-group">
-          <div class="menu-group-title">🚫 Boundaries</div>
           <div class="menu-item" onclick="showPage('dontlist')">
             <div class="left">
               <span class="icon">🚫</span>
@@ -1836,6 +1229,7 @@
           </div>
         </div>
         
+        <!-- Review -->
         <div class="menu-group">
           <div class="menu-group-title">📅 Review & Evaluasi</div>
           <div class="menu-item" onclick="showPage('review')">
@@ -1843,30 +1237,57 @@
               <span class="icon">📅</span>
               <div class="info">
                 <div class="title">Weekly Review</div>
-                <div class="subtitle">Evaluasi dan refleksi mingguan</div>
-              </div>
-            </div>
-            <div class="right">
-              <span class="badge" id="menuReviewBadge">-</span>
-              <span class="arrow">›</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="menu-group">
-          <div class="menu-group-title">📈 Statistik</div>
-          <div class="menu-item" onclick="showPage('stats')">
-            <div class="left">
-              <span class="icon">📈</span>
-              <div class="info">
-                <div class="title">Statistik Pomodoro</div>
-                <div class="subtitle">Rekap fokus harian/mingguan</div>
+                <div class="subtitle">Evaluasi mingguan</div>
               </div>
             </div>
             <div class="right"><span class="arrow">›</span></div>
           </div>
         </div>
         
+        <!-- Pembelajaran -->
+        <div class="menu-group">
+          <div class="menu-group-title">📚 Pembelajaran</div>
+          <div class="menu-item" onclick="showPage('learning')">
+            <div class="left">
+              <span class="icon">📚</span>
+              <div class="info">
+                <div class="title">Learning Tracker</div>
+                <div class="subtitle">Track pembelajaran</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge info" id="menuLearningBadge">0</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Statistik -->
+        <div class="menu-group">
+          <div class="menu-group-title">📈 Statistik</div>
+          <div class="menu-item" onclick="showPage('stats')">
+            <div class="left">
+              <span class="icon">📈</span>
+              <div class="info">
+                <div class="title">Pomodoro Stats</div>
+                <div class="subtitle">Rekap fokus</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+          <div class="menu-item" onclick="showPage('wellbeing')">
+            <div class="left">
+              <span class="icon">💚</span>
+              <div class="info">
+                <div class="title">Wellbeing Trends</div>
+                <div class="subtitle">Tren energi & kepuasan</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+        </div>
+        
+        <!-- Settings -->
         <div class="menu-group">
           <div class="menu-group-title">⚙️ Pengaturan</div>
           <div class="menu-item" onclick="showPage('settings')">
@@ -1877,115 +1298,123 @@
                 <div class="subtitle">Profil, sync, tentang</div>
               </div>
             </div>
-            <div class="right">
-              <span class="badge warning" id="menuSyncBadge" style="display: none;">0</span>
-              <span class="arrow">›</span>
-            </div>
+            <div class="right"><span class="arrow">›</span></div>
           </div>
         </div>
       </div>
     </div>
-
+    
+    <!-- ==================== PAGE: IBADAH ==================== -->
+    <div class="page" id="page-ibadah">
+      <div class="section-title">🕌 Tracker Sholat</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tap untuk log waktu sholat</p>
+      
+      <div class="card">
+        <div class="sholat-container" id="sholatGrid">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: HABITS ==================== -->
+    <div class="page" id="page-habits">
+      <div class="section-title">📿 Sunnah Rasulullah ﷺ</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Amalan harian berbasis sunnah</p>
+      
+      <div class="tabs">
+        <button class="tab-btn active" onclick="filterHabits('all')">Semua</button>
+        <button class="tab-btn" onclick="filterHabits('PAGI')">🌅 Pagi</button>
+        <button class="tab-btn" onclick="filterHabits('SIANG')">☀️ Siang</button>
+        <button class="tab-btn" onclick="filterHabits('MALAM')">🌙 Malam</button>
+      </div>
+      
+      <div id="habitFullList">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: VISION ==================== -->
+    <div class="page" id="page-vision">
+      <div class="section-title">🔮 Piramida Visi</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tentukan visi jangka panjang</p>
+      
+      <div class="vision-pyramid" id="visionPyramid">
+        <div class="vision-level level-10" onclick="openModal('vision-10')">
+          <div class="vision-header">
+            <span class="vision-period">🌟 Visi 10 Tahun</span>
+            <span class="vision-edit">✏️</span>
+          </div>
+          <div class="vision-content" id="vision10Content">
+            <span class="vision-empty">Tap untuk menentukan visi 10 tahun...</span>
+          </div>
+        </div>
+        
+        <div class="vision-level level-3" onclick="openModal('vision-3')">
+          <div class="vision-header">
+            <span class="vision-period">🎯 Target 3 Tahun</span>
+            <span class="vision-edit">✏️</span>
+          </div>
+          <div class="vision-content" id="vision3Content">
+            <span class="vision-empty">Tap untuk menentukan target 3 tahun...</span>
+          </div>
+        </div>
+        
+        <div class="vision-level level-1" onclick="openModal('vision-1')">
+          <div class="vision-header">
+            <span class="vision-period">📅 Target 1 Tahun</span>
+            <span class="vision-edit">✏️</span>
+          </div>
+          <div class="vision-content" id="vision1Content">
+            <span class="vision-empty">Tap untuk menentukan target 1 tahun...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: PAIRWISE ==================== -->
+    <div class="page" id="page-pairwise">
+      <div class="section-title">⚖️ Pairwise Comparison</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Pilih yang LEBIH PENTING</p>
+      
+      <div id="pairwiseContainer">
+        <div class="empty-state">
+          <span class="icon">🎯</span>
+          <p>Tambahkan minimal 2 goal untuk memulai</p>
+        </div>
+      </div>
+    </div>
+    
     <!-- ==================== PAGE: BRAIN DUMP ==================== -->
     <div class="page" id="page-braindump">
       <div class="section-title">🧠 Brain Dump</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Tulis semua yang ada di pikiran. Jangan filter, jangan edit. Proses nanti.
-      </p>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tulis semua yang ada di pikiran</p>
       
       <div class="card">
-        <div class="brain-dump-input">
-          <textarea id="brainDumpInput" placeholder="Ketik ide, pikiran, atau apapun yang ada di kepala..." maxlength="500" oninput="updateCharCount()"></textarea>
-          <span class="char-count"><span id="brainDumpCharCount">0</span>/500</span>
+        <textarea class="form-input form-textarea" id="brainDumpInput" placeholder="Ketik ide, pikiran, atau apapun..." maxlength="500" oninput="updateCharCount()" style="min-height: 100px;"></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+          <span style="font-size: 11px; color: var(--gray-400);"><span id="brainDumpCharCount">0</span>/500</span>
+          <button class="btn-submit" style="width: auto;" onclick="submitBrainDump()">💾 Simpan</button>
         </div>
-        <button class="btn-submit" onclick="submitBrainDump()">💾 Simpan</button>
       </div>
       
-      <div class="card" style="margin-top: 16px;">
-        <div class="card-header">
-          <span class="card-title">📝 Hari Ini</span>
-          <span class="badge info" id="brainDumpTodayCount">0 items</span>
-        </div>
-        <div id="brainDumpList" class="brain-dump-list">
-          <div class="empty-state">
-            <div class="icon">🧠</div>
-            <p>Belum ada brain dump<br>Mulai tulis apa yang ada di pikiranmu</p>
-          </div>
+      <div class="section-title">📝 Hari Ini <span id="brainDumpTodayCount" style="font-weight: normal; color: var(--gray-500);">0 items</span></div>
+      <div id="brainDumpList">
+        <div class="empty-state" style="padding: 24px;">
+          <p>Belum ada brain dump hari ini</p>
         </div>
       </div>
     </div>
-
-    <!-- ==================== PAGE: JOURNAL ==================== -->
-    <div class="page" id="page-journal">
-      <div class="section-title">📝 Jurnal Harian</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Refleksi harian untuk mengevaluasi dan mensyukuri hari.
-      </p>
-      
-      <div class="journal-section morning">
-        <div class="section-header">
-          <div class="section-title"><span>☀️</span><span>Jurnal Pagi</span></div>
-          <span class="section-status pending" id="journalMorningStatus">Belum ditulis</span>
-        </div>
-        <div id="journalMorningContent">
-          <div class="journal-form">
-            <div class="form-group">
-              <label class="form-label">3 hal yang disyukuri hari ini:</label>
-              <textarea id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Fokus utama hari ini:</label>
-              <textarea id="journalFocus" placeholder="Apa yang harus saya selesaikan hari ini?"></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Afirmasi positif:</label>
-              <textarea id="journalAffirmation" placeholder="Hari ini saya akan..."></textarea>
-            </div>
-            <button class="btn-submit" onclick="submitJournal('morning')">💾 Simpan Jurnal Pagi</button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="journal-section evening">
-        <div class="section-header">
-          <div class="section-title"><span>🌙</span><span>Jurnal Malam</span></div>
-          <span class="section-status pending" id="journalEveningStatus">Belum ditulis</span>
-        </div>
-        <div id="journalEveningContent">
-          <div class="journal-form">
-            <div class="form-group">
-              <label class="form-label">Apa yang berjalan baik hari ini?</label>
-              <textarea id="journalWins" placeholder="Hal positif yang terjadi..."></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Apa yang bisa diperbaiki?</label>
-              <textarea id="journalImprove" placeholder="Hal yang perlu ditingkatkan..."></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Pelajaran hari ini:</label>
-              <textarea id="journalLesson" placeholder="Apa yang saya pelajari..."></textarea>
-            </div>
-            <button class="btn-submit" onclick="submitJournal('evening')">💾 Simpan Jurnal Malam</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    
     <!-- ==================== PAGE: DON'T LIST ==================== -->
     <div class="page" id="page-dontlist">
       <div class="section-title">🚫 Don't List</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Hal-hal yang harus dihindari untuk menjaga fokus, waktu, dan energi.
-      </p>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Hal-hal yang harus dihindari</p>
       
-      <button class="btn-submit btn-secondary" onclick="openModal('dont-add')" style="margin-bottom: 16px; width: 100%;">
-        ➕ Tambah Item
-      </button>
+      <button class="btn-submit btn-secondary" onclick="openModal('dont-add')" style="margin-bottom: 16px;">+ Tambah Item</button>
       
-      <div id="dontListContainer" class="dont-list-container">
-        <div class="empty-state">
-          <div class="icon">🚫</div>
-          <p>Belum ada Don't List<br>Tambahkan hal-hal yang harus dihindari</p>
+      <div id="dontListContainer">
+        <div class="empty-state" style="padding: 24px;">
+          <p>Belum ada don't list</p>
         </div>
       </div>
     </div>
@@ -1993,57 +1422,146 @@
     <!-- ==================== PAGE: REVIEW ==================== -->
     <div class="page" id="page-review">
       <div class="section-title">📅 Weekly Review</div>
-      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-        Evaluasi mingguan untuk refleksi dan perencanaan.
-      </p>
       
-      <!-- Stats Minggu Ini -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">📊 Statistik Minggu Ini</span>
-          <span class="badge info" id="reviewWeekNumber">Minggu -</span>
+          <span class="card-title">📊 Minggu Ini</span>
+          <span class="badge info" id="reviewWeekNumber">W-</span>
         </div>
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px;">
-          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
-            <div style="font-size: 20px; font-weight: 700; color: var(--primary);" id="reviewStatSholat">0%</div>
-            <div style="font-size: 10px; color: var(--gray-500);">Sholat</div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="value" id="reviewStatSholat">0%</div>
+            <div class="label">Sholat</div>
           </div>
-          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
-            <div style="font-size: 20px; font-weight: 700; color: var(--success);" id="reviewStatHabit">0%</div>
-            <div style="font-size: 10px; color: var(--gray-500);">Habit</div>
+          <div class="stat-box">
+            <div class="value" id="reviewStatHabit">0%</div>
+            <div class="label">Habit</div>
           </div>
-          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
-            <div style="font-size: 20px; font-weight: 700; color: var(--warning);" id="reviewStatPomodoro">0</div>
-            <div style="font-size: 10px; color: var(--gray-500);">Pomodoro</div>
+          <div class="stat-box">
+            <div class="value" id="reviewStatPomodoro">0</div>
+            <div class="label">Pomodoro</div>
           </div>
-          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
-            <div style="font-size: 20px; font-weight: 700; color: var(--info);" id="reviewStatTasks">0</div>
-            <div style="font-size: 10px; color: var(--gray-500);">Tasks</div>
+          <div class="stat-box">
+            <div class="value" id="reviewStatTasks">0</div>
+            <div class="label">Tasks</div>
           </div>
         </div>
       </div>
       
-      <!-- Current Week Review -->
       <div class="card" style="margin-top: 16px;">
         <div class="card-header">
-          <span class="card-title">📝 Review Minggu Ini</span>
+          <span class="card-title">📝 Review</span>
           <span class="badge" id="reviewCurrentStatus">Belum</span>
         </div>
         <div id="reviewCurrentContent">
-          <button class="btn-submit" onclick="openModal('weekly-review')" style="width: 100%;">
-            ✏️ Tulis Weekly Review
-          </button>
+          <button class="btn-submit" onclick="openModal('weekly-review')">✏️ Tulis Weekly Review</button>
         </div>
       </div>
       
-      <!-- History -->
+      <div class="section-title">📜 Riwayat</div>
+      <div id="reviewHistoryList">
+        <div class="empty-state" style="padding: 20px;">
+          <p style="font-size: 12px;">Belum ada riwayat review</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: BEST WEEK ==================== -->
+    <div class="page" id="page-bestweek">
+      <div class="section-title">📆 Best Week Template</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Jadwal ideal mingguan Anda</p>
+      
+      <div class="tabs" id="bestWeekTabs">
+        <button class="tab-btn active" onclick="showBestWeekDay(1)">Sen</button>
+        <button class="tab-btn" onclick="showBestWeekDay(2)">Sel</button>
+        <button class="tab-btn" onclick="showBestWeekDay(3)">Rab</button>
+        <button class="tab-btn" onclick="showBestWeekDay(4)">Kam</button>
+        <button class="tab-btn" onclick="showBestWeekDay(5)">Jum</button>
+        <button class="tab-btn" onclick="showBestWeekDay(6)">Sab</button>
+        <button class="tab-btn" onclick="showBestWeekDay(7)">Min</button>
+      </div>
+      
+      <div class="card" id="bestWeekContent">
+        <div class="empty-state" style="padding: 20px;">
+          <p>Belum ada jadwal untuk hari ini</p>
+          <button class="btn-submit btn-secondary" style="width: auto; margin-top: 12px;" onclick="openModal('bestweek-edit')">+ Atur Jadwal</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: LEARNING ==================== -->
+    <div class="page" id="page-learning">
+      <div class="section-title">📚 Learning Tracker</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Track pembelajaran dan pengembangan diri</p>
+      
+      <button class="btn-submit btn-secondary" onclick="openModal('learning-add')" style="margin-bottom: 16px;">+ Tambah Learning</button>
+      
+      <div id="learningList">
+        <div class="empty-state" style="padding: 24px;">
+          <p>Belum ada learning yang di-track</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: WELLBEING ==================== -->
+    <div class="page" id="page-wellbeing">
+      <div class="section-title">💚 Wellbeing Trends</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tren energi dan kepuasan 12 minggu terakhir</p>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📈 Grafik Wellbeing</span>
+        </div>
+        <div id="wellbeingChart" style="min-height: 200px;">
+          <div class="empty-state" style="padding: 20px;">
+            <p>Isi Weekly Review untuk melihat tren</p>
+          </div>
+        </div>
+      </div>
+      
       <div class="card" style="margin-top: 16px;">
         <div class="card-header">
-          <span class="card-title">📜 Riwayat Review</span>
+          <span class="card-title">📊 Rata-rata</span>
         </div>
-        <div id="reviewHistoryList">
-          <div class="empty-state" style="padding: 24px;">
-            <p style="color: var(--gray-500); font-size: 13px;">Belum ada riwayat review</p>
+        <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="stat-box">
+            <div class="value" id="wellbeingAvgEnergy">-</div>
+            <div class="label">⚡ Energi</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="wellbeingAvgSatisfaction">-</div>
+            <div class="label">😊 Kepuasan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: STATS ==================== -->
+    <div class="page" id="page-stats">
+      <div class="section-title">📈 Statistik Pomodoro</div>
+      
+      <div class="tabs">
+        <button class="tab-btn active" onclick="loadStats('week')">Minggu</button>
+        <button class="tab-btn" onclick="loadStats('month')">Bulan</button>
+      </div>
+      
+      <div class="card">
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="stat-box">
+            <div class="value" id="statTotalSessions">0</div>
+            <div class="label">Total Sesi</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="statTotalMinutes">0m</div>
+            <div class="label">Total Waktu</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="statAvgDaily">0</div>
+            <div class="label">Rata-rata/hari</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="statStreak">0</div>
+            <div class="label">🔥 Streak</div>
           </div>
         </div>
       </div>
@@ -2055,43 +1573,35 @@
       
       <div class="card">
         <div class="card-header">
-          <span class="card-title">🔄 Status Sinkronisasi</span>
+          <span class="card-title">🔄 Sinkronisasi</span>
         </div>
-        <div style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
-          <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 4px;">Data Pending (belum disimpan ke server)</div>
-          <div style="font-size: 18px; font-weight: 700; color: var(--accent);" id="settingPendingCount">0</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 13px;">Data Pending</span>
+          <span style="font-weight: 700; color: var(--accent);" id="settingPendingCount">0</span>
         </div>
-        <button class="btn-submit btn-secondary" onclick="forceSyncNow()" style="margin-bottom: 0;">
-          ⚡ Sync Sekarang
-        </button>
+        <button class="btn-submit btn-secondary" onclick="forceSyncNow()">⚡ Sync Sekarang</button>
       </div>
       
-      <div class="card">
+      <div class="card" style="margin-top: 16px;">
         <div class="card-header">
           <span class="card-title">👤 Profil</span>
         </div>
-        <div style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
-          <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 4px;">User ID</div>
-          <div style="font-size: 12px; font-weight: 600; word-break: break-all;" id="settingUserId">-</div>
-        </div>
-        <div style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
-          <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 4px;">Status API</div>
-          <div style="font-size: 12px; font-weight: 600;" id="settingApiStatus">Checking...</div>
-        </div>
+        <div style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">User ID</div>
+        <div style="font-size: 11px; word-break: break-all; color: var(--gray-700);" id="settingUserId">-</div>
       </div>
       
-      <div class="card">
+      <div class="card" style="margin-top: 16px;">
         <div class="card-header">
-          <span class="card-title">ℹ️ Tentang Aplikasi</span>
+          <span class="card-title">ℹ️ Tentang</span>
         </div>
-        <div style="font-size: 13px; color: var(--gray-600); line-height: 1.8;">
-          <p><strong>Sync Planner v2.4</strong></p>
-          <p>Aplikasi produktivitas berbasis sunnah Rasulullah ﷺ untuk ASN.</p>
-          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Weekly Review, Milestones, Pomodoro Settings</p>
+        <div style="font-size: 13px; line-height: 1.8;">
+          <p><strong>Sync Planner v3.0</strong></p>
+          <p style="color: var(--gray-600);">Produktivitas Islami untuk ASN</p>
+          <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Batch 3: Full Features</p>
         </div>
       </div>
       
-      <button class="btn-submit" onclick="refreshAllData()" style="margin-top: 16px;">🔄 Refresh Semua Data</button>
+      <button class="btn-submit" onclick="refreshAllData()" style="margin-top: 16px;">🔄 Refresh Data</button>
     </div>
   </main>
   
@@ -2104,7 +1614,7 @@
       <span class="icon">🍅</span><span>Fokus</span>
     </button>
     <button class="nav-item" onclick="showPage('kanban', this)">
-      <span class="icon">📊</span><span>Kanban</span>
+      <span class="icon">📋</span><span>Tasks</span>
     </button>
     <button class="nav-item" onclick="showPage('goals', this)">
       <span class="icon">🎯</span><span>Goals</span>
@@ -2120,62 +1630,28 @@
   <div class="modal-overlay" id="modal-sholat" onclick="if(event.target===this)closeModal('sholat')">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title" id="sholatModalTitle">🕌 Log Sholat</span>
+        <span class="modal-title" id="sholatModalTitle">🕌 Sholat</span>
         <button class="modal-close" onclick="closeModal('sholat')">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Jam Pelaksanaan</label>
-          <input type="time" class="form-input" id="sholatJam">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Lokasi</label>
+          <label class="form-label">Pilih Lokasi</label>
           <select class="form-input form-select" id="sholatLokasi">
             <option value="masjid">🕌 Masjid</option>
-            <option value="musholla">🏢 Musholla Kantor</option>
+            <option value="musholla">🏢 Musholla</option>
             <option value="rumah">🏠 Rumah</option>
-            <option value="lainnya">📍 Lainnya</option>
+            <option value="kantor">💼 Kantor</option>
           </select>
         </div>
         <div class="form-group">
-          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
-            <input type="checkbox" id="sholatBerjamaah" style="width: 24px; height: 24px; accent-color: var(--primary);">
-            <span>Sholat Berjamaah</span>
-          </label>
-        </div>
-        <button class="btn-submit" id="btnSholat" onclick="submitSholat()">✓ Simpan</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal: Pomodoro Start -->
-  <div class="modal-overlay" id="modal-pomodoro-start" onclick="if(event.target===this)closeModal('pomodoro-start')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">🍅 Mulai Sesi Fokus</span>
-        <button class="modal-close" onclick="closeModal('pomodoro-start')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Tipe Sesi</label>
-          <select class="form-input form-select" id="pomodoroType">
-            <option value="POMODORO_25">🍅 Pomodoro (25 menit)</option>
-            <option value="DEEP_WORK_60">🧠 Deep Work (60 menit)</option>
-            <option value="DEEP_WORK_90">🚀 Ultra Focus (90 menit)</option>
+          <label class="form-label">Berjamaah?</label>
+          <select class="form-input form-select" id="sholatJamaah">
+            <option value="ya">✓ Ya, Berjamaah</option>
+            <option value="tidak">✗ Tidak / Sendirian</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Task yang akan dikerjakan</label>
-          <input type="text" class="form-input" id="pomodoroTask" placeholder="Contoh: Review SPM Gaji November">
-          <div class="form-hint">Pilih dari prioritas atau ketik manual</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Pilih dari Goal Prioritas</label>
-          <select class="form-input form-select" id="pomodoroGoal" onchange="selectPomodoroGoal()">
-            <option value="">-- Pilih Goal --</option>
-          </select>
-        </div>
-        <button class="btn-submit" onclick="startPomodoroFromModal()">▶️ Mulai Sesi</button>
+        <input type="hidden" id="sholatWaktu">
+        <button class="btn-submit" onclick="submitSholat()">✓ Simpan</button>
       </div>
     </div>
   </div>
@@ -2193,38 +1669,26 @@
           <input type="text" class="form-input" id="taskTitle" placeholder="Apa yang perlu dikerjakan?">
         </div>
         <div class="form-group">
-          <label class="form-label">Deskripsi (opsional)</label>
-          <textarea class="form-input form-textarea" id="taskDesc" placeholder="Detail tambahan..." style="min-height: 80px;"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Prioritas</label>
-            <select class="form-input form-select" id="taskPriority">
-              <option value="high">🔴 Tinggi</option>
-              <option value="medium" selected>🟡 Sedang</option>
-              <option value="low">🟢 Rendah</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-input form-select" id="taskStatus">
-              <option value="backlog">📥 Backlog</option>
-              <option value="todo" selected>📋 To Do</option>
-              <option value="progress">🔄 In Progress</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Terkait Goal</label>
+          <label class="form-label">Goal (Opsional)</label>
           <select class="form-input form-select" id="taskGoal">
-            <option value="">-- Tidak ada --</option>
+            <option value="">-- Tanpa Goal --</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Deadline (opsional)</label>
-          <input type="date" class="form-input" id="taskDueDate">
+          <label class="form-label">Milestone (Opsional)</label>
+          <select class="form-input form-select" id="taskMilestone">
+            <option value="">-- Tanpa Milestone --</option>
+          </select>
         </div>
-        <button class="btn-submit" id="btnTask" onclick="submitTask()">💾 Simpan Task</button>
+        <div class="form-group">
+          <label class="form-label">Prioritas</label>
+          <select class="form-input form-select" id="taskPriority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="submitTask()">✓ Simpan Task</button>
       </div>
     </div>
   </div>
@@ -2233,26 +1697,26 @@
   <div class="modal-overlay" id="modal-goal" onclick="if(event.target===this)closeModal('goal')">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title">🎯 Tambah Goal 12 Minggu</span>
+        <span class="modal-title">🎯 Tambah Goal</span>
         <button class="modal-close" onclick="closeModal('goal')">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Judul Goal</label>
-          <input type="text" class="form-input" id="goalTitle" placeholder="Contoh: LLAT 2025 100%">
+          <input type="text" class="form-input" id="goalTitle" placeholder="Goal 12 minggu Anda">
         </div>
         <div class="form-group">
-          <label class="form-label">Deskripsi & Alasan</label>
-          <textarea class="form-input form-textarea" id="goalDesc" placeholder="Mengapa goal ini penting? Apa dampaknya?"></textarea>
+          <label class="form-label">Deskripsi</label>
+          <textarea class="form-input form-textarea" id="goalDesc" placeholder="Detail goal..."></textarea>
         </div>
-        <div class="form-row">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
             <label class="form-label">Quarter</label>
             <select class="form-input form-select" id="goalQuarter">
-              <option value="1">Q1 (Jan-Mar)</option>
-              <option value="2">Q2 (Apr-Jun)</option>
-              <option value="3">Q3 (Jul-Sep)</option>
-              <option value="4">Q4 (Okt-Des)</option>
+              <option value="1">Q1</option>
+              <option value="2">Q2</option>
+              <option value="3">Q3</option>
+              <option value="4">Q4</option>
             </select>
           </div>
           <div class="form-group">
@@ -2260,127 +1724,53 @@
             <input type="number" class="form-input" id="goalYear" value="2025">
           </div>
         </div>
+        <button class="btn-submit" onclick="submitGoal()">✓ Simpan Goal</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Milestone -->
+  <div class="modal-overlay" id="modal-milestone" onclick="if(event.target===this)closeModal('milestone')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">📌 Tambah Milestone</span>
+        <button class="modal-close" onclick="closeModal('milestone')">✕</button>
+      </div>
+      <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Terkait Visi</label>
-          <select class="form-input form-select" id="goalVision">
-            <option value="">-- Pilih Bidang --</option>
-            <option value="SPIRITUAL">🕌 Spiritual</option>
-            <option value="KARIR">💼 Karir</option>
-            <option value="KESEHATAN">💪 Kesehatan</option>
-            <option value="KEUANGAN">💰 Keuangan</option>
-            <option value="RELASI">👨‍👩‍👧‍👦 Relasi</option>
-            <option value="PETUALANGAN">🌍 Petualangan</option>
+          <label class="form-label">Judul Milestone</label>
+          <input type="text" class="form-input" id="milestoneTitle" placeholder="Target mingguan...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Minggu</label>
+          <select class="form-input form-select" id="milestoneWeek">
+            <option value="1">Minggu 1</option>
+            <option value="2">Minggu 2</option>
+            <option value="3">Minggu 3</option>
+            <option value="4">Minggu 4</option>
           </select>
         </div>
-        <button class="btn-submit" id="btnGoal" onclick="submitGoal()">💾 Simpan Goal</button>
+        <input type="hidden" id="milestoneGoalId">
+        <button class="btn-submit" onclick="submitMilestone()">✓ Simpan</button>
       </div>
     </div>
   </div>
   
-  <!-- Modal: Vision -->
-  <div class="modal-overlay" id="modal-vision-10" onclick="if(event.target===this)closeModal('vision-10')">
+  <!-- Modal: Quick Brain Dump -->
+  <div class="modal-overlay" id="modal-quick-braindump" onclick="if(event.target===this)closeModal('quick-braindump')">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title">🌟 Visi 10 Tahun</span>
-        <button class="modal-close" onclick="closeModal('vision-10')">✕</button>
+        <span class="modal-title">🧠 Quick Brain Dump</span>
+        <button class="modal-close" onclick="closeModal('quick-braindump')">✕</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-          Bayangkan diri Anda 10 tahun dari sekarang. Di mana Anda ingin berada? Apa yang sudah Anda capai?
-        </p>
-        <div class="form-group">
-          <label class="form-label">Visi Spiritual</label>
-          <textarea class="form-input form-textarea" id="vision10Spiritual" placeholder="Contoh: Menjadi hamba Allah yang taat, hafal 10 juz, rutin tahajud..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Visi Karir</label>
-          <textarea class="form-input form-textarea" id="vision10Karir" placeholder="Contoh: Menjadi pejabat yang amanah dan berkontribusi..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Visi Keluarga & Relasi</label>
-          <textarea class="form-input form-textarea" id="vision10Relasi" placeholder="Contoh: Keluarga sakinah mawaddah warahmah..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Visi Kesehatan</label>
-          <textarea class="form-input form-textarea" id="vision10Kesehatan" placeholder="Contoh: Tubuh sehat dan bugar, berat ideal..."></textarea>
-        </div>
-        <button class="btn-submit" onclick="saveVision('10')">💾 Simpan Visi</button>
+        <textarea class="form-input form-textarea" id="quickBrainDumpInput" placeholder="Tulis ide, pikiran, apapun..." style="min-height: 120px;"></textarea>
+        <button class="btn-submit" style="margin-top: 12px;" onclick="submitQuickBrainDump()">💾 Simpan</button>
       </div>
     </div>
   </div>
   
-  <div class="modal-overlay" id="modal-vision-3" onclick="if(event.target===this)closeModal('vision-3')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">🎯 Target 3 Tahun</span>
-        <button class="modal-close" onclick="closeModal('vision-3')">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-          Milestone menuju visi 10 tahun. Fokus pada 2-3 bidang yang paling penting saat ini.
-        </p>
-        <div class="form-group">
-          <label class="form-label">Target Utama 3 Tahun</label>
-          <textarea class="form-input form-textarea" id="vision3Content" placeholder="Apa yang ingin dicapai dalam 3 tahun ke depan?"></textarea>
-        </div>
-        <button class="btn-submit" onclick="saveVision('3')">💾 Simpan Target</button>
-      </div>
-    </div>
-  </div>
-  
-  <div class="modal-overlay" id="modal-vision-1" onclick="if(event.target===this)closeModal('vision-1')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">📅 Target 1 Tahun</span>
-        <button class="modal-close" onclick="closeModal('vision-1')">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-          Target konkret dan terukur untuk tahun ini. Gunakan format SMART.
-        </p>
-        <div class="form-group">
-          <label class="form-label">Target Tahun Ini</label>
-          <textarea class="form-input form-textarea" id="vision1Content" placeholder="Apa yang HARUS tercapai tahun ini?"></textarea>
-        </div>
-        <button class="btn-submit" onclick="saveVision('1')">💾 Simpan Target</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal: Brain Dump to Task -->
-  <div class="modal-overlay" id="modal-braindump-task" onclick="if(event.target===this)closeModal('braindump-task')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">➡️ Jadikan Task</span>
-        <button class="modal-close" onclick="closeModal('braindump-task')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Judul Task</label>
-          <input type="text" class="form-input" id="brainDumpTaskTitle" placeholder="Judul task...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Prioritas</label>
-          <select class="form-input form-select" id="brainDumpTaskPriority">
-            <option value="high">🔴 High</option>
-            <option value="medium" selected>🟡 Medium</option>
-            <option value="low">🟢 Low</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status Awal</label>
-          <select class="form-input form-select" id="brainDumpTaskStatus">
-            <option value="backlog">📥 Backlog</option>
-            <option value="todo" selected>📋 Todo</option>
-          </select>
-        </div>
-        <input type="hidden" id="brainDumpTaskSourceId">
-        <button class="btn-submit" onclick="convertBrainDumpToTask()">✅ Buat Task</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Add Don't Item -->
+  <!-- Modal: Don't Add -->
   <div class="modal-overlay" id="modal-dont-add" onclick="if(event.target===this)closeModal('dont-add')">
     <div class="modal">
       <div class="modal-header">
@@ -2390,11 +1780,11 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Hal yang harus dihindari</label>
-          <input type="text" class="form-input" id="dontItemText" placeholder="Contoh: Cek HP sebelum sholat subuh">
+          <input type="text" class="form-input" id="dontItemText" placeholder="Contoh: Cek HP sebelum subuh">
         </div>
         <div class="form-group">
           <label class="form-label">Alasan</label>
-          <textarea class="form-input form-textarea" id="dontItemReason" placeholder="Mengapa hal ini harus dihindari?" style="min-height: 80px;"></textarea>
+          <textarea class="form-input form-textarea" id="dontItemReason" placeholder="Mengapa harus dihindari?"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Kategori</label>
@@ -2409,52 +1799,32 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal: Quick Brain Dump -->
-  <div class="modal-overlay" id="modal-quick-braindump" onclick="if(event.target===this)closeModal('quick-braindump')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">🧠 Quick Brain Dump</span>
-        <button class="modal-close" onclick="closeModal('quick-braindump')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <textarea class="form-input form-textarea" id="quickBrainDumpInput" placeholder="Tulis ide, pikiran, atau apapun..." style="min-height: 120px;"></textarea>
-        </div>
-        <button class="btn-submit" onclick="submitQuickBrainDump()">💾 Simpan</button>
-      </div>
-    </div>
-  </div>
-
+  
   <!-- Modal: Weekly Review -->
   <div class="modal-overlay" id="modal-weekly-review" onclick="if(event.target===this)closeModal('weekly-review')">
-    <div class="modal" style="max-height: 90vh; overflow-y: auto;">
+    <div class="modal">
       <div class="modal-header">
         <span class="modal-title">📅 Weekly Review</span>
         <button class="modal-close" onclick="closeModal('weekly-review')">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">🏆 Wins (Apa yang berjalan baik?)</label>
-          <textarea class="form-input form-textarea" id="reviewWins" placeholder="Hal-hal yang berhasil minggu ini..."></textarea>
+          <label class="form-label">🏆 Wins</label>
+          <textarea class="form-input form-textarea" id="reviewWins" placeholder="Apa yang berjalan baik?"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">🚧 Challenges (Apa yang menantang?)</label>
-          <textarea class="form-input form-textarea" id="reviewChallenges" placeholder="Tantangan yang dihadapi..."></textarea>
+          <label class="form-label">🚧 Challenges</label>
+          <textarea class="form-input form-textarea" id="reviewChallenges" placeholder="Tantangan yang dihadapi?"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">💡 Lessons (Pelajaran minggu ini)</label>
-          <textarea class="form-input form-textarea" id="reviewLessons" placeholder="Apa yang dipelajari..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">🙏 Gratitude (Rasa syukur)</label>
-          <textarea class="form-input form-textarea" id="reviewGratitude" placeholder="Hal-hal yang disyukuri..."></textarea>
+          <label class="form-label">💡 Lessons</label>
+          <textarea class="form-input form-textarea" id="reviewLessons" placeholder="Apa yang dipelajari?"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">🎯 Fokus Minggu Depan</label>
-          <textarea class="form-input form-textarea" id="reviewNextFocus" placeholder="Prioritas minggu depan..."></textarea>
+          <textarea class="form-input form-textarea" id="reviewNextFocus" placeholder="Prioritas minggu depan?"></textarea>
         </div>
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
             <label class="form-label">⚡ Energi (1-10)</label>
             <input type="number" class="form-input" id="reviewEnergy" min="1" max="10" placeholder="8">
@@ -2464,38 +1834,11 @@
             <input type="number" class="form-input" id="reviewSatisfaction" min="1" max="10" placeholder="7">
           </div>
         </div>
-        <button class="btn-submit" onclick="submitWeeklyReview()">💾 Simpan Review</button>
+        <button class="btn-submit" onclick="submitWeeklyReview()">💾 Simpan</button>
       </div>
     </div>
   </div>
-
-  <!-- Modal: Add Milestone -->
-  <div class="modal-overlay" id="modal-milestone" onclick="if(event.target===this)closeModal('milestone')">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">🎯 Tambah Milestone</span>
-        <button class="modal-close" onclick="closeModal('milestone')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Judul Milestone</label>
-          <input type="text" class="form-input" id="milestoneTitle" placeholder="Contoh: Selesaikan dokumen LED">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Target Minggu</label>
-          <select class="form-input form-select" id="milestoneWeek">
-            <option value="1">Minggu 1</option>
-            <option value="2">Minggu 2</option>
-            <option value="3">Minggu 3</option>
-            <option value="4">Minggu 4</option>
-          </select>
-        </div>
-        <input type="hidden" id="milestoneGoalId">
-        <button class="btn-submit" onclick="submitMilestone()">💾 Simpan</button>
-      </div>
-    </div>
-  </div>
-
+  
   <!-- Modal: Pomodoro Settings -->
   <div class="modal-overlay" id="modal-pomodoro-settings" onclick="if(event.target===this)closeModal('pomodoro-settings')">
     <div class="modal">
@@ -2505,33 +1848,165 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">🍅 Durasi Pomodoro (menit)</label>
+          <label class="form-label">🍅 Pomodoro (menit)</label>
           <input type="number" class="form-input" id="settingPomodoro" min="15" max="60" value="25">
         </div>
         <div class="form-group">
-          <label class="form-label">🧠 Durasi Deep Work (menit)</label>
+          <label class="form-label">🧠 Deep Work (menit)</label>
           <input type="number" class="form-input" id="settingDeepWork" min="30" max="90" value="60">
         </div>
         <div class="form-group">
-          <label class="form-label">🚀 Durasi Ultra Focus (menit)</label>
+          <label class="form-label">🚀 Ultra Focus (menit)</label>
           <input type="number" class="form-input" id="settingUltraFocus" min="60" max="120" value="90">
         </div>
         <div class="form-group">
-          <label class="form-label">☕ Durasi Break Pendek (menit)</label>
-          <input type="number" class="form-input" id="settingShortBreak" min="3" max="15" value="5">
-        </div>
-        <div class="form-group">
-          <label class="form-label">🎯 Target Pomodoro per Hari</label>
+          <label class="form-label">🎯 Target Harian</label>
           <input type="number" class="form-input" id="settingDailyTarget" min="1" max="20" value="8">
         </div>
-        <button class="btn-submit" onclick="savePomodoroSettings()">💾 Simpan Settings</button>
+        <button class="btn-submit" onclick="savePomodoroSettings()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Learning Add -->
+  <div class="modal-overlay" id="modal-learning-add" onclick="if(event.target===this)closeModal('learning-add')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">📚 Tambah Learning</span>
+        <button class="modal-close" onclick="closeModal('learning-add')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Topik</label>
+          <input type="text" class="form-input" id="learningName" placeholder="Apa yang ingin dipelajari?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sumber</label>
+          <input type="text" class="form-input" id="learningSumber" placeholder="Buku, course, dll">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target</label>
+          <input type="text" class="form-input" id="learningTarget" placeholder="Apa hasil yang diharapkan?">
+        </div>
+        <button class="btn-submit" onclick="submitLearning()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Journal Morning -->
+  <div class="modal-overlay" id="modal-journal-morning" onclick="if(event.target===this)closeModal('journal-morning')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">☀️ Jurnal Pagi</span>
+        <button class="modal-close" onclick="closeModal('journal-morning')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">🙏 3 hal yang disyukuri</label>
+          <textarea class="form-input form-textarea" id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Fokus utama hari ini</label>
+          <textarea class="form-input form-textarea" id="journalFocus" placeholder="Apa yang harus diselesaikan?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">✨ Afirmasi positif</label>
+          <textarea class="form-input form-textarea" id="journalAffirmation" placeholder="Hari ini saya akan..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="submitJournal('morning')">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Journal Evening -->
+  <div class="modal-overlay" id="modal-journal-evening" onclick="if(event.target===this)closeModal('journal-evening')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🌙 Jurnal Malam</span>
+        <button class="modal-close" onclick="closeModal('journal-evening')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">🏆 Apa yang berjalan baik?</label>
+          <textarea class="form-input form-textarea" id="journalWins" placeholder="Hal positif hari ini..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔧 Apa yang bisa diperbaiki?</label>
+          <textarea class="form-input form-textarea" id="journalImprove" placeholder="Yang perlu ditingkatkan..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💡 Pelajaran hari ini</label>
+          <textarea class="form-input form-textarea" id="journalLesson" placeholder="Apa yang dipelajari..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="submitJournal('evening')">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Vision -->
+  <div class="modal-overlay" id="modal-vision-10" onclick="if(event.target===this)closeModal('vision-10')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🌟 Visi 10 Tahun</span>
+        <button class="modal-close" onclick="closeModal('vision-10')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Bayangkan diri Anda 10 tahun dari sekarang. Siapa Anda? Apa yang sudah tercapai?</p>
+        <div class="form-group">
+          <label class="form-label">🕌 Spiritual</label>
+          <textarea class="form-input form-textarea" id="vision10Spiritual" placeholder="Visi spiritual..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💼 Karir</label>
+          <textarea class="form-input form-textarea" id="vision10Karir" placeholder="Visi karir..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">👨‍👩‍👧‍👦 Relasi</label>
+          <textarea class="form-input form-textarea" id="vision10Relasi" placeholder="Visi relasi/keluarga..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💪 Kesehatan</label>
+          <textarea class="form-input form-textarea" id="vision10Kesehatan" placeholder="Visi kesehatan..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="saveVision('10')">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-overlay" id="modal-vision-3" onclick="if(event.target===this)closeModal('vision-3')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🎯 Target 3 Tahun</span>
+        <button class="modal-close" onclick="closeModal('vision-3')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Target Utama 3 Tahun</label>
+          <textarea class="form-input form-textarea" id="vision3Content" placeholder="Apa yang ingin dicapai dalam 3 tahun?"></textarea>
+        </div>
+        <button class="btn-submit" onclick="saveVision('3')">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-overlay" id="modal-vision-1" onclick="if(event.target===this)closeModal('vision-1')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">📅 Target 1 Tahun</span>
+        <button class="modal-close" onclick="closeModal('vision-1')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Target Tahun Ini</label>
+          <textarea class="form-input form-textarea" id="vision1Content" placeholder="Apa yang HARUS tercapai tahun ini?"></textarea>
+        </div>
+        <button class="btn-submit" onclick="saveVision('1')">💾 Simpan</button>
       </div>
     </div>
   </div>
   
   <!-- Toast -->
   <div class="toast" id="toast"></div>
-
 
   <script src="app.js"></script>
 </body>
