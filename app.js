@@ -424,7 +424,9 @@ async function loadAllData() {
     // Load secondary data in background (non-blocking)
     Promise.all([
       loadGoals(true), // silent mode
-      loadVisions(true)
+      loadVisions(true),
+      loadKanban(false), // load kanban for today's tasks
+      loadBrainDumps(true)
     ]).catch(console.error);
     
   } catch (err) {
@@ -476,6 +478,7 @@ async function loadKanban(forceRefresh = false) {
   if (!forceRefresh && isCacheValid('kanban') && state.kanban) {
     renderKanban();
     renderKanbanTabs();
+    renderTodayFocus(); // Update home page too
     return;
   }
   
@@ -488,6 +491,7 @@ async function loadKanban(forceRefresh = false) {
     state.pageLoaded.kanban = true;
     renderKanban();
     renderKanbanTabs();
+    renderTodayFocus(); // Update home page too
   } catch (err) {
     document.getElementById('kanbanBoard').innerHTML = `
       <div class="empty-state">
@@ -563,7 +567,11 @@ function renderDailySync() {
   if (focusEl) focusEl.textContent = (data.stats?.pomodoro_minutes || 0) + 'm';
   
   renderSholatGrid(data.sholat);
+  renderSholatMiniGrid(data.sholat);
   renderHabitRosul(data.habits);
+  renderSunnahMiniList(data.habits);
+  renderBrainDumpMini();
+  renderTodayFocus();
 }
 
 function renderSholatGrid(sholatData) {
@@ -625,6 +633,87 @@ function renderHabitRosul(habits) {
       <div class="habit-rosul-time">${h.hour}</div>
     </div>
   `).join('');
+}
+
+// ============================================
+// HOME MINI COMPONENTS
+// ============================================
+function renderSholatMiniGrid(sholatData) {
+  const container = document.getElementById('sholatMiniGrid');
+  const badge = document.getElementById('sholatBadge');
+  if (!container) return;
+  
+  const sholatList = [
+    { id: 'TAHAJUD', name: 'Tahajud', icon: '🌙' },
+    { id: 'SUBUH', name: 'Subuh', icon: '🌅' },
+    { id: 'DHUHA', name: 'Dhuha', icon: '☀️' },
+    { id: 'DZUHUR', name: 'Dzuhur', icon: '🌞' },
+    { id: 'ASHAR', name: 'Ashar', icon: '🌇' },
+    { id: 'MAGHRIB', name: 'Maghrib', icon: '🌆' },
+    { id: 'ISYA', name: 'Isya', icon: '🌃' },
+    { id: 'WITIR', name: 'Witir', icon: '⭐' }
+  ];
+  
+  // Handle array format from API
+  const sholatMap = {};
+  if (Array.isArray(sholatData)) {
+    sholatData.forEach(s => {
+      sholatMap[s.waktu] = { done: s.status === 'done' || s.status === true, ...s };
+    });
+  }
+  
+  let completedCount = 0;
+  container.innerHTML = sholatList.map(s => {
+    const data = sholatMap[s.id] || { done: false };
+    if (data.done) completedCount++;
+    return `<div class="sholat-mini-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')">
+      <span class="icon">${s.icon}</span>
+      <span class="name">${s.name}</span>
+    </div>`;
+  }).join('');
+  
+  if (badge) badge.textContent = `${completedCount}/8`;
+}
+
+function renderSunnahMiniList(habits) {
+  const container = document.getElementById('sunnahMiniList');
+  const badge = document.getElementById('sunnahBadge');
+  if (!container) return;
+  
+  const habitsList = habits || [];
+  let completedCount = 0;
+  
+  const html = habitsList.slice(0, 6).map(h => {
+    if (h.completed) completedCount++;
+    return `<div class="sunnah-mini-item ${h.completed ? 'done' : ''}" onclick="toggleHabitRosul('${h.habit_id}', ${h.completed})">
+      <span class="check">${h.completed ? '✓' : ''}</span>
+      <span>${escapeHtml(h.name)}</span>
+    </div>`;
+  }).join('');
+  
+  container.innerHTML = html || '<div style="padding: 8px; color: var(--gray-400); font-size: 11px;">Tidak ada sunnah</div>';
+  if (badge) badge.textContent = `${completedCount}/${habitsList.length}`;
+}
+
+function renderBrainDumpMini() {
+  const container = document.getElementById('brainDumpMiniList');
+  if (!container) return;
+  
+  // Get brain dumps from state or dailySync
+  const dumps = state.brainDumps || [];
+  
+  if (dumps.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding: 16px;">
+      <p style="font-size: 12px; color: var(--gray-400);">Tangkap ide & pikiran</p>
+      <button class="btn-submit btn-secondary" style="width: auto; margin-top: 8px; font-size: 12px;" onclick="openModal('braindump')">+ Tambah</button>
+    </div>`;
+    return;
+  }
+  
+  container.innerHTML = dumps.slice(0, 5).map(d => {
+    const content = typeof d.content === 'string' ? d.content : (d.data?.content || d.content || '');
+    return `<div class="brain-dump-item">${escapeHtml(content.substring(0, 80))}${content.length > 80 ? '...' : ''}</div>`;
+  }).join('');
 }
 
 function renderHabitsFull() {
@@ -706,47 +795,88 @@ function renderTodayFocus() {
   const container = document.getElementById('todayFocus');
   if (!container) return;
   
-  // Sort goals by rank (ascending - rank 1 is highest priority)
-  const sortedGoals = (state.goals || [])
-    .filter(g => g.rank && g.rank > 0)
-    .sort((a, b) => a.rank - b.rank)
-    .slice(0, 3);
+  // Get today's tasks (todo + progress, sorted by priority)
+  const k = state.kanban;
+  let todayTasks = [];
   
-  if (sortedGoals.length === 0) {
+  if (k) {
+    const board = k.board || k;
+    const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3, someday: 4 };
+    
+    todayTasks = [
+      ...(board.todo || []),
+      ...(board.progress || [])
+    ]
+    .filter(t => !t.due_date || new Date(t.due_date) <= new Date(new Date().setHours(23,59,59)))
+    .sort((a, b) => (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2))
+    .slice(0, 5);
+  }
+  
+  if (todayTasks.length === 0) {
     container.innerHTML = `<div class="empty-state">
-      <span class="icon">⚖️</span>
-      <p>Tentukan prioritas dengan Pairwise</p>
-      <button class="btn-submit" style="width: auto; margin-top: 16px;" onclick="showPage('pairwise')">Mulai</button>
+      <span class="icon">✨</span>
+      <p>Tidak ada task untuk hari ini</p>
+      <button class="btn-submit" style="width: auto; margin-top: 12px;" onclick="openModal('task')">+ Tambah Task</button>
     </div>`;
     return;
   }
   
+  const priorityIcons = { urgent: '🔥', high: '🔴', medium: '🟡', low: '🟢', someday: '⚪' };
+  
   container.innerHTML = `
-    <div class="card-header"><span class="card-title">🔥 Top Prioritas</span></div>
-    ${sortedGoals.map((g, i) => `
-      <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${i === 0 ? 'var(--warning-light)' : 'var(--gray-50)'}; border-radius: var(--radius-md); margin-bottom: 8px;">
-        <div style="width: 28px; height: 28px; background: ${['#FFD700','#C0C0C0','#CD7F32'][i]}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">${i + 1}</div>
-        <div style="flex: 1;"><div style="font-weight: 600;">${escapeHtml(g.title)}</div></div>
+    <div class="card-header"><span class="card-title">📋 Task Hari Ini</span></div>
+    ${todayTasks.map(t => `
+      <div class="today-task-item" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 8px; border-left: 3px solid ${t.status === 'progress' ? 'var(--primary)' : 'var(--gray-300)'};">
+        <span style="font-size: 14px;">${priorityIcons[t.priority] || '🟡'}</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.title)}</div>
+          <div style="font-size: 11px; color: var(--gray-500);">${t.status === 'progress' ? '🔄 Sedang dikerjakan' : '📋 To Do'}${t.due_date ? ' • 📅 ' + formatDateShort(t.due_date) : ''}</div>
+        </div>
+        <button onclick="moveTask('${t.task_id}','${t.status === 'progress' ? 'done' : 'progress'}')" style="background: var(--primary); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 12px;">${t.status === 'progress' ? '✓' : '→'}</button>
       </div>
     `).join('')}
   `;
 }
 
 function renderKanban() {
+  const container = document.getElementById('kanbanBoard');
+  if (!container) return;
+  
   const k = state.kanban;
-  if (!k || !k.board) {
-    document.getElementById('kanbanBoard').innerHTML = '<div class="empty-state"><span class="icon">📊</span><p>Tidak ada task</p></div>';
+  
+  if (!k) {
+    container.innerHTML = '<div class="empty-state"><span class="icon">📊</span><p>Tidak ada task</p></div>';
     return;
   }
   
+  // Handle multiple formats: 
+  // 1. {board: {backlog:[], todo:[], ...}} from API getKanban
+  // 2. {backlog:[], todo:[], ...} direct format
+  // 3. {todo:[], progress:[], done:[]} from API getTasks grouped
+  let board;
+  if (k.board) {
+    board = k.board;
+  } else if (k.backlog || k.todo || k.progress || k.done) {
+    board = k;
+  } else {
+    board = { backlog: [], todo: [], progress: [], done: [] };
+  }
+  
   const columns = [
-    { id: 'backlog', title: '📥 Backlog', tasks: k.board.backlog || [] },
-    { id: 'todo', title: '📋 To Do', tasks: k.board.todo || [] },
-    { id: 'progress', title: '🔄 Progress', tasks: k.board.progress || [] },
-    { id: 'done', title: '✅ Done', tasks: k.board.done || [] }
+    { id: 'backlog', title: '📥 Backlog', tasks: board.backlog || [] },
+    { id: 'todo', title: '📋 To Do', tasks: board.todo || [] },
+    { id: 'progress', title: '🔄 Progress', tasks: board.progress || [] },
+    { id: 'done', title: '✅ Done', tasks: board.done || [] }
   ];
   
-  document.getElementById('kanbanBoard').innerHTML = columns.map(col => `
+  const totalTasks = columns.reduce((sum, col) => sum + col.tasks.length, 0);
+  
+  if (totalTasks === 0) {
+    container.innerHTML = '<div class="empty-state"><span class="icon">📋</span><p>Belum ada task</p><button class="btn-submit" style="width:auto;margin-top:12px" onclick="openModal(\'task\')">+ Tambah Task</button></div>';
+    return;
+  }
+  
+  container.innerHTML = columns.map(col => `
     <div class="kanban-column ${col.id}">
       <div class="kanban-header">
         <span class="kanban-title">${col.title}</span>
@@ -809,23 +939,53 @@ function renderKanbanTabs() {
 
 function renderVisions() {
   const visions = state.visions || [];
-  const spiritual = visions.find(v => v.bidang === 'SPIRITUAL');
-  const karir = visions.find(v => v.bidang === 'KARIR');
+  
+  console.log('[Vision] Data:', visions);
   
   const v10 = document.getElementById('vision10Content');
   const v3 = document.getElementById('vision3Content');
   const v1 = document.getElementById('vision1Content');
-  const vQ = document.getElementById('visionQuarterContent');
   
-  if (v10 && (spiritual?.vision_10_tahun || karir?.vision_10_tahun)) {
-    let content = '';
-    if (spiritual?.vision_10_tahun) content += `<strong>Spiritual:</strong> ${escapeHtml(spiritual.vision_10_tahun)}<br>`;
-    if (karir?.vision_10_tahun) content += `<strong>Karir:</strong> ${escapeHtml(karir.vision_10_tahun)}`;
-    v10.innerHTML = content;
+  // Render Vision 10 Tahun - gabungkan semua bidang
+  if (v10) {
+    const content10 = visions
+      .filter(v => v.vision_10_tahun)
+      .map(v => `<div class="vision-item"><strong>${v.bidang}:</strong> ${escapeHtml(v.vision_10_tahun)}</div>`)
+      .join('');
+    
+    if (content10) {
+      v10.innerHTML = content10;
+    } else {
+      v10.innerHTML = '<span class="vision-empty">Tap untuk menentukan visi 10 tahun...</span>';
+    }
   }
   
-  if (vQ && state.goals?.length > 0) {
-    vQ.innerHTML = `${state.goals.length} goal aktif`;
+  // Render Vision 3 Tahun
+  if (v3) {
+    const content3 = visions
+      .filter(v => v.vision_3_tahun)
+      .map(v => `<div class="vision-item"><strong>${v.bidang}:</strong> ${escapeHtml(v.vision_3_tahun)}</div>`)
+      .join('');
+    
+    if (content3) {
+      v3.innerHTML = content3;
+    } else {
+      v3.innerHTML = '<span class="vision-empty">Tap untuk menentukan target 3 tahun...</span>';
+    }
+  }
+  
+  // Render Vision 1 Tahun
+  if (v1) {
+    const content1 = visions
+      .filter(v => v.vision_1_tahun)
+      .map(v => `<div class="vision-item"><strong>${v.bidang}:</strong> ${escapeHtml(v.vision_1_tahun)}</div>`)
+      .join('');
+    
+    if (content1) {
+      v1.innerHTML = content1;
+    } else {
+      v1.innerHTML = '<span class="vision-empty">Tap untuk menentukan target 1 tahun...</span>';
+    }
   }
 }
 
@@ -1483,10 +1643,19 @@ function submitTask() {
     created_at: new Date().toISOString()
   };
   
-  if (!state.kanban) state.kanban = { backlog: [], todo: [], progress: [], done: [] };
+  // Handle both kanban formats: {board:{...}} or direct {backlog:[], todo:[],...}
+  if (!state.kanban) state.kanban = { board: { backlog: [], todo: [], progress: [], done: [] } };
+  
   const status = taskData.status || 'todo';
-  if (!state.kanban[status]) state.kanban[status] = [];
-  state.kanban[status].unshift(newTask);
+  
+  // Check if using board wrapper or direct format
+  if (state.kanban.board) {
+    if (!state.kanban.board[status]) state.kanban.board[status] = [];
+    state.kanban.board[status].unshift(newTask);
+  } else {
+    if (!state.kanban[status]) state.kanban[status] = [];
+    state.kanban[status].unshift(newTask);
+  }
   
   // Add to queue with milestone_id
   addToQueue('createTask', { 
@@ -1498,29 +1667,34 @@ function submitTask() {
   // Clear form & close modal
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskDesc').value = '';
-  document.getElementById('taskLink').value = '';
-  document.getElementById('taskDelegateTo').value = '';
-  document.getElementById('taskAssignee').value = 'self';
+  const linkEl = document.getElementById('taskLink');
+  const delegateEl = document.getElementById('taskDelegateTo');
+  const assigneeEl = document.getElementById('taskAssignee');
+  if (linkEl) linkEl.value = '';
+  if (delegateEl) delegateEl.value = '';
+  if (assigneeEl) assigneeEl.value = 'self';
   toggleDelegateInput('self');
   closeModal('task');
   
   showToast('Task tersimpan! ✓', 'success');
   
-  // Re-render kanban
+  // Re-render kanban and today focus
   renderKanban();
+  renderTodayFocus();
 }
 
 function moveTask(taskId, newStatus) {
   // Update local state langsung
   if (state.kanban) {
     let movedTask = null;
+    const board = state.kanban.board || state.kanban;
     
     // Cari dan hapus task dari status lama
     ['backlog', 'todo', 'progress', 'done'].forEach(status => {
-      if (state.kanban[status]) {
-        const idx = state.kanban[status].findIndex(t => t.task_id === taskId);
+      if (board[status]) {
+        const idx = board[status].findIndex(t => t.task_id === taskId);
         if (idx !== -1) {
-          movedTask = state.kanban[status].splice(idx, 1)[0];
+          movedTask = board[status].splice(idx, 1)[0];
         }
       }
     });
@@ -1528,8 +1702,8 @@ function moveTask(taskId, newStatus) {
     // Tambah ke status baru
     if (movedTask) {
       movedTask.status = newStatus;
-      if (!state.kanban[newStatus]) state.kanban[newStatus] = [];
-      state.kanban[newStatus].unshift(movedTask);
+      if (!board[newStatus]) board[newStatus] = [];
+      board[newStatus].unshift(movedTask);
     }
   }
   
@@ -1538,8 +1712,9 @@ function moveTask(taskId, newStatus) {
   
   showToast('Dipindahkan! ✓', 'success');
   
-  // Re-render kanban
+  // Re-render kanban and today focus
   renderKanban();
+  renderTodayFocus();
 }
 
 function filterKanban(goalId) {
@@ -1674,15 +1849,17 @@ function updateCharCount() {
   }
 }
 
-async function loadBrainDumps() {
+async function loadBrainDumps(silent = false) {
   try {
     const data = await apiGet('getBrainDumps', { date: todayString() });
     state.brainDumps = data || [];
     renderBrainDumps();
+    renderBrainDumpMini();
   } catch (err) {
-    console.error('Failed to load brain dumps:', err);
+    if (!silent) console.error('Failed to load brain dumps:', err);
     state.brainDumps = [];
     renderBrainDumps();
+    renderBrainDumpMini();
   }
 }
 

@@ -856,6 +856,8 @@
     .vision-period { font-size: 14px; font-weight: 700; }
     .vision-edit { font-size: 12px; color: var(--primary); }
     .vision-content { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+    .vision-item { margin-bottom: 8px; padding: 8px; background: var(--gray-50); border-radius: var(--radius-sm); }
+    .vision-item strong { color: var(--primary); }
     .vision-empty { color: var(--gray-400); font-style: italic; }
     
     /* Pairwise */
@@ -965,8 +967,121 @@
     .priority-urgent { border-left: 3px solid #ff6b6b !important; }
     .priority-someday { border-left: 3px solid #adb5bd !important; }
     
+    /* Home Two Column Layout */
+    .home-two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .home-left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .home-right-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .compact-card {
+      padding: 12px !important;
+    }
+    .compact-card .card-header {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+    }
+    .card-badge {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    /* Sholat Mini Grid */
+    .sholat-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .sholat-mini-item {
+      text-align: center;
+      padding: 6px 4px;
+      border-radius: var(--radius-sm);
+      background: var(--gray-50);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sholat-mini-item.done {
+      background: var(--success-light);
+    }
+    .sholat-mini-item .icon {
+      font-size: 16px;
+      display: block;
+    }
+    .sholat-mini-item .name {
+      font-size: 9px;
+      color: var(--gray-600);
+      margin-top: 2px;
+    }
+    
+    /* Sunnah Mini List */
+    .sunnah-mini-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .sunnah-mini-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .sunnah-mini-item.done {
+      background: var(--success-light);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+    .sunnah-mini-item .check {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--gray-300);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .sunnah-mini-item.done .check {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    
+    /* Brain Dump Mini List */
+    .brain-dump-list {
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .brain-dump-item {
+      padding: 8px;
+      background: #fffbeb;
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      font-size: 12px;
+      border-left: 3px solid #f59e0b;
+    }
+    
     /* Responsive */
     @media (max-width: 480px) {
+      .home-two-column { grid-template-columns: 1fr; }
       .quick-actions { grid-template-columns: repeat(4, 1fr); }
       .sholat-container { grid-template-columns: repeat(4, 1fr); }
       .kanban-container { grid-template-columns: repeat(2, 1fr); }
@@ -1022,12 +1137,56 @@
         </div>
       </div>
       
-      <!-- Fokus Hari Ini -->
-      <div class="section-title">🎯 Fokus Hari Ini</div>
+      <!-- Row: Tracker Sholat & Sunnah + Brain Dump -->
+      <div class="home-two-column">
+        <!-- Left: Sholat & Sunnah -->
+        <div class="home-left-col">
+          <!-- Tracker Sholat -->
+          <div class="card compact-card">
+            <div class="card-header">
+              <span class="card-title">🕌 Sholat</span>
+              <span class="card-badge" id="sholatBadge">0/8</span>
+            </div>
+            <div class="sholat-mini-grid" id="sholatMiniGrid">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+          
+          <!-- Sunnah Rosul -->
+          <div class="card compact-card">
+            <div class="card-header">
+              <span class="card-title">📿 Sunnah</span>
+              <span class="card-badge" id="sunnahBadge">0/11</span>
+            </div>
+            <div class="sunnah-mini-list" id="sunnahMiniList">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right: Brain Dump -->
+        <div class="home-right-col">
+          <div class="card" style="height: 100%;">
+            <div class="card-header">
+              <span class="card-title">💭 Brain Dump</span>
+              <button class="btn-icon" onclick="openModal('braindump')">+</button>
+            </div>
+            <div class="brain-dump-list" id="brainDumpMiniList">
+              <div class="empty-state" style="padding: 16px;">
+                <p style="font-size: 12px; color: var(--gray-400);">Tangkap ide & pikiran di sini</p>
+                <button class="btn-submit btn-secondary" style="width: auto; margin-top: 8px; font-size: 12px;" onclick="openModal('braindump')">+ Tambah</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fokus Hari Ini (Task) -->
+      <div class="section-title">📋 Task Hari Ini</div>
       <div class="card" id="todayFocus">
         <div class="empty-state" style="padding: 20px;">
-          <p>Tentukan prioritas dengan Pairwise</p>
-          <button class="btn-submit btn-secondary" style="width: auto; margin-top: 12px;" onclick="showPage('pairwise')">⚖️ Atur Prioritas</button>
+          <p>Belum ada task hari ini</p>
+          <button class="btn-submit" style="width: auto; margin-top: 12px;" onclick="openModal('task')">+ Tambah Task</button>
         </div>
       </div>
       
