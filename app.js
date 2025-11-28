@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwuGZUrVuuG5qA6mWF1yCB4fsSlF1SOCooizYnjffRfypY_tLFZFXop_17OBIkAEPfX5Q/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwW9X2Sg0LZGFEySsLLSyd4_iA8nkUyEHg4ccyBGJOQRNPG1DaE9oO14pxnP1gnKu7IOA/exec',
   USER_ID: '339926ce-f54b-46e5-8740-865ba7555929',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -354,8 +354,10 @@ function showPage(pageName, navEl) {
       state.pageLoaded.wellbeing = true;
       break;
     case 'settings':
-      document.getElementById('settingUserId').textContent = CONFIG.USER_ID;
-      document.getElementById('settingPendingCount').textContent = state.pendingQueue.length;
+      const userIdEl = document.getElementById('settingUserId');
+      const pendingEl = document.getElementById('settingPendingCount');
+      if (userIdEl) userIdEl.textContent = CONFIG.USER_ID;
+      if (pendingEl) pendingEl.textContent = state.pendingQueue.length;
       break;
   }
 }
@@ -430,13 +432,15 @@ async function loadAllData() {
 
 async function loadDailySync(silent = false) {
   try {
-    if (!silent) document.getElementById('settingApiStatus').textContent = 'Loading...';
+    const apiStatusEl = document.getElementById('settingApiStatus');
+    if (!silent && apiStatusEl) apiStatusEl.textContent = 'Loading...';
     state.dailySync = await apiGet('getDailySync');
     state.cache.dailySync = Date.now();
-    if (!silent) document.getElementById('settingApiStatus').textContent = '✅ Connected';
+    if (!silent && apiStatusEl) apiStatusEl.textContent = '✅ Connected';
     renderDailySync();
   } catch (err) {
-    if (!silent) document.getElementById('settingApiStatus').textContent = '❌ ' + err.message;
+    const apiStatusEl = document.getElementById('settingApiStatus');
+    if (!silent && apiStatusEl) apiStatusEl.textContent = '❌ ' + err.message;
     throw err;
   }
 }
@@ -1256,10 +1260,96 @@ function submitGoal() {
 function populateGoalSelect() {
   const select = document.getElementById('taskGoal');
   if (!select) return;
-  select.innerHTML = '<option value="">-- Pilih Goal --</option>';
+  select.innerHTML = '<option value="">-- Tanpa Goal --</option>';
   (state.goals || []).forEach(g => {
     select.innerHTML += `<option value="${g.goal_id}">${escapeHtml(g.title)}</option>`;
   });
+  
+  // Also update milestone select
+  const milestoneSelect = document.getElementById('taskMilestone');
+  if (milestoneSelect) {
+    milestoneSelect.innerHTML = '<option value="">-- Tanpa Milestone --</option>';
+  }
+}
+
+function updateMilestoneSelect(goalId) {
+  const milestoneSelect = document.getElementById('taskMilestone');
+  if (!milestoneSelect) return;
+  
+  milestoneSelect.innerHTML = '<option value="">-- Tanpa Milestone --</option>';
+  
+  if (!goalId) return;
+  
+  const goal = state.goals.find(g => g.goal_id === goalId);
+  if (goal && goal.milestones) {
+    goal.milestones.forEach(m => {
+      milestoneSelect.innerHTML += `<option value="${m.milestone_id}">${escapeHtml(m.title)} (W${m.week})</option>`;
+    });
+  }
+}
+
+// Milestone Functions
+function submitMilestone() {
+  const title = document.getElementById('milestoneTitle')?.value.trim();
+  const week = document.getElementById('milestoneWeek')?.value || '1';
+  const goalId = document.getElementById('milestoneGoalId')?.value;
+  
+  if (!title) {
+    showToast('Isi judul milestone', 'error');
+    return;
+  }
+  
+  if (!goalId) {
+    showToast('Goal tidak ditemukan', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  
+  const newMilestone = {
+    milestone_id: tempId,
+    goal_id: goalId,
+    title: title,
+    week: parseInt(week),
+    completed: false
+  };
+  
+  // Add to goal's milestones in state
+  const goal = state.goals.find(g => g.goal_id === goalId);
+  if (goal) {
+    if (!goal.milestones) goal.milestones = [];
+    goal.milestones.push(newMilestone);
+  }
+  
+  // Add to queue
+  addToQueue('addMilestone', {
+    goal_id: goalId,
+    data: { title, week: parseInt(week) }
+  });
+  
+  closeModal('milestone');
+  renderGoals(state.currentGoalFilter || 'active');
+  showToast('Milestone ditambahkan! ✓', 'success');
+}
+
+function toggleMilestone(milestoneId) {
+  // Find milestone in goals
+  for (const goal of state.goals) {
+    if (!goal.milestones) continue;
+    const milestone = goal.milestones.find(m => m.milestone_id === milestoneId);
+    if (milestone) {
+      milestone.completed = !milestone.completed;
+      
+      addToQueue('toggleMilestone', {
+        milestone_id: milestoneId,
+        completed: milestone.completed
+      });
+      
+      renderGoals(state.currentGoalFilter || 'active');
+      showToast(milestone.completed ? 'Milestone selesai! ✓' : 'Milestone dibuka', 'success');
+      return;
+    }
+  }
 }
 
 function populatePomodoroGoals() {
@@ -1282,17 +1372,19 @@ function openAddTask(status) {
 }
 
 function submitTask() {
-  const title = document.getElementById('taskTitle').value.trim();
+  const titleEl = document.getElementById('taskTitle');
+  const title = titleEl?.value.trim();
   if (!title) { showToast('Isi judul', 'error'); return; }
   
   const taskData = {
     title,
-    description: document.getElementById('taskDesc').value.trim(),
-    priority: document.getElementById('taskPriority').value,
-    status: document.getElementById('taskStatus').value,
-    due_date: document.getElementById('taskDueDate').value
+    description: document.getElementById('taskDesc')?.value.trim() || '',
+    priority: document.getElementById('taskPriority')?.value || 'medium',
+    status: document.getElementById('taskStatus')?.value || 'todo',
+    due_date: document.getElementById('taskDueDate')?.value || ''
   };
-  const goalId = document.getElementById('taskGoal').value || '';
+  const goalId = document.getElementById('taskGoal')?.value || '';
+  const milestoneId = document.getElementById('taskMilestone')?.value || '';
   
   // Generate temporary ID
   const tempId = 'temp_' + Date.now();
@@ -1301,12 +1393,13 @@ function submitTask() {
   const newTask = {
     task_id: tempId,
     goal_id: goalId,
+    milestone_id: milestoneId,
     ...taskData,
     created_at: new Date().toISOString()
   };
   
   if (!state.kanban) state.kanban = { backlog: [], todo: [], progress: [], done: [] };
-  const status = taskData.status || 'backlog';
+  const status = taskData.status || 'todo';
   if (!state.kanban[status]) state.kanban[status] = [];
   state.kanban[status].unshift(newTask);
   
