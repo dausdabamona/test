@@ -910,7 +910,25 @@ function renderTaskCard(task, currentStatus) {
     someday: '⚪'
   };
   
-  return `<div class="task-card priority-${task.priority || 'medium'}">
+  // Actions based on status
+  let actionsHtml = '';
+  if (currentStatus === 'done') {
+    // Task di Done - bisa undo ke progress atau todo
+    actionsHtml = `
+    <div class="task-actions">
+      <button class="task-action-btn warning" onclick="moveTask('${task.task_id}','progress')" title="Kembali ke Progress">↩</button>
+      <button class="task-action-btn danger" onclick="confirmDeleteTask('${task.task_id}')" title="Hapus">🗑</button>
+    </div>`;
+  } else {
+    // Task belum Done
+    actionsHtml = `
+    <div class="task-actions">
+      ${nextStatus[currentStatus] ? `<button class="task-action-btn primary" onclick="moveTask('${task.task_id}','${nextStatus[currentStatus]}')" title="Lanjutkan">→</button>` : ''}
+      <button class="task-action-btn success" onclick="moveTask('${task.task_id}','done')" title="Selesai">✓</button>
+    </div>`;
+  }
+  
+  return `<div class="task-card priority-${task.priority || 'medium'}" onclick="openTaskDetail('${task.task_id}')">
     <div class="task-title">${escapeHtml(task.title)}</div>
     <div class="task-meta">
       <span class="task-label priority-${task.priority}">${priorityIcons[task.priority] || '🟡'} ${task.priority || 'medium'}</span>
@@ -919,12 +937,86 @@ function renderTaskCard(task, currentStatus) {
     </div>
     ${isDelegated ? `<div class="task-delegate">👤 ${escapeHtml(delegatee)}</div>` : ''}
     ${hasLink ? `<div class="task-link"><a href="${escapeHtml(link)}" target="_blank" onclick="event.stopPropagation()">🔗 Link</a></div>` : ''}
-    ${currentStatus !== 'done' ? `
-    <div class="task-actions">
-      ${nextStatus[currentStatus] ? `<button class="task-action-btn primary" onclick="moveTask('${task.task_id}','${nextStatus[currentStatus]}')">→</button>` : ''}
-      <button class="task-action-btn success" onclick="moveTask('${task.task_id}','done')">✓</button>
-    </div>` : ''}
+    ${actionsHtml}
   </div>`;
+}
+
+// Open task detail modal
+function openTaskDetail(taskId) {
+  // Find task
+  const board = state.kanban?.board || state.kanban;
+  let task = null;
+  
+  ['backlog', 'todo', 'progress', 'done'].forEach(status => {
+    if (board?.[status]) {
+      const found = board[status].find(t => t.task_id === taskId);
+      if (found) task = found;
+    }
+  });
+  
+  if (!task) return;
+  
+  // For now, just show a simple action modal
+  const actions = `
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-submit" onclick="moveTask('${taskId}','backlog');closeModal('task-action')">📥 Pindah ke Backlog</button>
+      <button class="btn-submit" onclick="moveTask('${taskId}','todo');closeModal('task-action')">📋 Pindah ke To Do</button>
+      <button class="btn-submit" onclick="moveTask('${taskId}','progress');closeModal('task-action')">🔄 Pindah ke Progress</button>
+      <button class="btn-submit" onclick="moveTask('${taskId}','done');closeModal('task-action')">✅ Pindah ke Done</button>
+      <hr style="border: none; border-top: 1px solid var(--gray-200); margin: 8px 0;">
+      <button class="btn-submit btn-danger" onclick="confirmDeleteTask('${taskId}');closeModal('task-action')">🗑 Hapus Task</button>
+    </div>
+  `;
+  
+  showActionModal('📋 ' + task.title, actions);
+}
+
+function showActionModal(title, content) {
+  // Remove existing modal if any
+  const existing = document.getElementById('modal-task-action');
+  if (existing) existing.remove();
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'modal-task-action';
+  modal.onclick = (e) => { if (e.target === modal) closeModal('task-action'); };
+  modal.innerHTML = `
+    <div class="modal" style="max-width: 320px;">
+      <div class="modal-header">
+        <span class="modal-title">${title}</span>
+        <button class="modal-close" onclick="closeModal('task-action')">✕</button>
+      </div>
+      <div class="modal-body">${content}</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.classList.add('active');
+}
+
+function confirmDeleteTask(taskId) {
+  if (confirm('Hapus task ini?')) {
+    deleteTask(taskId);
+  }
+}
+
+function deleteTask(taskId) {
+  // Remove from local state
+  if (state.kanban) {
+    const board = state.kanban.board || state.kanban;
+    ['backlog', 'todo', 'progress', 'done'].forEach(status => {
+      if (board[status]) {
+        const idx = board[status].findIndex(t => t.task_id === taskId);
+        if (idx !== -1) board[status].splice(idx, 1);
+      }
+    });
+  }
+  
+  // Add to queue
+  addToQueue('deleteTask', { task_id: taskId });
+  
+  showToast('Task dihapus! ✓', 'success');
+  renderKanban();
+  renderTodayFocus();
 }
 
 function renderKanbanTabs() {
