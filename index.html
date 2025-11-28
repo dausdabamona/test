@@ -1326,6 +1326,144 @@
     .menu-item .badge.warning { background: var(--warning-light); color: var(--warning); }
     .menu-item .badge.info { background: var(--info-light); color: var(--info); }
     .menu-item .arrow { color: var(--gray-400); font-size: 18px; }
+    
+    /* Brain Dump Quick Button */
+    .brain-dump-quick-btn {
+      width: 44px; height: 44px;
+      border: none; border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.2);
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+      flex-shrink: 0;
+    }
+    .brain-dump-quick-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.1);
+    }
+    .brain-dump-quick-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* Review History Item */
+    .review-history-item {
+      padding: 16px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .review-history-item:hover {
+      background: var(--gray-100);
+    }
+    .review-history-item .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .review-history-item .week {
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .review-history-item .date {
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    .review-history-item .scores {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .review-history-item .scores span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* Milestone Item */
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .milestone-item.done {
+      background: var(--success-light);
+    }
+    .milestone-item .checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .milestone-item .checkbox:hover {
+      border-color: var(--primary);
+    }
+    .milestone-item.done .checkbox {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    .milestone-item .content {
+      flex: 1;
+    }
+    .milestone-item .title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .milestone-item.done .title {
+      text-decoration: line-through;
+      color: var(--gray-500);
+    }
+    .milestone-item .week-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--info-light);
+      color: var(--info);
+      border-radius: var(--radius-full);
+    }
+    
+    /* Pomodoro Settings Card */
+    .settings-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .settings-card .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .settings-card .setting-row:last-child {
+      border-bottom: none;
+    }
+    .settings-card .setting-label {
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+    .settings-card .setting-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -1342,8 +1480,15 @@
       </div>
     </div>
     <div class="header-greeting">
-      <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-      <div class="translation">"Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang"</div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+          <div class="translation">"Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang"</div>
+        </div>
+        <button class="brain-dump-quick-btn" onclick="openQuickBrainDump()" title="Brain Dump">
+          🧠
+        </button>
+      </div>
     </div>
     <div class="header-stats">
       <div class="stat-item">🕌 <span class="value" id="sholatCount">0/8</span></div>
@@ -1491,10 +1636,25 @@
       <div class="tabs" id="goalTabs">
         <button class="tab-btn active" onclick="filterGoals('active')">Aktif</button>
         <button class="tab-btn" onclick="filterGoals('all')">Semua</button>
+        <button class="tab-btn" onclick="showGoalMilestones()">📌 Milestones</button>
       </div>
       
       <div id="goalsList">
         <div class="loading"><div class="spinner"></div></div>
+      </div>
+      
+      <div id="goalMilestonesSection" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📌 Milestones</span>
+            <button class="btn-submit btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openAddMilestoneModal()">+ Tambah</button>
+          </div>
+          <div id="milestonesList">
+            <div class="empty-state" style="padding: 20px;">
+              <p style="color: var(--gray-500); font-size: 13px;">Belum ada milestone. Tambahkan untuk tracking progress goal.</p>
+            </div>
+          </div>
+        </div>
       </div>
       
       <button class="btn-submit" style="margin-top: 20px;" onclick="openModal('goal')">
@@ -1564,17 +1724,21 @@
           <div class="pomodoro-types">
             <button class="pomodoro-type-btn" onclick="selectPomodoroType('POMODORO_25')">
               <span class="pomodoro-type-icon">🍅</span>
-              <span class="pomodoro-type-name">25 menit</span>
+              <span class="pomodoro-type-name" id="pomodoroLabel25">25 menit</span>
             </button>
             <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_60')">
               <span class="pomodoro-type-icon">🧠</span>
-              <span class="pomodoro-type-name">60 menit</span>
+              <span class="pomodoro-type-name" id="pomodoroLabel60">60 menit</span>
             </button>
             <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_90')">
               <span class="pomodoro-type-icon">🚀</span>
-              <span class="pomodoro-type-name">90 menit</span>
+              <span class="pomodoro-type-name" id="pomodoroLabel90">90 menit</span>
             </button>
           </div>
+          
+          <button class="btn-submit btn-secondary" style="margin-top: 16px; font-size: 13px;" onclick="openModal('pomodoro-settings')">
+            ⚙️ Atur Durasi
+          </button>
         </div>
       </div>
     </div>
@@ -1667,6 +1831,23 @@
             </div>
             <div class="right">
               <span class="badge info" id="menuDontBadge">0</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">📅 Review & Evaluasi</div>
+          <div class="menu-item" onclick="showPage('review')">
+            <div class="left">
+              <span class="icon">📅</span>
+              <div class="info">
+                <div class="title">Weekly Review</div>
+                <div class="subtitle">Evaluasi dan refleksi mingguan</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge" id="menuReviewBadge">-</span>
               <span class="arrow">›</span>
             </div>
           </div>
@@ -1809,6 +1990,65 @@
       </div>
     </div>
     
+    <!-- ==================== PAGE: REVIEW ==================== -->
+    <div class="page" id="page-review">
+      <div class="section-title">📅 Weekly Review</div>
+      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+        Evaluasi mingguan untuk refleksi dan perencanaan.
+      </p>
+      
+      <!-- Stats Minggu Ini -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📊 Statistik Minggu Ini</span>
+          <span class="badge info" id="reviewWeekNumber">Minggu -</span>
+        </div>
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px;">
+          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);" id="reviewStatSholat">0%</div>
+            <div style="font-size: 10px; color: var(--gray-500);">Sholat</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--success);" id="reviewStatHabit">0%</div>
+            <div style="font-size: 10px; color: var(--gray-500);">Habit</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--warning);" id="reviewStatPomodoro">0</div>
+            <div style="font-size: 10px; color: var(--gray-500);">Pomodoro</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-md);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--info);" id="reviewStatTasks">0</div>
+            <div style="font-size: 10px; color: var(--gray-500);">Tasks</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Current Week Review -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">📝 Review Minggu Ini</span>
+          <span class="badge" id="reviewCurrentStatus">Belum</span>
+        </div>
+        <div id="reviewCurrentContent">
+          <button class="btn-submit" onclick="openModal('weekly-review')" style="width: 100%;">
+            ✏️ Tulis Weekly Review
+          </button>
+        </div>
+      </div>
+      
+      <!-- History -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">📜 Riwayat Review</span>
+        </div>
+        <div id="reviewHistoryList">
+          <div class="empty-state" style="padding: 24px;">
+            <p style="color: var(--gray-500); font-size: 13px;">Belum ada riwayat review</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- ==================== PAGE: SETTINGS ==================== -->
     <div class="page" id="page-settings">
       <div class="section-title">⚙️ Pengaturan</div>
@@ -1845,9 +2085,9 @@
           <span class="card-title">ℹ️ Tentang Aplikasi</span>
         </div>
         <div style="font-size: 13px; color: var(--gray-600); line-height: 1.8;">
-          <p><strong>Sync Planner v2.3</strong></p>
+          <p><strong>Sync Planner v2.4</strong></p>
           <p>Aplikasi produktivitas berbasis sunnah Rasulullah ﷺ untuk ASN.</p>
-          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Brain Dump, Jurnal, Don't List</p>
+          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Weekly Review, Milestones, Pomodoro Settings</p>
         </div>
       </div>
       
@@ -2166,6 +2406,125 @@
           </select>
         </div>
         <button class="btn-submit" onclick="submitDontItem()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Brain Dump -->
+  <div class="modal-overlay" id="modal-quick-braindump" onclick="if(event.target===this)closeModal('quick-braindump')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🧠 Quick Brain Dump</span>
+        <button class="modal-close" onclick="closeModal('quick-braindump')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <textarea class="form-input form-textarea" id="quickBrainDumpInput" placeholder="Tulis ide, pikiran, atau apapun..." style="min-height: 120px;"></textarea>
+        </div>
+        <button class="btn-submit" onclick="submitQuickBrainDump()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Weekly Review -->
+  <div class="modal-overlay" id="modal-weekly-review" onclick="if(event.target===this)closeModal('weekly-review')">
+    <div class="modal" style="max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <span class="modal-title">📅 Weekly Review</span>
+        <button class="modal-close" onclick="closeModal('weekly-review')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">🏆 Wins (Apa yang berjalan baik?)</label>
+          <textarea class="form-input form-textarea" id="reviewWins" placeholder="Hal-hal yang berhasil minggu ini..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🚧 Challenges (Apa yang menantang?)</label>
+          <textarea class="form-input form-textarea" id="reviewChallenges" placeholder="Tantangan yang dihadapi..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💡 Lessons (Pelajaran minggu ini)</label>
+          <textarea class="form-input form-textarea" id="reviewLessons" placeholder="Apa yang dipelajari..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🙏 Gratitude (Rasa syukur)</label>
+          <textarea class="form-input form-textarea" id="reviewGratitude" placeholder="Hal-hal yang disyukuri..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Fokus Minggu Depan</label>
+          <textarea class="form-input form-textarea" id="reviewNextFocus" placeholder="Prioritas minggu depan..."></textarea>
+        </div>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">⚡ Energi (1-10)</label>
+            <input type="number" class="form-input" id="reviewEnergy" min="1" max="10" placeholder="8">
+          </div>
+          <div class="form-group">
+            <label class="form-label">😊 Kepuasan (1-10)</label>
+            <input type="number" class="form-input" id="reviewSatisfaction" min="1" max="10" placeholder="7">
+          </div>
+        </div>
+        <button class="btn-submit" onclick="submitWeeklyReview()">💾 Simpan Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Milestone -->
+  <div class="modal-overlay" id="modal-milestone" onclick="if(event.target===this)closeModal('milestone')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🎯 Tambah Milestone</span>
+        <button class="modal-close" onclick="closeModal('milestone')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Judul Milestone</label>
+          <input type="text" class="form-input" id="milestoneTitle" placeholder="Contoh: Selesaikan dokumen LED">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Minggu</label>
+          <select class="form-input form-select" id="milestoneWeek">
+            <option value="1">Minggu 1</option>
+            <option value="2">Minggu 2</option>
+            <option value="3">Minggu 3</option>
+            <option value="4">Minggu 4</option>
+          </select>
+        </div>
+        <input type="hidden" id="milestoneGoalId">
+        <button class="btn-submit" onclick="submitMilestone()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Pomodoro Settings -->
+  <div class="modal-overlay" id="modal-pomodoro-settings" onclick="if(event.target===this)closeModal('pomodoro-settings')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">⏱️ Pomodoro Settings</span>
+        <button class="modal-close" onclick="closeModal('pomodoro-settings')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">🍅 Durasi Pomodoro (menit)</label>
+          <input type="number" class="form-input" id="settingPomodoro" min="15" max="60" value="25">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🧠 Durasi Deep Work (menit)</label>
+          <input type="number" class="form-input" id="settingDeepWork" min="30" max="90" value="60">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🚀 Durasi Ultra Focus (menit)</label>
+          <input type="number" class="form-input" id="settingUltraFocus" min="60" max="120" value="90">
+        </div>
+        <div class="form-group">
+          <label class="form-label">☕ Durasi Break Pendek (menit)</label>
+          <input type="number" class="form-input" id="settingShortBreak" min="3" max="15" value="5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Target Pomodoro per Hari</label>
+          <input type="number" class="form-input" id="settingDailyTarget" min="1" max="20" value="8">
+        </div>
+        <button class="btn-submit" onclick="savePomodoroSettings()">💾 Simpan Settings</button>
       </div>
     </div>
   </div>

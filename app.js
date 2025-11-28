@@ -66,7 +66,8 @@ const state = {
     menu: false,
     braindump: false,
     journal: false,
-    dontlist: false
+    dontlist: false,
+    review: false
   },
   // QUEUE SYSTEM - Pending actions untuk sync ke server
   pendingQueue: [],
@@ -74,7 +75,18 @@ const state = {
   // Batch 1: Brain Dump, Journal, Don't List
   brainDumps: [],
   journals: { morning: null, evening: null },
-  dontList: []
+  dontList: [],
+  // Batch 2: Review, Milestones, Pomodoro Settings
+  reviews: [],
+  currentWeekReview: null,
+  milestones: [],
+  pomodoroSettings: {
+    pomodoro: 25,
+    deepWork: 60,
+    ultraFocus: 90,
+    shortBreak: 5,
+    dailyTarget: 8
+  }
 };
 
 // Habit Sunnah Rasulullah untuk ASN
@@ -303,6 +315,12 @@ function showPage(pageName, navEl) {
         loadDontList();
       }
       state.pageLoaded.dontlist = true;
+      break;
+    case 'review':
+      if (!state.pageLoaded.review) {
+        loadReviewPage();
+      }
+      state.pageLoaded.review = true;
       break;
     case 'settings':
       document.getElementById('settingUserId').textContent = CONFIG.USER_ID;
@@ -1384,7 +1402,7 @@ function refreshAllData() {
   syncPendingQueue();
   
   state.cache = { dailySync: 0, goals: 0, kanban: 0, visions: 0, stats: 0 };
-  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false };
+  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false, review: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
 }
@@ -1928,9 +1946,427 @@ function parseJSON(str) {
 }
 
 // ============================================
+// BATCH 2: QUICK BRAIN DUMP
+// ============================================
+function openQuickBrainDump() {
+  document.getElementById('quickBrainDumpInput').value = '';
+  openModal('quick-braindump');
+}
+
+function submitQuickBrainDump() {
+  const input = document.getElementById('quickBrainDumpInput');
+  const content = input?.value.trim();
+  
+  if (!content) {
+    showToast('Tulis sesuatu dulu', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  const now = new Date();
+  
+  const newDump = {
+    log_id: tempId,
+    content: content,
+    time: now.toTimeString().slice(0, 5),
+    created_at: now.toISOString()
+  };
+  state.brainDumps = [newDump, ...(state.brainDumps || [])];
+  
+  addToQueue('addBrainDump', { content: content });
+  
+  closeModal('quick-braindump');
+  showToast('Brain dump tersimpan! 🧠', 'success');
+}
+
+// ============================================
+// BATCH 2: WEEKLY REVIEW FUNCTIONS
+// ============================================
+async function loadReviewPage() {
+  // Set week number
+  const weekNum = getWeekNumber(new Date());
+  const weekNumEl = document.getElementById('reviewWeekNumber');
+  if (weekNumEl) weekNumEl.textContent = 'Minggu ' + weekNum;
+  
+  // Load stats (use existing data)
+  updateReviewStats();
+  
+  // Load current week review
+  try {
+    const year = new Date().getFullYear();
+    const review = await apiGet('getWeeklyReview', { week_number: weekNum, year: year });
+    state.currentWeekReview = review;
+    renderCurrentReview();
+  } catch (err) {
+    console.error('Failed to load weekly review:', err);
+  }
+  
+  // Load history
+  try {
+    const history = await apiGet('getReviewHistory', { type: 'WEEKLY', limit: 5 });
+    state.reviews = history || [];
+    renderReviewHistory();
+  } catch (err) {
+    console.error('Failed to load review history:', err);
+  }
+}
+
+function updateReviewStats() {
+  // Using existing dailySync stats (weekly stats would need additional API)
+  const stats = state.dailySync?.stats || {};
+  
+  const sholatEl = document.getElementById('reviewStatSholat');
+  const habitEl = document.getElementById('reviewStatHabit');
+  const pomodoroEl = document.getElementById('reviewStatPomodoro');
+  const tasksEl = document.getElementById('reviewStatTasks');
+  
+  if (sholatEl) {
+    const sholatPct = Math.round(((stats.sholat_completed || 0) / 8) * 100);
+    sholatEl.textContent = sholatPct + '%';
+  }
+  if (habitEl) {
+    const habitTotal = stats.habits_total || 11;
+    const habitPct = Math.round(((stats.habits_completed || 0) / habitTotal) * 100);
+    habitEl.textContent = habitPct + '%';
+  }
+  if (pomodoroEl) pomodoroEl.textContent = stats.pomodoro_count || 0;
+  if (tasksEl) {
+    const done = state.kanban?.done?.length || 0;
+    tasksEl.textContent = done;
+  }
+}
+
+function renderCurrentReview() {
+  const container = document.getElementById('reviewCurrentContent');
+  const statusBadge = document.getElementById('reviewCurrentStatus');
+  
+  if (!container) return;
+  
+  if (state.currentWeekReview) {
+    const r = state.currentWeekReview;
+    statusBadge.textContent = '✓ Ditulis';
+    statusBadge.className = 'badge success';
+    
+    container.innerHTML = `
+      <div style="font-size: 13px; line-height: 1.8; color: var(--gray-700);">
+        ${r.wins ? `<p><strong>🏆 Wins:</strong> ${escapeHtml(r.wins)}</p>` : ''}
+        ${r.challenges ? `<p><strong>🚧 Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
+        ${r.lessons ? `<p><strong>💡 Lessons:</strong> ${escapeHtml(r.lessons)}</p>` : ''}
+        ${r.next_focus ? `<p><strong>🎯 Fokus:</strong> ${escapeHtml(r.next_focus)}</p>` : ''}
+        <div style="display: flex; gap: 16px; margin-top: 12px;">
+          ${r.energy_level ? `<span>⚡ Energi: ${r.energy_level}/10</span>` : ''}
+          ${r.satisfaction ? `<span>😊 Kepuasan: ${r.satisfaction}/10</span>` : ''}
+        </div>
+      </div>
+      <button class="btn-submit btn-secondary" style="margin-top: 16px; width: 100%;" onclick="editWeeklyReview()">
+        ✏️ Edit Review
+      </button>
+    `;
+  } else {
+    statusBadge.textContent = 'Belum';
+    statusBadge.className = 'badge';
+    container.innerHTML = `
+      <button class="btn-submit" onclick="openModal('weekly-review')" style="width: 100%;">
+        ✏️ Tulis Weekly Review
+      </button>
+    `;
+  }
+}
+
+function editWeeklyReview() {
+  const r = state.currentWeekReview || {};
+  document.getElementById('reviewWins').value = r.wins || '';
+  document.getElementById('reviewChallenges').value = r.challenges || '';
+  document.getElementById('reviewLessons').value = r.lessons || '';
+  document.getElementById('reviewGratitude').value = r.gratitude || '';
+  document.getElementById('reviewNextFocus').value = r.next_focus || '';
+  document.getElementById('reviewEnergy').value = r.energy_level || '';
+  document.getElementById('reviewSatisfaction').value = r.satisfaction || '';
+  openModal('weekly-review');
+}
+
+function submitWeeklyReview() {
+  const data = {
+    wins: document.getElementById('reviewWins')?.value.trim() || '',
+    challenges: document.getElementById('reviewChallenges')?.value.trim() || '',
+    lessons: document.getElementById('reviewLessons')?.value.trim() || '',
+    gratitude: document.getElementById('reviewGratitude')?.value.trim() || '',
+    next_focus: document.getElementById('reviewNextFocus')?.value.trim() || '',
+    energy_level: document.getElementById('reviewEnergy')?.value || '',
+    satisfaction: document.getElementById('reviewSatisfaction')?.value || ''
+  };
+  
+  // Check if has content
+  const hasContent = Object.values(data).some(v => v);
+  if (!hasContent) {
+    showToast('Isi minimal satu field', 'error');
+    return;
+  }
+  
+  // Update local state
+  state.currentWeekReview = {
+    ...data,
+    week_number: getWeekNumber(new Date()),
+    year: new Date().getFullYear()
+  };
+  
+  // Add to queue
+  addToQueue('saveWeeklyReview', { data: data });
+  
+  closeModal('weekly-review');
+  renderCurrentReview();
+  showToast('Weekly review tersimpan! ✓', 'success');
+}
+
+function renderReviewHistory() {
+  const container = document.getElementById('reviewHistoryList');
+  if (!container) return;
+  
+  const reviews = state.reviews || [];
+  
+  if (reviews.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 24px;">
+        <p style="color: var(--gray-500); font-size: 13px;">Belum ada riwayat review</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = reviews.map(r => `
+    <div class="review-history-item">
+      <div class="header">
+        <span class="week">Minggu ${r.week_number}</span>
+        <span class="date">${r.date || ''}</span>
+      </div>
+      <div class="scores">
+        ${r.energy_level ? `<span>⚡ ${r.energy_level}</span>` : ''}
+        ${r.satisfaction ? `<span>😊 ${r.satisfaction}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// ============================================
+// BATCH 2: MILESTONE FUNCTIONS
+// ============================================
+function showGoalMilestones() {
+  // Hide goals list, show milestones
+  document.getElementById('goalsList').style.display = 'none';
+  document.getElementById('goalMilestonesSection').style.display = 'block';
+  
+  // Update tab active state
+  document.querySelectorAll('#goalTabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('#goalTabs .tab-btn')[2].classList.add('active');
+  
+  loadMilestones();
+}
+
+async function loadMilestones() {
+  try {
+    // Get milestones from goals
+    const goals = state.goals || [];
+    let allMilestones = [];
+    
+    for (const goal of goals) {
+      if (goal.milestones && goal.milestones.length > 0) {
+        allMilestones = allMilestones.concat(
+          goal.milestones.map(m => ({ ...m, goal_title: goal.title }))
+        );
+      }
+    }
+    
+    state.milestones = allMilestones;
+    renderMilestones();
+  } catch (err) {
+    console.error('Failed to load milestones:', err);
+  }
+}
+
+function renderMilestones() {
+  const container = document.getElementById('milestonesList');
+  if (!container) return;
+  
+  const milestones = state.milestones || [];
+  
+  if (milestones.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p style="color: var(--gray-500); font-size: 13px;">Belum ada milestone. Tambahkan untuk tracking progress goal.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Sort by week
+  milestones.sort((a, b) => (a.week || 1) - (b.week || 1));
+  
+  container.innerHTML = milestones.map(m => `
+    <div class="milestone-item ${m.completed ? 'done' : ''}" data-id="${m.milestone_id}">
+      <div class="checkbox" onclick="toggleMilestone('${m.milestone_id}')">
+        ${m.completed ? '✓' : ''}
+      </div>
+      <div class="content">
+        <div class="title">${escapeHtml(m.title)}</div>
+        <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">
+          ${m.goal_title ? escapeHtml(m.goal_title) : ''}
+        </div>
+      </div>
+      <span class="week-badge">W${m.week || 1}</span>
+    </div>
+  `).join('');
+}
+
+function openAddMilestoneModal() {
+  // Populate goal select if needed
+  const goals = state.goals || [];
+  if (goals.length === 0) {
+    showToast('Tambahkan goal dulu', 'error');
+    return;
+  }
+  
+  document.getElementById('milestoneTitle').value = '';
+  document.getElementById('milestoneGoalId').value = goals[0]?.goal_id || '';
+  openModal('milestone');
+}
+
+function submitMilestone() {
+  const title = document.getElementById('milestoneTitle')?.value.trim();
+  const week = document.getElementById('milestoneWeek')?.value || '1';
+  const goalId = document.getElementById('milestoneGoalId')?.value;
+  
+  if (!title) {
+    showToast('Isi judul milestone', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  
+  const newMilestone = {
+    milestone_id: tempId,
+    goal_id: goalId,
+    title: title,
+    week: parseInt(week),
+    completed: false
+  };
+  
+  state.milestones = [...(state.milestones || []), newMilestone];
+  
+  addToQueue('addMilestone', {
+    goal_id: goalId,
+    data: { title, week: parseInt(week) }
+  });
+  
+  closeModal('milestone');
+  renderMilestones();
+  showToast('Milestone ditambahkan! ✓', 'success');
+}
+
+function toggleMilestone(milestoneId) {
+  const milestone = state.milestones.find(m => m.milestone_id === milestoneId);
+  if (!milestone) return;
+  
+  milestone.completed = !milestone.completed;
+  
+  addToQueue('toggleMilestone', {
+    milestone_id: milestoneId,
+    completed: milestone.completed
+  });
+  
+  renderMilestones();
+  showToast(milestone.completed ? 'Milestone selesai! ✓' : 'Milestone dibuka kembali', 'success');
+}
+
+// Reset to goals list view
+function filterGoals(filter) {
+  document.getElementById('goalsList').style.display = 'block';
+  document.getElementById('goalMilestonesSection').style.display = 'none';
+  
+  // Update tab active state
+  const tabs = document.querySelectorAll('#goalTabs .tab-btn');
+  tabs.forEach(btn => btn.classList.remove('active'));
+  if (filter === 'active') tabs[0].classList.add('active');
+  else if (filter === 'all') tabs[1].classList.add('active');
+  
+  renderGoals(filter);
+}
+
+// ============================================
+// BATCH 2: POMODORO SETTINGS FUNCTIONS
+// ============================================
+async function loadPomodoroSettings() {
+  try {
+    const settings = await apiGet('getPomodoroSettings');
+    if (settings) {
+      state.pomodoroSettings = {
+        pomodoro: settings.pomodoro_duration || 25,
+        deepWork: settings.deep_work_duration || 60,
+        ultraFocus: settings.ultra_focus_duration || 90,
+        shortBreak: settings.short_break || 5,
+        dailyTarget: settings.daily_target || 8
+      };
+      updatePomodoroLabels();
+    }
+  } catch (err) {
+    console.error('Failed to load pomodoro settings:', err);
+  }
+}
+
+function updatePomodoroLabels() {
+  const s = state.pomodoroSettings;
+  
+  const label25 = document.getElementById('pomodoroLabel25');
+  const label60 = document.getElementById('pomodoroLabel60');
+  const label90 = document.getElementById('pomodoroLabel90');
+  
+  if (label25) label25.textContent = s.pomodoro + ' menit';
+  if (label60) label60.textContent = s.deepWork + ' menit';
+  if (label90) label90.textContent = s.ultraFocus + ' menit';
+  
+  // Update POMODORO_TYPES
+  POMODORO_TYPES.POMODORO_25.duration = s.pomodoro * 60;
+  POMODORO_TYPES.DEEP_WORK_60.duration = s.deepWork * 60;
+  POMODORO_TYPES.DEEP_WORK_90.duration = s.ultraFocus * 60;
+}
+
+function savePomodoroSettings() {
+  const pomodoro = parseInt(document.getElementById('settingPomodoro')?.value) || 25;
+  const deepWork = parseInt(document.getElementById('settingDeepWork')?.value) || 60;
+  const ultraFocus = parseInt(document.getElementById('settingUltraFocus')?.value) || 90;
+  const shortBreak = parseInt(document.getElementById('settingShortBreak')?.value) || 5;
+  const dailyTarget = parseInt(document.getElementById('settingDailyTarget')?.value) || 8;
+  
+  state.pomodoroSettings = { pomodoro, deepWork, ultraFocus, shortBreak, dailyTarget };
+  
+  addToQueue('updatePomodoroSettings', {
+    data: {
+      pomodoro_duration: pomodoro,
+      deep_work_duration: deepWork,
+      ultra_focus_duration: ultraFocus,
+      short_break: shortBreak,
+      daily_target: dailyTarget
+    }
+  });
+  
+  updatePomodoroLabels();
+  closeModal('pomodoro-settings');
+  showToast('Settings tersimpan! ✓', 'success');
+}
+
+// ============================================
 // INIT
 // ============================================
-document.addEventListener('DOMContentLoaded', loadAllData);
+document.addEventListener('DOMContentLoaded', () => {
+  loadAllData();
+  loadPomodoroSettings();
+});
 
 // Register service worker
 if ('serviceWorker' in navigator) {
