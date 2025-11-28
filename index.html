@@ -1573,13 +1573,6 @@
       
       <div class="card">
         <div class="card-header">
-          <span class="card-title">🌐 Status API</span>
-        </div>
-        <div style="font-size: 13px; color: var(--gray-600);" id="settingApiStatus">Checking...</div>
-      </div>
-      
-      <div class="card" style="margin-top: 16px;">
-        <div class="card-header">
           <span class="card-title">🔄 Sinkronisasi</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -1604,7 +1597,7 @@
         <div style="font-size: 13px; line-height: 1.8;">
           <p><strong>Sync Planner v3.0</strong></p>
           <p style="color: var(--gray-600);">Produktivitas Islami untuk ASN</p>
-          <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Full Features Edition</p>
+          <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Batch 3: Full Features</p>
         </div>
       </div>
       
@@ -1676,12 +1669,8 @@
           <input type="text" class="form-input" id="taskTitle" placeholder="Apa yang perlu dikerjakan?">
         </div>
         <div class="form-group">
-          <label class="form-label">Deskripsi (Opsional)</label>
-          <textarea class="form-input form-textarea" id="taskDesc" placeholder="Detail task..."></textarea>
-        </div>
-        <div class="form-group">
           <label class="form-label">Goal (Opsional)</label>
-          <select class="form-input form-select" id="taskGoal" onchange="updateMilestoneSelect(this.value)">
+          <select class="form-input form-select" id="taskGoal">
             <option value="">-- Tanpa Goal --</option>
           </select>
         </div>
@@ -1691,27 +1680,13 @@
             <option value="">-- Tanpa Milestone --</option>
           </select>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label class="form-label">Prioritas</label>
-            <select class="form-input form-select" id="taskPriority">
-              <option value="high">🔴 High</option>
-              <option value="medium" selected>🟡 Medium</option>
-              <option value="low">🟢 Low</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-input form-select" id="taskStatus">
-              <option value="backlog">📥 Backlog</option>
-              <option value="todo" selected>📋 Todo</option>
-              <option value="progress">🔄 Progress</option>
-            </select>
-          </div>
-        </div>
         <div class="form-group">
-          <label class="form-label">Due Date (Opsional)</label>
-          <input type="date" class="form-input" id="taskDueDate">
+          <label class="form-label">Prioritas</label>
+          <select class="form-input form-select" id="taskPriority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
         </div>
         <button class="btn-submit" onclick="submitTask()">✓ Simpan Task</button>
       </div>
