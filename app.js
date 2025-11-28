@@ -5,7 +5,7 @@
 // CONFIG - GANTI DENGAN DATA ANDA
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbwXXj7eYC9rzwoAe1V3PoXSOw2R7QVdJh2AfJ_gTzQkUQptISjNXISOkxymvhEPsKyAAw/exec',
-  USER_ID: 'b85b0e08-d379-40ba-81dc-5a16f23a8a37'
+  USER_ID: '339926ce-f54b-46e5-8740-865ba7555929'
 };
 
 // STATE
