@@ -1172,8 +1172,8 @@ function savePairwiseResults() {
     });
   }
   
-  // Add to queue
-  addToQueue('savePairwise', { rankings });
+  // Add to queue - gunakan updateGoalRanks yang ada di backend
+  addToQueue('updateGoalRanks', { ranks: rankings });
   
   showToast('Prioritas tersimpan! ✓', 'success');
   
