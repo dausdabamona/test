@@ -706,9 +706,13 @@ function renderTodayFocus() {
   const container = document.getElementById('todayFocus');
   if (!container) return;
   
-  const topGoals = (state.goals || []).filter(g => g.priority_rank && g.priority_rank <= 3).slice(0, 3);
+  // Sort goals by rank (ascending - rank 1 is highest priority)
+  const sortedGoals = (state.goals || [])
+    .filter(g => g.rank && g.rank > 0)
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, 3);
   
-  if (topGoals.length === 0) {
+  if (sortedGoals.length === 0) {
     container.innerHTML = `<div class="empty-state">
       <span class="icon">⚖️</span>
       <p>Tentukan prioritas dengan Pairwise</p>
@@ -719,7 +723,7 @@ function renderTodayFocus() {
   
   container.innerHTML = `
     <div class="card-header"><span class="card-title">🔥 Top Prioritas</span></div>
-    ${topGoals.map((g, i) => `
+    ${sortedGoals.map((g, i) => `
       <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${i === 0 ? 'var(--warning-light)' : 'var(--gray-50)'}; border-radius: var(--radius-md); margin-bottom: 8px;">
         <div style="width: 28px; height: 28px; background: ${['#FFD700','#C0C0C0','#CD7F32'][i]}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">${i + 1}</div>
         <div style="flex: 1;"><div style="font-weight: 600;">${escapeHtml(g.title)}</div></div>
