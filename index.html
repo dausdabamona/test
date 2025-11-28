@@ -1189,6 +1189,143 @@
     ::-webkit-scrollbar-track { background: var(--gray-100); }
     ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+    
+    /* ==================== BATCH 1: Brain Dump, Jurnal, Don't List ==================== */
+    
+    /* Brain Dump */
+    .brain-dump-input { position: relative; margin-bottom: 20px; }
+    .brain-dump-input textarea {
+      width: 100%; min-height: 80px; padding: 16px;
+      border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+      font-size: 15px; font-family: inherit; resize: none; transition: all 0.2s;
+    }
+    .brain-dump-input textarea:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+    }
+    .brain-dump-input .char-count {
+      position: absolute; bottom: 8px; right: 12px;
+      font-size: 11px; color: var(--gray-400);
+    }
+    .brain-dump-list { display: flex; flex-direction: column; gap: 12px; }
+    .brain-dump-item {
+      background: white; border-radius: var(--radius-md); padding: 16px;
+      box-shadow: var(--shadow-sm); border-left: 4px solid var(--primary);
+    }
+    .brain-dump-item .content {
+      font-size: 14px; line-height: 1.6; color: var(--gray-800); margin-bottom: 12px;
+    }
+    .brain-dump-item .meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: var(--gray-500);
+    }
+    .brain-dump-item .actions { display: flex; gap: 8px; }
+    .brain-dump-item .actions button {
+      padding: 6px 12px; border: none; border-radius: var(--radius-sm);
+      font-size: 11px; cursor: pointer; transition: all 0.2s;
+    }
+    .brain-dump-item .actions .btn-task { background: var(--info-light); color: var(--info); }
+    .brain-dump-item .actions .btn-task:hover { background: var(--info); color: white; }
+    .brain-dump-item .actions .btn-delete { background: var(--gray-100); color: var(--gray-600); }
+    .brain-dump-item .actions .btn-delete:hover { background: var(--danger-light); color: var(--danger); }
+    
+    /* Journal */
+    .journal-section {
+      background: white; border-radius: var(--radius-lg); padding: 20px;
+      margin-bottom: 16px; box-shadow: var(--shadow-sm);
+    }
+    .journal-section.morning { border-left: 4px solid var(--warning); }
+    .journal-section.evening { border-left: 4px solid var(--spiritual); }
+    .journal-section .section-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+    }
+    .journal-section .section-title {
+      font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+    }
+    .journal-section .section-status {
+      font-size: 12px; padding: 4px 12px; border-radius: var(--radius-full);
+    }
+    .journal-section .section-status.done { background: var(--success-light); color: var(--success); }
+    .journal-section .section-status.pending { background: var(--gray-100); color: var(--gray-600); }
+    .journal-content { font-size: 14px; line-height: 1.8; color: var(--gray-700); }
+    .journal-content .label {
+      font-weight: 600; color: var(--gray-800); margin-top: 12px; margin-bottom: 4px;
+    }
+    .journal-content .label:first-child { margin-top: 0; }
+    .journal-form textarea {
+      width: 100%; min-height: 60px; padding: 12px;
+      border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+      font-size: 14px; font-family: inherit; resize: none; margin-bottom: 12px;
+    }
+    .journal-form textarea:focus { outline: none; border-color: var(--primary); }
+    
+    /* Don't List */
+    .dont-list-container { display: flex; flex-direction: column; gap: 16px; }
+    .dont-category {
+      background: white; border-radius: var(--radius-lg);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .dont-category-header {
+      padding: 14px 16px; font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dont-category.fokus .dont-category-header { background: var(--info-light); color: var(--info); }
+    .dont-category.waktu .dont-category-header { background: var(--warning-light); color: var(--warning); }
+    .dont-category.energi .dont-category-header { background: var(--success-light); color: var(--success); }
+    .dont-category.kebiasaan .dont-category-header { background: var(--spiritual-light); color: var(--spiritual); }
+    .dont-category-items { padding: 8px; }
+    .dont-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px;
+      border-radius: var(--radius-md); transition: background 0.2s;
+    }
+    .dont-item:hover { background: var(--gray-50); }
+    .dont-item .icon { font-size: 20px; flex-shrink: 0; }
+    .dont-item .content { flex: 1; }
+    .dont-item .item-text { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; }
+    .dont-item .item-reason { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+    .dont-item .actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+    .dont-item:hover .actions { opacity: 1; }
+    .dont-item .actions button {
+      padding: 6px; border: none; background: transparent;
+      cursor: pointer; border-radius: var(--radius-sm); transition: background 0.2s;
+    }
+    .dont-item .actions button:hover { background: var(--gray-200); }
+    
+    /* Menu Page */
+    .menu-grid { display: flex; flex-direction: column; gap: 12px; }
+    .menu-group {
+      background: white; border-radius: var(--radius-lg);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .menu-group-title {
+      padding: 12px 16px; font-size: 12px; font-weight: 700;
+      color: var(--gray-500); text-transform: uppercase;
+      letter-spacing: 0.5px; background: var(--gray-50);
+    }
+    .menu-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; cursor: pointer; transition: background 0.2s;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:hover { background: var(--gray-50); }
+    .menu-item:active { background: var(--gray-100); }
+    .menu-item .left { display: flex; align-items: center; gap: 14px; }
+    .menu-item .icon {
+      font-size: 24px; width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gray-100); border-radius: var(--radius-md);
+    }
+    .menu-item .info .title { font-size: 15px; font-weight: 600; color: var(--gray-800); }
+    .menu-item .info .subtitle { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+    .menu-item .right { display: flex; align-items: center; gap: 8px; }
+    .menu-item .badge {
+      padding: 4px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;
+    }
+    .menu-item .badge.success { background: var(--success-light); color: var(--success); }
+    .menu-item .badge.warning { background: var(--warning-light); color: var(--warning); }
+    .menu-item .badge.info { background: var(--info-light); color: var(--info); }
+    .menu-item .arrow { color: var(--gray-400); font-size: 18px; }
   </style>
 </head>
 <body>
@@ -1442,6 +1579,236 @@
       </div>
     </div>
     
+    <!-- ==================== PAGE: MENU ==================== -->
+    <div class="page" id="page-menu">
+      <div class="section-title">☰ Menu</div>
+      
+      <div class="menu-grid">
+        <div class="menu-group">
+          <div class="menu-group-title">📿 Ibadah & Habit</div>
+          <div class="menu-item" onclick="showPage('habits')">
+            <div class="left">
+              <span class="icon">📿</span>
+              <div class="info">
+                <div class="title">Sunnah Rasulullah ﷺ</div>
+                <div class="subtitle">Habit dan ritual harian</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge success" id="menuHabitBadge">0/11</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">🔮 Visi & Perencanaan</div>
+          <div class="menu-item" onclick="showPage('vision')">
+            <div class="left">
+              <span class="icon">🔮</span>
+              <div class="info">
+                <div class="title">Piramida Visi</div>
+                <div class="subtitle">Visi 10 tahun, 3 tahun, 1 tahun</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+          <div class="menu-item" onclick="showPage('pairwise')">
+            <div class="left">
+              <span class="icon">⚖️</span>
+              <div class="info">
+                <div class="title">Pairwise Comparison</div>
+                <div class="subtitle">Prioritaskan goal dengan perbandingan</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">🧠 Capture & Jurnal</div>
+          <div class="menu-item" onclick="showPage('braindump')">
+            <div class="left">
+              <span class="icon">🧠</span>
+              <div class="info">
+                <div class="title">Brain Dump</div>
+                <div class="subtitle">Tulis semua pikiran, proses nanti</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge info" id="menuBrainDumpBadge">0</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+          <div class="menu-item" onclick="showPage('journal')">
+            <div class="left">
+              <span class="icon">📝</span>
+              <div class="info">
+                <div class="title">Jurnal Harian</div>
+                <div class="subtitle">Refleksi pagi dan malam</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge" id="menuJournalBadge">-</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">🚫 Boundaries</div>
+          <div class="menu-item" onclick="showPage('dontlist')">
+            <div class="left">
+              <span class="icon">🚫</span>
+              <div class="info">
+                <div class="title">Don't List</div>
+                <div class="subtitle">Hal yang harus dihindari</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge info" id="menuDontBadge">0</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">📈 Statistik</div>
+          <div class="menu-item" onclick="showPage('stats')">
+            <div class="left">
+              <span class="icon">📈</span>
+              <div class="info">
+                <div class="title">Statistik Pomodoro</div>
+                <div class="subtitle">Rekap fokus harian/mingguan</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+        </div>
+        
+        <div class="menu-group">
+          <div class="menu-group-title">⚙️ Pengaturan</div>
+          <div class="menu-item" onclick="showPage('settings')">
+            <div class="left">
+              <span class="icon">⚙️</span>
+              <div class="info">
+                <div class="title">Pengaturan</div>
+                <div class="subtitle">Profil, sync, tentang</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge warning" id="menuSyncBadge" style="display: none;">0</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: BRAIN DUMP ==================== -->
+    <div class="page" id="page-braindump">
+      <div class="section-title">🧠 Brain Dump</div>
+      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+        Tulis semua yang ada di pikiran. Jangan filter, jangan edit. Proses nanti.
+      </p>
+      
+      <div class="card">
+        <div class="brain-dump-input">
+          <textarea id="brainDumpInput" placeholder="Ketik ide, pikiran, atau apapun yang ada di kepala..." maxlength="500" oninput="updateCharCount()"></textarea>
+          <span class="char-count"><span id="brainDumpCharCount">0</span>/500</span>
+        </div>
+        <button class="btn-submit" onclick="submitBrainDump()">💾 Simpan</button>
+      </div>
+      
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">📝 Hari Ini</span>
+          <span class="badge info" id="brainDumpTodayCount">0 items</span>
+        </div>
+        <div id="brainDumpList" class="brain-dump-list">
+          <div class="empty-state">
+            <div class="icon">🧠</div>
+            <p>Belum ada brain dump<br>Mulai tulis apa yang ada di pikiranmu</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: JOURNAL ==================== -->
+    <div class="page" id="page-journal">
+      <div class="section-title">📝 Jurnal Harian</div>
+      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+        Refleksi harian untuk mengevaluasi dan mensyukuri hari.
+      </p>
+      
+      <div class="journal-section morning">
+        <div class="section-header">
+          <div class="section-title"><span>☀️</span><span>Jurnal Pagi</span></div>
+          <span class="section-status pending" id="journalMorningStatus">Belum ditulis</span>
+        </div>
+        <div id="journalMorningContent">
+          <div class="journal-form">
+            <div class="form-group">
+              <label class="form-label">3 hal yang disyukuri hari ini:</label>
+              <textarea id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fokus utama hari ini:</label>
+              <textarea id="journalFocus" placeholder="Apa yang harus saya selesaikan hari ini?"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Afirmasi positif:</label>
+              <textarea id="journalAffirmation" placeholder="Hari ini saya akan..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="submitJournal('morning')">💾 Simpan Jurnal Pagi</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="journal-section evening">
+        <div class="section-header">
+          <div class="section-title"><span>🌙</span><span>Jurnal Malam</span></div>
+          <span class="section-status pending" id="journalEveningStatus">Belum ditulis</span>
+        </div>
+        <div id="journalEveningContent">
+          <div class="journal-form">
+            <div class="form-group">
+              <label class="form-label">Apa yang berjalan baik hari ini?</label>
+              <textarea id="journalWins" placeholder="Hal positif yang terjadi..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apa yang bisa diperbaiki?</label>
+              <textarea id="journalImprove" placeholder="Hal yang perlu ditingkatkan..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pelajaran hari ini:</label>
+              <textarea id="journalLesson" placeholder="Apa yang saya pelajari..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="submitJournal('evening')">💾 Simpan Jurnal Malam</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: DON'T LIST ==================== -->
+    <div class="page" id="page-dontlist">
+      <div class="section-title">🚫 Don't List</div>
+      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+        Hal-hal yang harus dihindari untuk menjaga fokus, waktu, dan energi.
+      </p>
+      
+      <button class="btn-submit btn-secondary" onclick="openModal('dont-add')" style="margin-bottom: 16px; width: 100%;">
+        ➕ Tambah Item
+      </button>
+      
+      <div id="dontListContainer" class="dont-list-container">
+        <div class="empty-state">
+          <div class="icon">🚫</div>
+          <p>Belum ada Don't List<br>Tambahkan hal-hal yang harus dihindari</p>
+        </div>
+      </div>
+    </div>
+    
     <!-- ==================== PAGE: SETTINGS ==================== -->
     <div class="page" id="page-settings">
       <div class="section-title">⚙️ Pengaturan</div>
@@ -1478,9 +1845,9 @@
           <span class="card-title">ℹ️ Tentang Aplikasi</span>
         </div>
         <div style="font-size: 13px; color: var(--gray-600); line-height: 1.8;">
-          <p><strong>Sync Planner v2.1</strong></p>
+          <p><strong>Sync Planner v2.3</strong></p>
           <p>Aplikasi produktivitas berbasis sunnah Rasulullah ﷺ untuk ASN.</p>
-          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Instant Response + Queue Sync</p>
+          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Brain Dump, Jurnal, Don't List</p>
         </div>
       </div>
       
@@ -1502,8 +1869,8 @@
     <button class="nav-item" onclick="showPage('goals', this)">
       <span class="icon">🎯</span><span>Goals</span>
     </button>
-    <button class="nav-item" onclick="showPage('settings', this)">
-      <span class="icon">⚙️</span><span>Lainnya</span>
+    <button class="nav-item" onclick="showPage('menu', this)">
+      <span class="icon">☰</span><span>Menu</span>
     </button>
   </nav>
 
@@ -1736,6 +2103,69 @@
           <textarea class="form-input form-textarea" id="vision1Content" placeholder="Apa yang HARUS tercapai tahun ini?"></textarea>
         </div>
         <button class="btn-submit" onclick="saveVision('1')">💾 Simpan Target</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Brain Dump to Task -->
+  <div class="modal-overlay" id="modal-braindump-task" onclick="if(event.target===this)closeModal('braindump-task')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">➡️ Jadikan Task</span>
+        <button class="modal-close" onclick="closeModal('braindump-task')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Judul Task</label>
+          <input type="text" class="form-input" id="brainDumpTaskTitle" placeholder="Judul task...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioritas</label>
+          <select class="form-input form-select" id="brainDumpTaskPriority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status Awal</label>
+          <select class="form-input form-select" id="brainDumpTaskStatus">
+            <option value="backlog">📥 Backlog</option>
+            <option value="todo" selected>📋 Todo</option>
+          </select>
+        </div>
+        <input type="hidden" id="brainDumpTaskSourceId">
+        <button class="btn-submit" onclick="convertBrainDumpToTask()">✅ Buat Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Don't Item -->
+  <div class="modal-overlay" id="modal-dont-add" onclick="if(event.target===this)closeModal('dont-add')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🚫 Tambah Don't Item</span>
+        <button class="modal-close" onclick="closeModal('dont-add')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Hal yang harus dihindari</label>
+          <input type="text" class="form-input" id="dontItemText" placeholder="Contoh: Cek HP sebelum sholat subuh">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alasan</label>
+          <textarea class="form-input form-textarea" id="dontItemReason" placeholder="Mengapa hal ini harus dihindari?" style="min-height: 80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori</label>
+          <select class="form-input form-select" id="dontItemCategory">
+            <option value="FOKUS">🎯 Fokus</option>
+            <option value="WAKTU">⏰ Waktu</option>
+            <option value="ENERGI">⚡ Energi</option>
+            <option value="KEBIASAAN">🔄 Kebiasaan</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="submitDontItem()">💾 Simpan</button>
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwXXj7eYC9rzwoAe1V3PoXSOw2R7QVdJh2AfJ_gTzQkUQptISjNXISOkxymvhEPsKyAAw/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwuGZUrVuuG5qA6mWF1yCB4fsSlF1SOCooizYnjffRfypY_tLFZFXop_17OBIkAEPfX5Q/exec',
   USER_ID: '339926ce-f54b-46e5-8740-865ba7555929',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -62,11 +62,19 @@ const state = {
     habits: false,
     vision: false,
     pairwise: false,
-    pomodoro: false
+    pomodoro: false,
+    menu: false,
+    braindump: false,
+    journal: false,
+    dontlist: false
   },
   // QUEUE SYSTEM - Pending actions untuk sync ke server
   pendingQueue: [],
-  isSyncing: false
+  isSyncing: false,
+  // Batch 1: Brain Dump, Journal, Don't List
+  brainDumps: [],
+  journals: { morning: null, evening: null },
+  dontList: []
 };
 
 // Habit Sunnah Rasulullah untuk ASN
@@ -273,6 +281,28 @@ function showPage(pageName, navEl) {
     case 'pomodoro':
       renderPomodoroPage();
       state.pageLoaded.pomodoro = true;
+      break;
+    case 'menu':
+      updateMenuBadges();
+      state.pageLoaded.menu = true;
+      break;
+    case 'braindump':
+      if (!state.pageLoaded.braindump) {
+        loadBrainDumps();
+      }
+      state.pageLoaded.braindump = true;
+      break;
+    case 'journal':
+      if (!state.pageLoaded.journal) {
+        loadJournalToday();
+      }
+      state.pageLoaded.journal = true;
+      break;
+    case 'dontlist':
+      if (!state.pageLoaded.dontlist) {
+        loadDontList();
+      }
+      state.pageLoaded.dontlist = true;
       break;
     case 'settings':
       document.getElementById('settingUserId').textContent = CONFIG.USER_ID;
@@ -1354,7 +1384,7 @@ function refreshAllData() {
   syncPendingQueue();
   
   state.cache = { dailySync: 0, goals: 0, kanban: 0, visions: 0, stats: 0 };
-  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false };
+  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
 }
@@ -1395,6 +1425,505 @@ async function forceSyncNow() {
   const settingCount = document.getElementById('settingPendingCount');
   if (settingCount) {
     settingCount.textContent = state.pendingQueue.length;
+  }
+}
+
+// ============================================
+// BATCH 1: BRAIN DUMP FUNCTIONS
+// ============================================
+function updateCharCount() {
+  const input = document.getElementById('brainDumpInput');
+  const count = document.getElementById('brainDumpCharCount');
+  if (input && count) {
+    count.textContent = input.value.length;
+  }
+}
+
+async function loadBrainDumps() {
+  try {
+    const data = await apiGet('getBrainDumps', { date: todayString() });
+    state.brainDumps = data || [];
+    renderBrainDumps();
+  } catch (err) {
+    console.error('Failed to load brain dumps:', err);
+    state.brainDumps = [];
+    renderBrainDumps();
+  }
+}
+
+function renderBrainDumps() {
+  const container = document.getElementById('brainDumpList');
+  const countBadge = document.getElementById('brainDumpTodayCount');
+  
+  if (!container) return;
+  
+  const dumps = state.brainDumps || [];
+  
+  if (countBadge) {
+    countBadge.textContent = dumps.length + ' items';
+  }
+  
+  if (dumps.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🧠</div>
+        <p>Belum ada brain dump<br>Mulai tulis apa yang ada di pikiranmu</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = dumps.map(dump => `
+    <div class="brain-dump-item" data-id="${dump.log_id}">
+      <div class="content">${escapeHtml(dump.content)}</div>
+      <div class="meta">
+        <span class="time">${dump.time || formatTime(dump.created_at)}</span>
+        <div class="actions">
+          <button class="btn-task" onclick="openBrainDumpToTask('${dump.log_id}', '${escapeHtml(dump.content).replace(/'/g, "\\'")}')">
+            ➡️ Task
+          </button>
+          <button class="btn-delete" onclick="deleteBrainDump('${dump.log_id}')">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function submitBrainDump() {
+  const input = document.getElementById('brainDumpInput');
+  const content = input?.value.trim();
+  
+  if (!content) {
+    showToast('Tulis sesuatu dulu', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  const now = new Date();
+  
+  const newDump = {
+    log_id: tempId,
+    content: content,
+    time: now.toTimeString().slice(0, 5),
+    created_at: now.toISOString()
+  };
+  state.brainDumps = [newDump, ...(state.brainDumps || [])];
+  
+  addToQueue('addBrainDump', { content: content });
+  
+  input.value = '';
+  updateCharCount();
+  renderBrainDumps();
+  
+  showToast('Brain dump tersimpan! ✓', 'success');
+}
+
+function openBrainDumpToTask(logId, content) {
+  document.getElementById('brainDumpTaskTitle').value = content.substring(0, 100);
+  document.getElementById('brainDumpTaskSourceId').value = logId;
+  openModal('braindump-task');
+}
+
+function convertBrainDumpToTask() {
+  const title = document.getElementById('brainDumpTaskTitle').value.trim();
+  const priority = document.getElementById('brainDumpTaskPriority').value;
+  const status = document.getElementById('brainDumpTaskStatus').value;
+  const sourceId = document.getElementById('brainDumpTaskSourceId').value;
+  
+  if (!title) {
+    showToast('Isi judul task', 'error');
+    return;
+  }
+  
+  const taskData = {
+    title: title,
+    description: '',
+    priority: priority,
+    status: status,
+    due_date: ''
+  };
+  
+  const tempId = 'temp_' + Date.now();
+  const newTask = {
+    task_id: tempId,
+    ...taskData,
+    created_at: new Date().toISOString()
+  };
+  
+  if (!state.kanban) state.kanban = { backlog: [], todo: [], progress: [], done: [] };
+  if (!state.kanban[status]) state.kanban[status] = [];
+  state.kanban[status].unshift(newTask);
+  
+  addToQueue('createTask', { goal_id: '', data: taskData });
+  
+  state.brainDumps = state.brainDumps.filter(d => d.log_id !== sourceId);
+  renderBrainDumps();
+  
+  closeModal('braindump-task');
+  showToast('Task dibuat! ✓', 'success');
+}
+
+function deleteBrainDump(logId) {
+  if (!confirm('Hapus brain dump ini?')) return;
+  
+  state.brainDumps = state.brainDumps.filter(d => d.log_id !== logId);
+  renderBrainDumps();
+  showToast('Dihapus', 'success');
+}
+
+// ============================================
+// BATCH 1: JOURNAL FUNCTIONS
+// ============================================
+async function loadJournalToday() {
+  try {
+    const data = await apiGet('getJournal', { date: todayString() });
+    
+    state.journals = { morning: null, evening: null };
+    
+    if (data && data.length > 0) {
+      data.forEach(entry => {
+        const content = parseJSON(entry.content) || {};
+        if (content.type === 'morning' || (entry.time && entry.time < '12:00')) {
+          state.journals.morning = { ...entry, parsed: content };
+        } else {
+          state.journals.evening = { ...entry, parsed: content };
+        }
+      });
+    }
+    
+    renderJournal();
+  } catch (err) {
+    console.error('Failed to load journal:', err);
+    renderJournal();
+  }
+}
+
+function renderJournal() {
+  const morningStatus = document.getElementById('journalMorningStatus');
+  const eveningStatus = document.getElementById('journalEveningStatus');
+  const morningContent = document.getElementById('journalMorningContent');
+  const eveningContent = document.getElementById('journalEveningContent');
+  
+  if (!morningStatus || !eveningStatus) return;
+  
+  // Morning Journal
+  if (state.journals.morning) {
+    const m = state.journals.morning.parsed || {};
+    morningStatus.textContent = '✓ Ditulis';
+    morningStatus.className = 'section-status done';
+    morningContent.innerHTML = `
+      <div class="journal-content">
+        <div class="label">3 hal yang disyukuri:</div>
+        <div>${escapeHtml(m.gratitude || '-')}</div>
+        <div class="label">Fokus utama:</div>
+        <div>${escapeHtml(m.focus || '-')}</div>
+        <div class="label">Afirmasi:</div>
+        <div>${escapeHtml(m.affirmation || '-')}</div>
+      </div>
+      <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="editJournal('morning')">✏️ Edit</button>
+    `;
+  } else {
+    morningStatus.textContent = 'Belum ditulis';
+    morningStatus.className = 'section-status pending';
+  }
+  
+  // Evening Journal
+  if (state.journals.evening) {
+    const e = state.journals.evening.parsed || {};
+    eveningStatus.textContent = '✓ Ditulis';
+    eveningStatus.className = 'section-status done';
+    eveningContent.innerHTML = `
+      <div class="journal-content">
+        <div class="label">Yang berjalan baik:</div>
+        <div>${escapeHtml(e.wins || '-')}</div>
+        <div class="label">Yang bisa diperbaiki:</div>
+        <div>${escapeHtml(e.improve || '-')}</div>
+        <div class="label">Pelajaran:</div>
+        <div>${escapeHtml(e.lesson || '-')}</div>
+      </div>
+      <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="editJournal('evening')">✏️ Edit</button>
+    `;
+  } else {
+    eveningStatus.textContent = 'Belum ditulis';
+    eveningStatus.className = 'section-status pending';
+  }
+}
+
+function editJournal(type) {
+  const journal = state.journals[type];
+  const parsed = journal?.parsed || {};
+  
+  if (type === 'morning') {
+    document.getElementById('journalMorningContent').innerHTML = `
+      <div class="journal-form">
+        <div class="form-group">
+          <label class="form-label">3 hal yang disyukuri hari ini:</label>
+          <textarea id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ...">${escapeHtml(parsed.gratitude || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fokus utama hari ini:</label>
+          <textarea id="journalFocus" placeholder="Apa yang harus saya selesaikan hari ini?">${escapeHtml(parsed.focus || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Afirmasi positif:</label>
+          <textarea id="journalAffirmation" placeholder="Hari ini saya akan...">${escapeHtml(parsed.affirmation || '')}</textarea>
+        </div>
+        <button class="btn-submit" onclick="submitJournal('morning')">💾 Simpan Jurnal Pagi</button>
+      </div>
+    `;
+  } else {
+    document.getElementById('journalEveningContent').innerHTML = `
+      <div class="journal-form">
+        <div class="form-group">
+          <label class="form-label">Apa yang berjalan baik hari ini?</label>
+          <textarea id="journalWins" placeholder="Hal positif yang terjadi...">${escapeHtml(parsed.wins || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apa yang bisa diperbaiki?</label>
+          <textarea id="journalImprove" placeholder="Hal yang perlu ditingkatkan...">${escapeHtml(parsed.improve || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pelajaran hari ini:</label>
+          <textarea id="journalLesson" placeholder="Apa yang saya pelajari...">${escapeHtml(parsed.lesson || '')}</textarea>
+        </div>
+        <button class="btn-submit" onclick="submitJournal('evening')">💾 Simpan Jurnal Malam</button>
+      </div>
+    `;
+  }
+}
+
+function submitJournal(type) {
+  let content = {};
+  
+  if (type === 'morning') {
+    content = {
+      type: 'morning',
+      gratitude: document.getElementById('journalGratitude')?.value.trim() || '',
+      focus: document.getElementById('journalFocus')?.value.trim() || '',
+      affirmation: document.getElementById('journalAffirmation')?.value.trim() || ''
+    };
+  } else {
+    content = {
+      type: 'evening',
+      wins: document.getElementById('journalWins')?.value.trim() || '',
+      improve: document.getElementById('journalImprove')?.value.trim() || '',
+      lesson: document.getElementById('journalLesson')?.value.trim() || ''
+    };
+  }
+  
+  const hasContent = Object.values(content).some(v => v && v !== 'morning' && v !== 'evening');
+  if (!hasContent) {
+    showToast('Isi minimal satu field', 'error');
+    return;
+  }
+  
+  state.journals[type] = {
+    parsed: content,
+    time: type
+  };
+  
+  addToQueue('addJournal', { 
+    content: JSON.stringify(content),
+    time: type
+  });
+  
+  renderJournal();
+  showToast('Jurnal tersimpan! ✓', 'success');
+}
+
+// ============================================
+// BATCH 1: DON'T LIST FUNCTIONS
+// ============================================
+async function loadDontList() {
+  try {
+    const data = await apiGet('getDontList');
+    state.dontList = data || [];
+    renderDontList();
+  } catch (err) {
+    console.error('Failed to load dont list:', err);
+    state.dontList = [];
+    renderDontList();
+  }
+}
+
+function renderDontList() {
+  const container = document.getElementById('dontListContainer');
+  if (!container) return;
+  
+  const items = state.dontList || [];
+  
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🚫</div>
+        <p>Belum ada Don't List<br>Tambahkan hal-hal yang harus dihindari</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const categories = {
+    'FOKUS': { icon: '🎯', title: 'Fokus', items: [] },
+    'WAKTU': { icon: '⏰', title: 'Waktu', items: [] },
+    'ENERGI': { icon: '⚡', title: 'Energi', items: [] },
+    'KEBIASAAN': { icon: '🔄', title: 'Kebiasaan', items: [] }
+  };
+  
+  items.forEach(item => {
+    const cat = item.category || 'FOKUS';
+    if (categories[cat]) {
+      categories[cat].items.push(item);
+    }
+  });
+  
+  let html = '';
+  Object.entries(categories).forEach(([key, cat]) => {
+    if (cat.items.length === 0) return;
+    
+    html += `
+      <div class="dont-category ${key.toLowerCase()}">
+        <div class="dont-category-header">
+          ${cat.icon} ${cat.title} (${cat.items.length})
+        </div>
+        <div class="dont-category-items">
+          ${cat.items.map(item => `
+            <div class="dont-item" data-id="${item.dont_id}">
+              <span class="icon">🚫</span>
+              <div class="content">
+                <div class="item-text">${escapeHtml(item.item)}</div>
+                ${item.reason ? `<div class="item-reason">${escapeHtml(item.reason)}</div>` : ''}
+              </div>
+              <div class="actions">
+                <button onclick="deleteDontItem('${item.dont_id}')" title="Hapus">🗑️</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+function submitDontItem() {
+  const item = document.getElementById('dontItemText')?.value.trim();
+  const reason = document.getElementById('dontItemReason')?.value.trim();
+  const category = document.getElementById('dontItemCategory')?.value || 'FOKUS';
+  
+  if (!item) {
+    showToast('Isi hal yang harus dihindari', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  
+  const newItem = {
+    dont_id: tempId,
+    item: item,
+    reason: reason,
+    category: category,
+    active: true
+  };
+  state.dontList = [newItem, ...(state.dontList || [])];
+  
+  addToQueue('addDontItem', { 
+    data: { item, reason, category }
+  });
+  
+  document.getElementById('dontItemText').value = '';
+  document.getElementById('dontItemReason').value = '';
+  closeModal('dont-add');
+  
+  renderDontList();
+  showToast('Don\'t item ditambahkan! ✓', 'success');
+}
+
+function deleteDontItem(dontId) {
+  if (!confirm('Hapus item ini?')) return;
+  
+  state.dontList = state.dontList.filter(d => d.dont_id !== dontId);
+  renderDontList();
+  
+  addToQueue('deleteDontItem', { dont_id: dontId });
+  
+  showToast('Dihapus', 'success');
+}
+
+// ============================================
+// BATCH 1: MENU BADGES UPDATE
+// ============================================
+function updateMenuBadges() {
+  // Habit badge
+  const habitBadge = document.getElementById('menuHabitBadge');
+  if (habitBadge && state.dailySync?.stats) {
+    habitBadge.textContent = `${state.dailySync.stats.habits_completed || 0}/${state.dailySync.stats.habits_total || 11}`;
+  }
+  
+  // Brain dump badge
+  const brainBadge = document.getElementById('menuBrainDumpBadge');
+  if (brainBadge) {
+    brainBadge.textContent = (state.brainDumps || []).length;
+  }
+  
+  // Journal badge
+  const journalBadge = document.getElementById('menuJournalBadge');
+  if (journalBadge) {
+    const hasMorning = state.journals?.morning;
+    const hasEvening = state.journals?.evening;
+    if (hasMorning && hasEvening) {
+      journalBadge.textContent = '✓ Lengkap';
+      journalBadge.className = 'badge success';
+    } else if (hasMorning || hasEvening) {
+      journalBadge.textContent = '½';
+      journalBadge.className = 'badge warning';
+    } else {
+      journalBadge.textContent = 'Belum';
+      journalBadge.className = 'badge';
+    }
+  }
+  
+  // Don't list badge
+  const dontBadge = document.getElementById('menuDontBadge');
+  if (dontBadge) {
+    dontBadge.textContent = (state.dontList || []).length;
+  }
+  
+  // Sync badge
+  const syncBadge = document.getElementById('menuSyncBadge');
+  if (syncBadge) {
+    if (state.pendingQueue.length > 0) {
+      syncBadge.style.display = 'inline';
+      syncBadge.textContent = state.pendingQueue.length;
+    } else {
+      syncBadge.style.display = 'none';
+    }
+  }
+}
+
+// ============================================
+// BATCH 1: HELPER FUNCTIONS
+// ============================================
+function todayString() {
+  const d = new Date();
+  return d.getFullYear() + '-' + 
+    String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+    String(d.getDate()).padStart(2, '0');
+}
+
+function formatTime(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  return d.toTimeString().slice(0, 5);
+}
+
+function parseJSON(str) {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return null;
   }
 }
 
