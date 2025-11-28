@@ -6,8 +6,8 @@
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyUDbXWx5Is7ieQA6hnn1GH5RtB05OcLiW5EUhvKmDwKNbtw-K11ClgQobhkYijtj7kRA/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
-  CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
-  API_TIMEOUT: 15000 // 15 detik timeout
+  CACHE_DURATION: 5 * 60 * 1000,
+  API_TIMEOUT: 15000
 };
 
 // STATE dengan cache tracking
