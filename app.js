@@ -130,17 +130,23 @@ async function apiGet(action, params = {}) {
     if (v !== undefined && v !== '') url.searchParams.append(k, v); 
   });
   
+  console.log('[API GET]', action, url.toString());
+  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
   
   try {
     const response = await fetch(url.toString(), { signal: controller.signal });
     clearTimeout(timeoutId);
-    const data = await response.json();
-    if (!data.success) throw new Error(data.error?.message || 'API Error');
+    console.log('[API GET] Response status:', response.status);
+    const text = await response.text();
+    console.log('[API GET] Response text:', text.substring(0, 500));
+    const data = JSON.parse(text);
+    if (!data.success) throw new Error(data.error?.message || data.error || 'API Error');
     return data.data;
   } catch (err) {
     clearTimeout(timeoutId);
+    console.error('[API GET] Error:', err);
     if (err.name === 'AbortError') throw new Error('Request timeout');
     throw err;
   }
@@ -2772,6 +2778,69 @@ function updateMenuBadges() {
   if (learningBadge) {
     learningBadge.textContent = (state.learnings || []).length;
   }
+}
+
+// ============================================
+// POMODORO SETTINGS
+// ============================================
+async function loadPomodoroSettings() {
+  try {
+    const settings = await apiGet('getPomodoroSettings');
+    if (settings) {
+      state.pomodoroSettings = {
+        pomodoro: settings.pomodoro_duration || 25,
+        deepWork: settings.deep_work_duration || 60,
+        ultraFocus: settings.ultra_focus_duration || 90,
+        shortBreak: settings.short_break || 5,
+        dailyTarget: settings.daily_target || 8
+      };
+      updatePomodoroLabels();
+    }
+  } catch (err) {
+    console.log('Using default pomodoro settings');
+  }
+}
+
+function updatePomodoroLabels() {
+  const s = state.pomodoroSettings;
+  
+  const label25 = document.getElementById('pomodoroLabel25');
+  const label60 = document.getElementById('pomodoroLabel60');
+  const label90 = document.getElementById('pomodoroLabel90');
+  
+  if (label25) label25.textContent = s.pomodoro + ' menit';
+  if (label60) label60.textContent = s.deepWork + ' menit';
+  if (label90) label90.textContent = s.ultraFocus + ' menit';
+  
+  // Update POMODORO_TYPES if exists
+  if (typeof POMODORO_TYPES !== 'undefined') {
+    if (POMODORO_TYPES.POMODORO_25) POMODORO_TYPES.POMODORO_25.duration = s.pomodoro * 60;
+    if (POMODORO_TYPES.DEEP_WORK_60) POMODORO_TYPES.DEEP_WORK_60.duration = s.deepWork * 60;
+    if (POMODORO_TYPES.DEEP_WORK_90) POMODORO_TYPES.DEEP_WORK_90.duration = s.ultraFocus * 60;
+  }
+}
+
+function savePomodoroSettings() {
+  const pomodoro = parseInt(document.getElementById('settingPomodoro')?.value) || 25;
+  const deepWork = parseInt(document.getElementById('settingDeepWork')?.value) || 60;
+  const ultraFocus = parseInt(document.getElementById('settingUltraFocus')?.value) || 90;
+  const dailyTarget = parseInt(document.getElementById('settingDailyTarget')?.value) || 8;
+  
+  state.pomodoroSettings = { pomodoro, deepWork, ultraFocus, shortBreak: 5, dailyTarget };
+  
+  addToQueue('updatePomodoroSettings', {
+    data: {
+      pomodoro_duration: pomodoro,
+      deep_work_duration: deepWork,
+      ultra_focus_duration: ultraFocus,
+      short_break: 5,
+      daily_target: dailyTarget
+    }
+  });
+  
+  updatePomodoroLabels();
+  closeModal('pomodoro-settings');
+  showToast('Settings tersimpan! ✓', 'success');
 }
 
 // ============================================
