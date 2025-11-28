@@ -4,8 +4,8 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwuGZUrVuuG5qA6mWF1yCB4fsSlF1SOCooizYnjffRfypY_tLFZFXop_17OBIkAEPfX5Q/exec',
-  USER_ID: '339926ce-f54b-46e5-8740-865ba7555929',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyUDbXWx5Is7ieQA6hnn1GH5RtB05OcLiW5EUhvKmDwKNbtw-K11ClgQobhkYijtj7kRA/exec',
+  USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
 };
@@ -125,10 +125,12 @@ const POMODORO_TYPES = {
 async function apiGet(action, params = {}) {
   const url = new URL(CONFIG.API_URL);
   url.searchParams.append('action', action);
-  url.searchParams.append('user_id', CONFIG.USER_ID);
+  url.searchParams.append('userId', CONFIG.USER_ID);
   Object.entries(params).forEach(([k, v]) => { 
     if (v !== undefined && v !== '') url.searchParams.append(k, v); 
   });
+  
+  console.log('[API GET]', action, url.toString());
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
@@ -136,11 +138,15 @@ async function apiGet(action, params = {}) {
   try {
     const response = await fetch(url.toString(), { signal: controller.signal });
     clearTimeout(timeoutId);
-    const data = await response.json();
-    if (!data.success) throw new Error(data.error?.message || 'API Error');
+    console.log('[API GET] Response status:', response.status);
+    const text = await response.text();
+    console.log('[API GET] Response text:', text.substring(0, 500));
+    const data = JSON.parse(text);
+    if (!data.success) throw new Error(data.error?.message || data.error || 'API Error');
     return data.data;
   } catch (err) {
     clearTimeout(timeoutId);
+    console.error('[API GET] Error:', err);
     if (err.name === 'AbortError') throw new Error('Request timeout');
     throw err;
   }
@@ -154,7 +160,7 @@ async function apiPost(action, body = {}) {
     const response = await fetch(CONFIG.API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action, user_id: CONFIG.USER_ID, ...body }),
+      body: JSON.stringify({ action, userId: CONFIG.USER_ID, ...body }),
       signal: controller.signal
     });
     clearTimeout(timeoutId);
@@ -354,8 +360,10 @@ function showPage(pageName, navEl) {
       state.pageLoaded.wellbeing = true;
       break;
     case 'settings':
-      document.getElementById('settingUserId').textContent = CONFIG.USER_ID;
-      document.getElementById('settingPendingCount').textContent = state.pendingQueue.length;
+      const userIdEl = document.getElementById('settingUserId');
+      const pendingEl = document.getElementById('settingPendingCount');
+      if (userIdEl) userIdEl.textContent = CONFIG.USER_ID;
+      if (pendingEl) pendingEl.textContent = state.pendingQueue.length;
       break;
   }
 }
@@ -430,13 +438,15 @@ async function loadAllData() {
 
 async function loadDailySync(silent = false) {
   try {
-    if (!silent) document.getElementById('settingApiStatus').textContent = 'Loading...';
+    const apiStatusEl = document.getElementById('settingApiStatus');
+    if (!silent && apiStatusEl) apiStatusEl.textContent = 'Loading...';
     state.dailySync = await apiGet('getDailySync');
     state.cache.dailySync = Date.now();
-    if (!silent) document.getElementById('settingApiStatus').textContent = '✅ Connected';
+    if (!silent && apiStatusEl) apiStatusEl.textContent = '✅ Connected';
     renderDailySync();
   } catch (err) {
-    if (!silent) document.getElementById('settingApiStatus').textContent = '❌ ' + err.message;
+    const apiStatusEl = document.getElementById('settingApiStatus');
+    if (!silent && apiStatusEl) apiStatusEl.textContent = '❌ ' + err.message;
     throw err;
   }
 }
@@ -523,11 +533,14 @@ async function loadStats(period) {
 }
 
 function renderOfflineState() {
-  document.getElementById('sholatGrid').innerHTML = `
-    <div class="empty-state" style="grid-column: 1/-1;">
-      <span class="icon">📴</span>
-      <p>Mode Offline</p>
-    </div>`;
+  const grid = document.getElementById('sholatGrid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1/-1;">
+        <span class="icon">📴</span>
+        <p>Mode Offline</p>
+      </div>`;
+  }
 }
 
 // ============================================
@@ -537,17 +550,26 @@ function renderDailySync() {
   const data = state.dailySync;
   if (!data) return;
   
-  document.getElementById('currentDate').textContent = data.day + ', ' + formatDate(data.date);
-  document.getElementById('sholatCount').textContent = data.stats.sholat_completed + '/8';
-  document.getElementById('habitCount').textContent = data.stats.habits_completed + '/' + data.stats.habits_total;
-  document.getElementById('pomodoroCount').textContent = data.stats.pomodoros_completed;
-  document.getElementById('focusMinutes').textContent = data.stats.focus_minutes + 'm';
+  const dateEl = document.getElementById('currentDate');
+  const sholatEl = document.getElementById('sholatCount');
+  const habitEl = document.getElementById('habitCount');
+  const pomodoroEl = document.getElementById('pomodoroCount');
+  const focusEl = document.getElementById('focusMinutes');
+  
+  if (dateEl) dateEl.textContent = (data.day || '') + ', ' + formatDate(data.tanggal || data.date);
+  if (sholatEl) sholatEl.textContent = (data.stats?.sholat_completed || 0) + '/8';
+  if (habitEl) habitEl.textContent = (data.stats?.habits_completed || 0) + '/' + (data.stats?.habits_total || 11);
+  if (pomodoroEl) pomodoroEl.textContent = data.stats?.pomodoro_count || 0;
+  if (focusEl) focusEl.textContent = (data.stats?.pomodoro_minutes || 0) + 'm';
   
   renderSholatGrid(data.sholat);
   renderHabitRosul(data.habits);
 }
 
 function renderSholatGrid(sholatData) {
+  const container = document.getElementById('sholatGrid');
+  if (!container) return;
+  
   const sholatList = [
     { id: 'TAHAJUD', name: 'Tahajud', icon: '🌙' },
     { id: 'SUBUH', name: 'Subuh', icon: '🌅' },
@@ -559,8 +581,18 @@ function renderSholatGrid(sholatData) {
     { id: 'WITIR', name: 'Witir', icon: '⭐' }
   ];
   
-  document.getElementById('sholatGrid').innerHTML = sholatList.map(s => {
-    const data = sholatData?.[s.id] || { done: false };
+  // Handle array format from API
+  const sholatMap = {};
+  if (Array.isArray(sholatData)) {
+    sholatData.forEach(s => {
+      sholatMap[s.waktu] = { done: s.status === 'done' || s.status === true, ...s };
+    });
+  } else if (sholatData) {
+    Object.assign(sholatMap, sholatData);
+  }
+  
+  container.innerHTML = sholatList.map(s => {
+    const data = sholatMap[s.id] || { done: false };
     return `<div class="sholat-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')">
       <span class="icon">${s.icon}</span>
       <span class="name">${s.name}</span>
@@ -571,8 +603,13 @@ function renderSholatGrid(sholatData) {
 
 function renderHabitRosul(habits) {
   const container = document.getElementById('habitRosulList');
+  if (!container) return;
+  
+  // Handle habits dari API
+  const habitsList = habits || [];
+  
   const todayHabits = HABIT_ROSUL.slice(0, 4).map(hr => {
-    const dbHabit = habits?.find(h => h.name.toLowerCase().includes(hr.id.replace('_', ' ')));
+    const dbHabit = habitsList.find(h => h.name && h.name.toLowerCase().includes(hr.id.replace('_', ' ')));
     const completed = dbHabit?.completed || false;
     return { ...hr, completed, habit_id: dbHabit?.habit_id };
   });
@@ -721,12 +758,33 @@ function renderTaskCard(task, currentStatus) {
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && currentStatus !== 'done';
   const nextStatus = { backlog: 'todo', todo: 'progress', progress: 'done' };
   
+  // Check if delegated
+  const isDelegated = task.tags?.includes('delegated:');
+  const delegatee = isDelegated ? task.tags.split('delegated:')[1]?.split(',')[0] : '';
+  
+  // Check if has link
+  const hasLink = task.description?.includes('🔗 Link:');
+  const linkMatch = task.description?.match(/🔗 Link: (https?:\/\/[^\s]+)/);
+  const link = linkMatch ? linkMatch[1] : '';
+  
+  // Priority icons
+  const priorityIcons = {
+    urgent: '🔥',
+    high: '🔴',
+    medium: '🟡',
+    low: '🟢',
+    someday: '⚪'
+  };
+  
   return `<div class="task-card priority-${task.priority || 'medium'}">
     <div class="task-title">${escapeHtml(task.title)}</div>
     <div class="task-meta">
-      <span class="task-label priority-${task.priority}">${task.priority || 'medium'}</span>
+      <span class="task-label priority-${task.priority}">${priorityIcons[task.priority] || '🟡'} ${task.priority || 'medium'}</span>
       ${task.due_date ? `<span class="task-due ${isOverdue ? 'overdue' : ''}">📅 ${formatDateShort(task.due_date)}</span>` : ''}
+      ${task.estimated_pomodoro ? `<span class="task-pomodoro">🍅 ${task.estimated_pomodoro}</span>` : ''}
     </div>
+    ${isDelegated ? `<div class="task-delegate">👤 ${escapeHtml(delegatee)}</div>` : ''}
+    ${hasLink ? `<div class="task-link"><a href="${escapeHtml(link)}" target="_blank" onclick="event.stopPropagation()">🔗 Link</a></div>` : ''}
     ${currentStatus !== 'done' ? `
     <div class="task-actions">
       ${nextStatus[currentStatus] ? `<button class="task-action-btn primary" onclick="moveTask('${task.task_id}','${nextStatus[currentStatus]}')">→</button>` : ''}
@@ -1256,10 +1314,96 @@ function submitGoal() {
 function populateGoalSelect() {
   const select = document.getElementById('taskGoal');
   if (!select) return;
-  select.innerHTML = '<option value="">-- Pilih Goal --</option>';
+  select.innerHTML = '<option value="">-- Tanpa Goal --</option>';
   (state.goals || []).forEach(g => {
     select.innerHTML += `<option value="${g.goal_id}">${escapeHtml(g.title)}</option>`;
   });
+  
+  // Also update milestone select
+  const milestoneSelect = document.getElementById('taskMilestone');
+  if (milestoneSelect) {
+    milestoneSelect.innerHTML = '<option value="">-- Tanpa Milestone --</option>';
+  }
+}
+
+function updateMilestoneSelect(goalId) {
+  const milestoneSelect = document.getElementById('taskMilestone');
+  if (!milestoneSelect) return;
+  
+  milestoneSelect.innerHTML = '<option value="">-- Tanpa Milestone --</option>';
+  
+  if (!goalId) return;
+  
+  const goal = state.goals.find(g => g.goal_id === goalId);
+  if (goal && goal.milestones) {
+    goal.milestones.forEach(m => {
+      milestoneSelect.innerHTML += `<option value="${m.milestone_id}">${escapeHtml(m.title)} (W${m.week})</option>`;
+    });
+  }
+}
+
+// Milestone Functions
+function submitMilestone() {
+  const title = document.getElementById('milestoneTitle')?.value.trim();
+  const week = document.getElementById('milestoneWeek')?.value || '1';
+  const goalId = document.getElementById('milestoneGoalId')?.value;
+  
+  if (!title) {
+    showToast('Isi judul milestone', 'error');
+    return;
+  }
+  
+  if (!goalId) {
+    showToast('Goal tidak ditemukan', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  
+  const newMilestone = {
+    milestone_id: tempId,
+    goal_id: goalId,
+    title: title,
+    week: parseInt(week),
+    completed: false
+  };
+  
+  // Add to goal's milestones in state
+  const goal = state.goals.find(g => g.goal_id === goalId);
+  if (goal) {
+    if (!goal.milestones) goal.milestones = [];
+    goal.milestones.push(newMilestone);
+  }
+  
+  // Add to queue
+  addToQueue('addMilestone', {
+    goal_id: goalId,
+    data: { title, week: parseInt(week) }
+  });
+  
+  closeModal('milestone');
+  renderGoals(state.currentGoalFilter || 'active');
+  showToast('Milestone ditambahkan! ✓', 'success');
+}
+
+function toggleMilestone(milestoneId) {
+  // Find milestone in goals
+  for (const goal of state.goals) {
+    if (!goal.milestones) continue;
+    const milestone = goal.milestones.find(m => m.milestone_id === milestoneId);
+    if (milestone) {
+      milestone.completed = !milestone.completed;
+      
+      addToQueue('toggleMilestone', {
+        milestone_id: milestoneId,
+        completed: milestone.completed
+      });
+      
+      renderGoals(state.currentGoalFilter || 'active');
+      showToast(milestone.completed ? 'Milestone selesai! ✓' : 'Milestone dibuka', 'success');
+      return;
+    }
+  }
 }
 
 function populatePomodoroGoals() {
@@ -1281,18 +1425,47 @@ function openAddTask(status) {
   document.getElementById('taskStatus').value = status;
 }
 
+// Toggle delegate input visibility
+function toggleDelegateInput(value) {
+  const delegateGroup = document.getElementById('delegateInputGroup');
+  if (delegateGroup) {
+    delegateGroup.style.display = value === 'delegate' ? 'block' : 'none';
+  }
+}
+
 function submitTask() {
-  const title = document.getElementById('taskTitle').value.trim();
+  const titleEl = document.getElementById('taskTitle');
+  const title = titleEl?.value.trim();
   if (!title) { showToast('Isi judul', 'error'); return; }
+  
+  // Get assignee info
+  const assigneeType = document.getElementById('taskAssignee')?.value || 'self';
+  const delegateTo = assigneeType === 'delegate' ? 
+    (document.getElementById('taskDelegateTo')?.value.trim() || '') : '';
+  
+  // Get link
+  const link = document.getElementById('taskLink')?.value.trim() || '';
+  
+  // Build description with link if provided
+  let description = document.getElementById('taskDesc')?.value.trim() || '';
+  if (link) {
+    description = description ? `${description}\n\n🔗 Link: ${link}` : `🔗 Link: ${link}`;
+  }
+  if (delegateTo) {
+    description = description ? `${description}\n\n👤 Didelegasikan ke: ${delegateTo}` : `👤 Didelegasikan ke: ${delegateTo}`;
+  }
   
   const taskData = {
     title,
-    description: document.getElementById('taskDesc').value.trim(),
-    priority: document.getElementById('taskPriority').value,
-    status: document.getElementById('taskStatus').value,
-    due_date: document.getElementById('taskDueDate').value
+    description,
+    priority: document.getElementById('taskPriority')?.value || 'medium',
+    status: document.getElementById('taskStatus')?.value || 'todo',
+    due_date: document.getElementById('taskDueDate')?.value || '',
+    estimated_pomodoro: parseInt(document.getElementById('taskEstPomodoro')?.value) || 2,
+    tags: delegateTo ? `delegated:${delegateTo}` : (assigneeType === 'self' ? 'self' : '')
   };
-  const goalId = document.getElementById('taskGoal').value || '';
+  const goalId = document.getElementById('taskGoal')?.value || '';
+  const milestoneId = document.getElementById('taskMilestone')?.value || '';
   
   // Generate temporary ID
   const tempId = 'temp_' + Date.now();
@@ -1301,21 +1474,30 @@ function submitTask() {
   const newTask = {
     task_id: tempId,
     goal_id: goalId,
+    milestone_id: milestoneId,
     ...taskData,
     created_at: new Date().toISOString()
   };
   
   if (!state.kanban) state.kanban = { backlog: [], todo: [], progress: [], done: [] };
-  const status = taskData.status || 'backlog';
+  const status = taskData.status || 'todo';
   if (!state.kanban[status]) state.kanban[status] = [];
   state.kanban[status].unshift(newTask);
   
-  // Add to queue
-  addToQueue('createTask', { goal_id: goalId, data: taskData });
+  // Add to queue with milestone_id
+  addToQueue('createTask', { 
+    goal_id: goalId, 
+    milestone_id: milestoneId,
+    data: taskData 
+  });
   
   // Clear form & close modal
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskDesc').value = '';
+  document.getElementById('taskLink').value = '';
+  document.getElementById('taskDelegateTo').value = '';
+  document.getElementById('taskAssignee').value = 'self';
+  toggleDelegateInput('self');
   closeModal('task');
   
   showToast('Task tersimpan! ✓', 'success');
@@ -2679,6 +2861,69 @@ function updateMenuBadges() {
   if (learningBadge) {
     learningBadge.textContent = (state.learnings || []).length;
   }
+}
+
+// ============================================
+// POMODORO SETTINGS
+// ============================================
+async function loadPomodoroSettings() {
+  try {
+    const settings = await apiGet('getPomodoroSettings');
+    if (settings) {
+      state.pomodoroSettings = {
+        pomodoro: settings.pomodoro_duration || 25,
+        deepWork: settings.deep_work_duration || 60,
+        ultraFocus: settings.ultra_focus_duration || 90,
+        shortBreak: settings.short_break || 5,
+        dailyTarget: settings.daily_target || 8
+      };
+      updatePomodoroLabels();
+    }
+  } catch (err) {
+    console.log('Using default pomodoro settings');
+  }
+}
+
+function updatePomodoroLabels() {
+  const s = state.pomodoroSettings;
+  
+  const label25 = document.getElementById('pomodoroLabel25');
+  const label60 = document.getElementById('pomodoroLabel60');
+  const label90 = document.getElementById('pomodoroLabel90');
+  
+  if (label25) label25.textContent = s.pomodoro + ' menit';
+  if (label60) label60.textContent = s.deepWork + ' menit';
+  if (label90) label90.textContent = s.ultraFocus + ' menit';
+  
+  // Update POMODORO_TYPES if exists
+  if (typeof POMODORO_TYPES !== 'undefined') {
+    if (POMODORO_TYPES.POMODORO_25) POMODORO_TYPES.POMODORO_25.duration = s.pomodoro * 60;
+    if (POMODORO_TYPES.DEEP_WORK_60) POMODORO_TYPES.DEEP_WORK_60.duration = s.deepWork * 60;
+    if (POMODORO_TYPES.DEEP_WORK_90) POMODORO_TYPES.DEEP_WORK_90.duration = s.ultraFocus * 60;
+  }
+}
+
+function savePomodoroSettings() {
+  const pomodoro = parseInt(document.getElementById('settingPomodoro')?.value) || 25;
+  const deepWork = parseInt(document.getElementById('settingDeepWork')?.value) || 60;
+  const ultraFocus = parseInt(document.getElementById('settingUltraFocus')?.value) || 90;
+  const dailyTarget = parseInt(document.getElementById('settingDailyTarget')?.value) || 8;
+  
+  state.pomodoroSettings = { pomodoro, deepWork, ultraFocus, shortBreak: 5, dailyTarget };
+  
+  addToQueue('updatePomodoroSettings', {
+    data: {
+      pomodoro_duration: pomodoro,
+      deep_work_duration: deepWork,
+      ultra_focus_duration: ultraFocus,
+      short_break: 5,
+      daily_target: dailyTarget
+    }
+  });
+  
+  updatePomodoroLabels();
+  closeModal('pomodoro-settings');
+  showToast('Settings tersimpan! ✓', 'success');
 }
 
 // ============================================

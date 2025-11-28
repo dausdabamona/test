@@ -938,6 +938,33 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
+    /* Task Card Enhanced */
+    .task-delegate {
+      font-size: 11px;
+      color: var(--primary);
+      background: rgba(37, 99, 235, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    .task-link {
+      margin-top: 4px;
+    }
+    .task-link a {
+      font-size: 11px;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .task-link a:hover {
+      text-decoration: underline;
+    }
+    .task-pomodoro {
+      font-size: 10px;
+      color: #e74c3c;
+    }
+    .priority-urgent { border-left: 3px solid #ff6b6b !important; }
+    .priority-someday { border-left: 3px solid #adb5bd !important; }
+    
     /* Responsive */
     @media (max-width: 480px) {
       .quick-actions { grid-template-columns: repeat(4, 1fr); }
@@ -1573,6 +1600,13 @@
       
       <div class="card">
         <div class="card-header">
+          <span class="card-title">🌐 Status API</span>
+        </div>
+        <div style="font-size: 13px; color: var(--gray-600);" id="settingApiStatus">Checking...</div>
+      </div>
+      
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
           <span class="card-title">🔄 Sinkronisasi</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -1597,7 +1631,7 @@
         <div style="font-size: 13px; line-height: 1.8;">
           <p><strong>Sync Planner v3.0</strong></p>
           <p style="color: var(--gray-600);">Produktivitas Islami untuk ASN</p>
-          <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Batch 3: Full Features</p>
+          <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Full Features Edition</p>
         </div>
       </div>
       
@@ -1669,8 +1703,16 @@
           <input type="text" class="form-input" id="taskTitle" placeholder="Apa yang perlu dikerjakan?">
         </div>
         <div class="form-group">
+          <label class="form-label">Keterangan / Deskripsi</label>
+          <textarea class="form-input form-textarea" id="taskDesc" rows="3" placeholder="Detail task, catatan, atau instruksi..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔗 Link Terkait (Opsional)</label>
+          <input type="url" class="form-input" id="taskLink" placeholder="https://docs.google.com/... atau link lainnya">
+        </div>
+        <div class="form-group">
           <label class="form-label">Goal (Opsional)</label>
-          <select class="form-input form-select" id="taskGoal">
+          <select class="form-input form-select" id="taskGoal" onchange="updateMilestoneSelect(this.value)">
             <option value="">-- Tanpa Goal --</option>
           </select>
         </div>
@@ -1680,12 +1722,49 @@
             <option value="">-- Tanpa Milestone --</option>
           </select>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Prioritas</label>
+            <select class="form-input form-select" id="taskPriority">
+              <option value="urgent">🔥 Urgent</option>
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+              <option value="someday">⚪ Someday</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-input form-select" id="taskStatus">
+              <option value="backlog">📥 Backlog</option>
+              <option value="todo" selected>📋 Todo</option>
+              <option value="progress">🔄 Progress</option>
+            </select>
+          </div>
+        </div>
         <div class="form-group">
-          <label class="form-label">Prioritas</label>
-          <select class="form-input form-select" id="taskPriority">
-            <option value="high">🔴 High</option>
-            <option value="medium" selected>🟡 Medium</option>
-            <option value="low">🟢 Low</option>
+          <label class="form-label">👤 Pelaksana</label>
+          <select class="form-input form-select" id="taskAssignee" onchange="toggleDelegateInput(this.value)">
+            <option value="self">🙋 Kerjakan Sendiri</option>
+            <option value="delegate">👥 Delegasikan</option>
+          </select>
+        </div>
+        <div class="form-group" id="delegateInputGroup" style="display: none;">
+          <label class="form-label">Delegasikan Kepada</label>
+          <input type="text" class="form-input" id="taskDelegateTo" placeholder="Nama orang yang ditugaskan...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Due Date (Opsional)</label>
+          <input type="date" class="form-input" id="taskDueDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">⏱️ Estimasi Pomodoro</label>
+          <select class="form-input form-select" id="taskEstPomodoro">
+            <option value="1">1 Pomodoro (25 menit)</option>
+            <option value="2" selected>2 Pomodoro (50 menit)</option>
+            <option value="3">3 Pomodoro (75 menit)</option>
+            <option value="4">4 Pomodoro (100 menit)</option>
+            <option value="5">5+ Pomodoro</option>
           </select>
         </div>
         <button class="btn-submit" onclick="submitTask()">✓ Simpan Task</button>
