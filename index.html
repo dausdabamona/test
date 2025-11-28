@@ -1180,6 +1180,10 @@
       <div class="stat-item">📿 <span class="value" id="habitCount">0/0</span></div>
       <div class="stat-item">🍅 <span class="value" id="pomodoroCount">0</span></div>
       <div class="stat-item">⏱️ <span class="value" id="focusMinutes">0m</span></div>
+      <!-- Sync Indicator -->
+      <div class="stat-item sync-indicator" id="syncIndicator" style="display: none; background: rgba(255,111,0,0.3);">
+        🔄 <span class="value sync-count">0</span>
+      </div>
     </div>
   </header>
   
@@ -1415,6 +1419,19 @@
       
       <div class="card">
         <div class="card-header">
+          <span class="card-title">🔄 Status Sinkronisasi</span>
+        </div>
+        <div style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
+          <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 4px;">Data Pending (belum disimpan ke server)</div>
+          <div style="font-size: 18px; font-weight: 700; color: var(--accent);" id="settingPendingCount">0</div>
+        </div>
+        <button class="btn-submit btn-secondary" onclick="forceSyncNow()" style="margin-bottom: 0;">
+          ⚡ Sync Sekarang
+        </button>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
           <span class="card-title">👤 Profil</span>
         </div>
         <div style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 12px;">
@@ -1432,17 +1449,9 @@
           <span class="card-title">ℹ️ Tentang Aplikasi</span>
         </div>
         <div style="font-size: 13px; color: var(--gray-600); line-height: 1.8;">
-          <p><strong>Sync Planner v2.0</strong></p>
+          <p><strong>Sync Planner v2.1</strong></p>
           <p>Aplikasi produktivitas berbasis sunnah Rasulullah ﷺ untuk ASN.</p>
-          <p style="margin-top: 12px;"><strong>Fitur:</strong></p>
-          <ul style="margin-left: 20px; margin-top: 8px;">
-            <li>Piramida Visi (10 tahun → 3 bulan)</li>
-            <li>Pairwise Comparison untuk prioritas</li>
-            <li>Kanban Board</li>
-            <li>Habit Sunnah Rasulullah</li>
-            <li>Pomodoro Timer</li>
-            <li>Tracking Sholat</li>
-          </ul>
+          <p style="margin-top: 8px; font-size: 12px; color: var(--gray-500);">✨ Fitur baru: Instant Response + Queue Sync</p>
         </div>
       </div>
       
