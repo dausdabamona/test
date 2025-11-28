@@ -5,7 +5,7 @@
 // CONFIG
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbwW9X2Sg0LZGFEySsLLSyd4_iA8nkUyEHg4ccyBGJOQRNPG1DaE9oO14pxnP1gnKu7IOA/exec',
-  USER_ID: '339926ce-f54b-46e5-8740-865ba7555929',
+  USER_ID: '6d8c0bdc-21c3-41c3-a8b3-d9a8fcf378e2',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
 };
