@@ -10,10 +10,13 @@
   <title>Sync Planner - Produktivitas Islami</title>
   
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icons/icon-192.png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <!-- Optimized Font Loading - reduced weights -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -77,6 +80,78 @@
     }
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+    .skeleton-title { height: 20px; width: 70%; margin-bottom: 8px; }
+    .skeleton-text { height: 14px; width: 90%; }
+    .skeleton-item { padding: 16px; background: white; border-radius: var(--radius-md); margin-bottom: 12px; }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Pomodoro Timer Styles */
+    .pomodoro-start-container { text-align: center; padding: 20px 0; }
+    .pomodoro-icon { font-size: 64px; margin-bottom: 16px; }
+    .pomodoro-types { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+    .pomodoro-type-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 20px 24px; background: white; border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;
+      min-width: 100px;
+    }
+    .pomodoro-type-btn:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .pomodoro-type-icon { font-size: 32px; }
+    .pomodoro-type-name { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+    
+    .quick-pomodoro-goals { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .quick-goal-btn {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+      background: white; border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+      cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .quick-goal-btn:hover { border-color: var(--primary); background: var(--info-light); }
+    .quick-goal-rank {
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: 14px;
+      background: var(--warning); color: white;
+    }
+    .quick-goal-title { flex: 1; font-weight: 600; font-size: 14px; }
+    
+    .pomodoro-active-container { text-align: center; padding: 20px 0; }
+    .pomodoro-timer-ring { position: relative; width: 240px; height: 240px; margin: 0 auto 24px; }
+    .pomodoro-timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .pomodoro-timer-ring .timer-bg { fill: none; stroke: var(--gray-200); stroke-width: 8; }
+    .pomodoro-timer-ring .timer-progress { fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+    .timer-display {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .timer-time { font-size: 48px; font-weight: 700; color: var(--gray-800); }
+    .timer-label { font-size: 14px; color: var(--gray-500); margin-top: 4px; }
+    
+    .pomodoro-task { margin: 24px 0; padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); }
+    .pomodoro-task-label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
+    .pomodoro-task-name { font-size: 16px; font-weight: 600; }
+    
+    .pomodoro-controls { display: flex; gap: 12px; justify-content: center; }
+    .pomodoro-ctrl-btn {
+      display: flex; align-items: center; gap: 8px; padding: 14px 28px;
+      border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pomodoro-ctrl-btn.primary { background: var(--primary); color: white; }
+    .pomodoro-ctrl-btn.secondary { background: var(--gray-200); color: var(--gray-700); }
+    .pomodoro-ctrl-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    
+    .pomodoro-complete { text-align: center; padding: 40px 20px; }
+    .complete-icon { font-size: 72px; margin-bottom: 16px; }
     
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1126,7 +1201,7 @@
       <!-- Quick Actions -->
       <div class="section-title">⚡ Aksi Cepat</div>
       <div class="quick-actions">
-        <button class="action-btn primary" onclick="openModal('pomodoro')">
+        <button class="action-btn primary" onclick="showPage('pomodoro')">
           <span class="icon">🍅</span>
           <span class="label">Fokus</span>
         </button>
@@ -1303,6 +1378,37 @@
       </div>
     </div>
     
+    <!-- ==================== PAGE: POMODORO ==================== -->
+    <div class="page" id="page-pomodoro">
+      <div class="section-title">🍅 Pomodoro Timer</div>
+      <p style="font-size: 13px; color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+        Teknik fokus dengan interval waktu. Pilih durasi dan task yang akan dikerjakan.
+      </p>
+      
+      <div class="card" id="pomodoroContainer">
+        <div class="pomodoro-start-container">
+          <div class="pomodoro-icon">🍅</div>
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Mulai Sesi Fokus</h2>
+          <p style="color: var(--gray-600); margin-bottom: 24px;">Pilih durasi dan task yang akan dikerjakan</p>
+          
+          <div class="pomodoro-types">
+            <button class="pomodoro-type-btn" onclick="selectPomodoroType('POMODORO_25')">
+              <span class="pomodoro-type-icon">🍅</span>
+              <span class="pomodoro-type-name">25 menit</span>
+            </button>
+            <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_60')">
+              <span class="pomodoro-type-icon">🧠</span>
+              <span class="pomodoro-type-name">60 menit</span>
+            </button>
+            <button class="pomodoro-type-btn" onclick="selectPomodoroType('DEEP_WORK_90')">
+              <span class="pomodoro-type-icon">🚀</span>
+              <span class="pomodoro-type-name">90 menit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- ==================== PAGE: SETTINGS ==================== -->
     <div class="page" id="page-settings">
       <div class="section-title">⚙️ Pengaturan</div>
@@ -1340,7 +1446,7 @@
         </div>
       </div>
       
-      <button class="btn-submit" onclick="loadAllData()" style="margin-top: 16px;">🔄 Refresh Semua Data</button>
+      <button class="btn-submit" onclick="refreshAllData()" style="margin-top: 16px;">🔄 Refresh Semua Data</button>
     </div>
   </main>
   
@@ -1349,17 +1455,17 @@
     <button class="nav-item active" onclick="showPage('home', this)">
       <span class="icon">🏠</span><span>Beranda</span>
     </button>
+    <button class="nav-item" onclick="showPage('pomodoro', this)">
+      <span class="icon">🍅</span><span>Fokus</span>
+    </button>
     <button class="nav-item" onclick="showPage('kanban', this)">
       <span class="icon">📊</span><span>Kanban</span>
     </button>
     <button class="nav-item" onclick="showPage('goals', this)">
       <span class="icon">🎯</span><span>Goals</span>
     </button>
-    <button class="nav-item" onclick="showPage('stats', this)">
-      <span class="icon">📈</span><span>Stats</span>
-    </button>
     <button class="nav-item" onclick="showPage('settings', this)">
-      <span class="icon">⚙️</span><span>Setting</span>
+      <span class="icon">⚙️</span><span>Lainnya</span>
     </button>
   </nav>
 
@@ -1397,12 +1503,12 @@
     </div>
   </div>
   
-  <!-- Modal: Pomodoro -->
-  <div class="modal-overlay" id="modal-pomodoro" onclick="if(event.target===this)closeModal('pomodoro')">
+  <!-- Modal: Pomodoro Start -->
+  <div class="modal-overlay" id="modal-pomodoro-start" onclick="if(event.target===this)closeModal('pomodoro-start')">
     <div class="modal">
       <div class="modal-header">
         <span class="modal-title">🍅 Mulai Sesi Fokus</span>
-        <button class="modal-close" onclick="closeModal('pomodoro')">✕</button>
+        <button class="modal-close" onclick="closeModal('pomodoro-start')">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -1416,7 +1522,7 @@
         <div class="form-group">
           <label class="form-label">Task yang akan dikerjakan</label>
           <input type="text" class="form-input" id="pomodoroTask" placeholder="Contoh: Review SPM Gaji November">
-          <div class="form-hint">Pilih dari prioritas hasil pairwise atau ketik manual</div>
+          <div class="form-hint">Pilih dari prioritas atau ketik manual</div>
         </div>
         <div class="form-group">
           <label class="form-label">Pilih dari Goal Prioritas</label>
@@ -1424,7 +1530,7 @@
             <option value="">-- Pilih Goal --</option>
           </select>
         </div>
-        <button class="btn-submit" id="btnPomodoro" onclick="startPomodoro()">▶️ Mulai Sesi</button>
+        <button class="btn-submit" onclick="startPomodoroFromModal()">▶️ Mulai Sesi</button>
       </div>
     </div>
   </div>
