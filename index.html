@@ -943,33 +943,60 @@
     .nav-item.active { color: var(--primary); }
     .nav-item .icon { font-size: 26px; margin-bottom: 4px; }
     
-    /* Modal */
+    /* Sync Button di Header */
+    .sync-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      animation: pulse-sync 2s infinite;
+      transition: all 0.2s;
+    }
+    .sync-btn:hover {
+      transform: scale(1.05);
+      animation: none;
+    }
+    @keyframes pulse-sync {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    /* Modal - Posisi Tengah */
     .modal-overlay {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       z-index: 200;
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s;
       backdrop-filter: blur(4px);
+      padding: 20px;
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
     
     .modal {
       background: white;
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      border-radius: var(--radius-xl);
       width: 100%;
-      max-width: 560px;
-      max-height: 92vh;
+      max-width: 480px;
+      max-height: 85vh;
       overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      box-shadow: var(--shadow-xl);
     }
-    .modal-overlay.active .modal { transform: translateY(0); }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
     
     .modal-header {
       display: flex;
@@ -1169,7 +1196,13 @@
   <header class="header">
     <div class="header-top">
       <h1>🌙 Sync Planner</h1>
-      <span class="header-date" id="currentDate">Loading...</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- Sync Button - muncul jika ada pending -->
+        <button class="sync-btn" id="syncButton" onclick="forceSyncNow()" style="display: none;">
+          🔄 <span id="syncBtnCount">0</span>
+        </button>
+        <span class="header-date" id="currentDate">Loading...</span>
+      </div>
     </div>
     <div class="header-greeting">
       <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
@@ -1180,10 +1213,6 @@
       <div class="stat-item">📿 <span class="value" id="habitCount">0/0</span></div>
       <div class="stat-item">🍅 <span class="value" id="pomodoroCount">0</span></div>
       <div class="stat-item">⏱️ <span class="value" id="focusMinutes">0m</span></div>
-      <!-- Sync Indicator -->
-      <div class="stat-item sync-indicator" id="syncIndicator" style="display: none; background: rgba(255,111,0,0.3);">
-        🔄 <span class="value sync-count">0</span>
-      </div>
     </div>
   </header>
   

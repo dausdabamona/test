@@ -159,14 +159,21 @@ function addToQueue(action, data) {
 }
 
 function updateSyncIndicator() {
-  const indicator = document.getElementById('syncIndicator');
-  if (!indicator) return;
+  const syncBtn = document.getElementById('syncButton');
+  const syncBtnCount = document.getElementById('syncBtnCount');
+  const settingCount = document.getElementById('settingPendingCount');
   
-  if (state.pendingQueue.length > 0) {
-    indicator.style.display = 'flex';
-    indicator.querySelector('.sync-count').textContent = state.pendingQueue.length;
-  } else {
-    indicator.style.display = 'none';
+  if (syncBtn) {
+    if (state.pendingQueue.length > 0) {
+      syncBtn.style.display = 'flex';
+      if (syncBtnCount) syncBtnCount.textContent = state.pendingQueue.length;
+    } else {
+      syncBtn.style.display = 'none';
+    }
+  }
+  
+  if (settingCount) {
+    settingCount.textContent = state.pendingQueue.length;
   }
 }
 
@@ -804,7 +811,7 @@ async function startPomodoroFromModal() {
   startPomodoroTimer(type, task);
 }
 
-async function startPomodoroTimer(type, task) {
+function startPomodoroTimer(type, task) {
   const typeInfo = POMODORO_TYPES[type];
   
   state.pomodoro = {
@@ -818,14 +825,10 @@ async function startPomodoroTimer(type, task) {
     isPaused: false
   };
   
-  // Log to backend
-  try {
-    await apiPost('startPomodoro', {
-      options: { type, planned_task: task }
-    });
-  } catch (err) {
-    console.error('Failed to log pomodoro start:', err);
-  }
+  // Add to queue - log start
+  addToQueue('startPomodoro', {
+    options: { type, planned_task: task }
+  });
   
   // Start timer
   state.pomodoro.interval = setInterval(updatePomodoroTimer, 1000);
@@ -868,7 +871,7 @@ function stopPomodoro() {
   }
 }
 
-async function completePomodoro() {
+function completePomodoro() {
   clearInterval(state.pomodoro.interval);
   
   const typeInfo = POMODORO_TYPES[state.pomodoro.type];
@@ -879,22 +882,24 @@ async function completePomodoro() {
   // Show completion
   showToast(`${typeInfo.label} selesai! 🎉`, 'success');
   
-  // Log completion to backend
-  try {
-    await apiPost('completePomodoro', {
-      type: state.pomodoro.type,
-      task: state.pomodoro.task,
-      duration_minutes: Math.floor(typeInfo.duration / 60)
-    });
-  } catch (err) {
-    console.error('Failed to log pomodoro completion:', err);
+  // Add to queue - log completion
+  addToQueue('completePomodoro', {
+    type: state.pomodoro.type,
+    task: state.pomodoro.task,
+    duration_minutes: Math.floor(typeInfo.duration / 60)
+  });
+  
+  // Update local stats
+  if (state.dailySync?.stats) {
+    state.dailySync.stats.pomodoro_count = (state.dailySync.stats.pomodoro_count || 0) + 1;
+    state.dailySync.stats.focus_minutes = (state.dailySync.stats.focus_minutes || 0) + Math.floor(typeInfo.duration / 60);
+    
+    document.getElementById('pomodoroCount').textContent = state.dailySync.stats.pomodoro_count;
+    document.getElementById('focusMinutes').textContent = state.dailySync.stats.focus_minutes + 'm';
   }
   
   // Reset state
   state.pomodoro.active = false;
-  
-  // Refresh stats cache
-  state.cache.stats = 0;
   
   // Show completion screen
   const container = document.getElementById('pomodoroContainer');
@@ -1017,22 +1022,26 @@ function renderPairwiseResults() {
   `;
 }
 
-async function savePairwiseResults() {
-  try {
-    const { results, items } = state.pairwise;
-    const ranked = [...items].sort((a, b) => results[b.goal_id] - results[a.goal_id]);
-    const rankings = ranked.map((g, i) => ({ goal_id: g.goal_id, rank: i + 1 }));
-    
-    await apiPost('savePairwise', { rankings });
-    showToast('Prioritas tersimpan!', 'success');
-    
-    // Invalidate cache
-    state.cache.goals = 0;
-    await loadGoals();
-    renderTodayFocus();
-  } catch (err) {
-    showToast('Gagal: ' + err.message, 'error');
+function savePairwiseResults() {
+  const { results, items } = state.pairwise;
+  const ranked = [...items].sort((a, b) => results[b.goal_id] - results[a.goal_id]);
+  const rankings = ranked.map((g, i) => ({ goal_id: g.goal_id, rank: i + 1 }));
+  
+  // Update local state langsung - tambahkan rank ke goals
+  if (state.goals) {
+    rankings.forEach(r => {
+      const goal = state.goals.find(g => g.goal_id === r.goal_id);
+      if (goal) goal.rank = r.rank;
+    });
   }
+  
+  // Add to queue
+  addToQueue('savePairwise', { rankings });
+  
+  showToast('Prioritas tersimpan! ✓', 'success');
+  
+  // Re-render today focus
+  renderTodayFocus();
 }
 
 // ============================================
@@ -1125,32 +1134,43 @@ function toggleHabitRosul(habitId, isCompleted) {
   showToast('Alhamdulillah! ✓', 'success');
 }
 
-async function submitGoal() {
+function submitGoal() {
   const title = document.getElementById('goalTitle').value.trim();
   if (!title) { showToast('Isi judul', 'error'); return; }
   
-  const btn = document.getElementById('btnGoal');
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
-  try {
-    await apiPost('createGoal', {
-      data: {
-        title,
-        description: document.getElementById('goalDesc').value.trim(),
-        quarter: parseInt(document.getElementById('goalQuarter').value),
-        year: parseInt(document.getElementById('goalYear').value)
-      }
-    });
-    showToast('Goal tersimpan!', 'success');
-    closeModal('goal');
-    document.getElementById('goalTitle').value = '';
-    document.getElementById('goalDesc').value = '';
-    state.cache.goals = 0;
-    await loadGoals();
-  } catch (err) { showToast(err.message, 'error'); }
-  finally { 
-    btn.disabled = false; 
-    btn.textContent = '💾 Simpan Goal';
+  const goalData = {
+    title,
+    description: document.getElementById('goalDesc').value.trim(),
+    quarter: parseInt(document.getElementById('goalQuarter').value),
+    year: parseInt(document.getElementById('goalYear').value)
+  };
+  
+  // Generate temporary ID
+  const tempId = 'temp_' + Date.now();
+  
+  // Update local state langsung
+  const newGoal = {
+    goal_id: tempId,
+    ...goalData,
+    status: 'active',
+    created_at: new Date().toISOString()
+  };
+  state.goals = state.goals || [];
+  state.goals.unshift(newGoal);
+  
+  // Add to queue
+  addToQueue('createGoal', { data: goalData });
+  
+  // Clear form & close modal
+  document.getElementById('goalTitle').value = '';
+  document.getElementById('goalDesc').value = '';
+  closeModal('goal');
+  
+  showToast('Goal tersimpan! ✓', 'success');
+  
+  // Re-render jika di halaman goals
+  if (state.pageLoaded.goals) {
+    renderGoals();
   }
 }
 
@@ -1182,44 +1202,79 @@ function openAddTask(status) {
   document.getElementById('taskStatus').value = status;
 }
 
-async function submitTask() {
+function submitTask() {
   const title = document.getElementById('taskTitle').value.trim();
   if (!title) { showToast('Isi judul', 'error'); return; }
   
-  const btn = document.getElementById('btnTask');
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
-  try {
-    await apiPost('createTask', {
-      goal_id: document.getElementById('taskGoal').value || '',
-      data: {
-        title,
-        description: document.getElementById('taskDesc').value.trim(),
-        priority: document.getElementById('taskPriority').value,
-        status: document.getElementById('taskStatus').value,
-        due_date: document.getElementById('taskDueDate').value
-      }
-    });
-    showToast('Task tersimpan!', 'success');
-    closeModal('task');
-    document.getElementById('taskTitle').value = '';
-    document.getElementById('taskDesc').value = '';
-    state.cache.kanban = 0;
-    await loadKanban(true);
-  } catch (err) { showToast(err.message, 'error'); }
-  finally { 
-    btn.disabled = false; 
-    btn.textContent = '💾 Simpan Task';
-  }
+  const taskData = {
+    title,
+    description: document.getElementById('taskDesc').value.trim(),
+    priority: document.getElementById('taskPriority').value,
+    status: document.getElementById('taskStatus').value,
+    due_date: document.getElementById('taskDueDate').value
+  };
+  const goalId = document.getElementById('taskGoal').value || '';
+  
+  // Generate temporary ID
+  const tempId = 'temp_' + Date.now();
+  
+  // Update local state langsung
+  const newTask = {
+    task_id: tempId,
+    goal_id: goalId,
+    ...taskData,
+    created_at: new Date().toISOString()
+  };
+  
+  if (!state.kanban) state.kanban = { backlog: [], todo: [], progress: [], done: [] };
+  const status = taskData.status || 'backlog';
+  if (!state.kanban[status]) state.kanban[status] = [];
+  state.kanban[status].unshift(newTask);
+  
+  // Add to queue
+  addToQueue('createTask', { goal_id: goalId, data: taskData });
+  
+  // Clear form & close modal
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskDesc').value = '';
+  closeModal('task');
+  
+  showToast('Task tersimpan! ✓', 'success');
+  
+  // Re-render kanban
+  renderKanban();
 }
 
-async function moveTask(taskId, newStatus) {
-  try {
-    await apiPost('moveTask', { task_id: taskId, status: newStatus });
-    showToast('Dipindahkan!', 'success');
-    state.cache.kanban = 0;
-    await loadKanban(true);
-  } catch (err) { showToast(err.message, 'error'); }
+function moveTask(taskId, newStatus) {
+  // Update local state langsung
+  if (state.kanban) {
+    let movedTask = null;
+    
+    // Cari dan hapus task dari status lama
+    ['backlog', 'todo', 'progress', 'done'].forEach(status => {
+      if (state.kanban[status]) {
+        const idx = state.kanban[status].findIndex(t => t.task_id === taskId);
+        if (idx !== -1) {
+          movedTask = state.kanban[status].splice(idx, 1)[0];
+        }
+      }
+    });
+    
+    // Tambah ke status baru
+    if (movedTask) {
+      movedTask.status = newStatus;
+      if (!state.kanban[newStatus]) state.kanban[newStatus] = [];
+      state.kanban[newStatus].unshift(movedTask);
+    }
+  }
+  
+  // Add to queue
+  addToQueue('moveTask', { task_id: taskId, status: newStatus });
+  
+  showToast('Dipindahkan! ✓', 'success');
+  
+  // Re-render kanban
+  renderKanban();
 }
 
 function filterKanban(goalId) {
@@ -1234,7 +1289,7 @@ function viewGoalDetail(goalId) {
   showPage('kanban');
 }
 
-async function saveVision(level) {
+function saveVision(level) {
   let data = {};
   
   if (level === '10') {
@@ -1250,14 +1305,26 @@ async function saveVision(level) {
     data = { content: document.getElementById('vision1Content')?.value.trim() };
   }
   
-  try {
-    await apiPost('saveVision', { level, data });
-    showToast('Visi tersimpan!', 'success');
-    closeModal('vision-' + level);
-    state.cache.visions = 0;
-    await loadVisions();
-  } catch (err) {
-    showToast('Gagal menyimpan: ' + err.message, 'error');
+  // Validasi - pastikan ada isi
+  const hasContent = Object.values(data).some(v => v && v.length > 0);
+  if (!hasContent) {
+    showToast('Isi minimal satu field', 'error');
+    return;
+  }
+  
+  // Update local state langsung
+  if (!state.visions) state.visions = {};
+  state.visions[level] = data;
+  
+  // Add to queue
+  addToQueue('saveVision', { level, data });
+  
+  closeModal('vision-' + level);
+  showToast('Visi tersimpan! ✓', 'success');
+  
+  // Re-render vision page jika sedang dibuka
+  if (state.pageLoaded.vision) {
+    renderVisions();
   }
 }
 
@@ -1292,23 +1359,43 @@ function refreshAllData() {
   showToast('Memuat ulang data...', 'info');
 }
 
-// Force sync sekarang (dari settings)
+// Force sync sekarang (dari header button atau settings)
 async function forceSyncNow() {
   if (state.pendingQueue.length === 0) {
-    showToast('Tidak ada data pending', 'info');
+    showToast('Semua data sudah tersimpan ✓', 'success');
     return;
   }
   
-  showToast(`Menyimpan ${state.pendingQueue.length} item...`, 'info');
+  const count = state.pendingQueue.length;
+  const syncBtn = document.getElementById('syncButton');
+  
+  // Update button state
+  if (syncBtn) {
+    syncBtn.innerHTML = '⏳ Syncing...';
+    syncBtn.disabled = true;
+  }
+  
+  showToast(`Menyimpan ${count} item...`, 'info');
+  
   await syncPendingQueue();
+  
+  // Restore button
+  if (syncBtn) {
+    syncBtn.disabled = false;
+    updateSyncIndicator();
+  }
   
   if (state.pendingQueue.length === 0) {
     showToast('Semua data tersimpan! ✓', 'success');
   } else {
-    showToast(`${state.pendingQueue.length} item gagal`, 'error');
+    showToast(`${state.pendingQueue.length} item gagal disimpan`, 'warning');
   }
   
-  document.getElementById('settingPendingCount').textContent = state.pendingQueue.length;
+  // Update settings page jika sedang dibuka
+  const settingCount = document.getElementById('settingPendingCount');
+  if (settingCount) {
+    settingCount.textContent = state.pendingQueue.length;
+  }
 }
 
 // ============================================
