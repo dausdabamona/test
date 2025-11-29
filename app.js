@@ -438,16 +438,24 @@ async function loadAllData() {
     await loadDailySync();
     state.pageLoaded.home = true;
     
+    // Load journal explicitly and render
+    try {
+      await loadJournalToday();
+      console.log('[loadAllData] Journal loaded:', state.journals);
+      renderJournal();
+    } catch(journalErr) {
+      console.error('[loadAllData] Journal error:', journalErr);
+      renderJournal(); // Still render with empty
+    }
+    
     // Load secondary data in background (non-blocking) - parallel
     Promise.all([
       loadGoals(true),
       loadKanban(false),
-      loadDontList(),
-      loadJournalToday()
+      loadDontList()
     ]).then(() => {
       // After data loaded, render home components
       renderTodayFocus();
-      renderHomeJournals();
     }).catch(() => {});
     
     // Load less critical in background
@@ -2061,8 +2069,9 @@ function submitGoal() {
   state.goals = state.goals || [];
   state.goals.unshift(newGoal);
   
-  // Add to queue
-  addToQueue('createGoal', { data: goalData });
+  // Add to queue and sync immediately
+  addToQueue('addGoal', { data: goalData });
+  syncPendingQueue(); // <-- PENTING: Sync langsung!
   
   // Clear form & close modal
   document.getElementById('goalTitle').value = '';
@@ -4926,17 +4935,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render daily quote first
   renderDailyQuote();
   
+  // Load all data (includes journal)
   loadAllData();
   loadPomodoroSettings();
-  
-  // Load journal with better error handling
-  loadJournalToday().then(() => {
-    console.log('[Init] Journal loaded, state.journals:', state.journals);
-    renderJournal();
-  }).catch(err => {
-    console.error('[Init] Failed to load journal:', err);
-    renderJournal(); // Still render with empty state
-  });
 });
 
 // Register service worker
