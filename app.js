@@ -1064,7 +1064,6 @@ function startPomodoroForTask(taskId, taskTitle, estimatedPomodoro) {
   showPage('pomodoro');
   showToast(`🍅 Fokus: ${taskTitle}`, 'success');
 }
-}
 
 // Open task detail modal
 function openTaskDetail(taskId) {
