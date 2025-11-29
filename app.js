@@ -130,23 +130,18 @@ async function apiGet(action, params = {}) {
     if (v !== undefined && v !== '') url.searchParams.append(k, v); 
   });
   
-  console.log('[API GET]', action, url.toString());
-  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
   
   try {
     const response = await fetch(url.toString(), { signal: controller.signal });
     clearTimeout(timeoutId);
-    console.log('[API GET] Response status:', response.status);
     const text = await response.text();
-    console.log('[API GET] Response text:', text.substring(0, 500));
     const data = JSON.parse(text);
     if (!data.success) throw new Error(data.error?.message || data.error || 'API Error');
     return data.data;
   } catch (err) {
     clearTimeout(timeoutId);
-    console.error('[API GET] Error:', err);
     if (err.name === 'AbortError') throw new Error('Request timeout');
     throw err;
   }
@@ -421,18 +416,22 @@ async function loadAllData() {
     await loadDailySync();
     state.pageLoaded.home = true;
     
-    // Load secondary data in background (non-blocking)
+    // Load secondary data in background (non-blocking) - parallel
     Promise.all([
-      loadGoals(true), // silent mode
-      loadVisions(true),
-      loadKanban(false), // load kanban for today's tasks
-      loadBrainDumps(true),
-      loadDontList() // for home page don't list
-    ]).catch(console.error);
+      loadGoals(true),
+      loadKanban(false),
+      loadDontList()
+    ]).then(() => {
+      // After kanban loaded, render today focus
+      renderTodayFocus();
+    }).catch(() => {});
+    
+    // Load less critical in background
+    loadVisions(true);
+    loadBrainDumps(true);
     
   } catch (err) {
     showToast('Gagal memuat: ' + err.message, 'error');
-    // Show offline state
     renderOfflineState();
   }
   
@@ -571,8 +570,6 @@ function renderDailySync() {
   renderSholatMiniList(data.sholat);
   renderHabitRosul(data.habits);
   renderSunnahMiniList(data.habits);
-  renderDontListMini();
-  renderTodayFocus();
 }
 
 function renderSholatGrid(sholatData) {
@@ -1160,7 +1157,7 @@ function renderKanbanTabs() {
 function renderVisions() {
   const visions = state.visions || [];
   
-  console.log('[Vision] Data:', visions);
+  
   
   const v10 = document.getElementById('vision10Content');
   const v3 = document.getElementById('vision3Content');
@@ -2448,14 +2445,23 @@ function submitJournal(type) {
 // BATCH 1: DON'T LIST FUNCTIONS
 // ============================================
 async function loadDontList() {
+  // Skip if already loaded and cache valid
+  if (state.dontList?.length > 0 && isCacheValid('dontList')) {
+    renderDontList();
+    renderDontListMini();
+    return;
+  }
+  
   try {
     const data = await apiGet('getDontList');
     state.dontList = data || [];
+    state.cache.dontList = Date.now();
     renderDontList();
+    renderDontListMini();
   } catch (err) {
-    console.error('Failed to load dont list:', err);
     state.dontList = [];
     renderDontList();
+    renderDontListMini();
   }
 }
 
