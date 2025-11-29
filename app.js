@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwu26bd6NAj8aILYL0RlOvK17-kDj0qk9XJYcWTZWXvhbr_jy9RXTbdxxUkYRDwptfQAw/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwvgSyz0ck_kUfrQoVhl0baQstfzTm3kPNRmFy94BM8nKzZpRVE62kThFnDBVxaL3KmZA/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -470,6 +470,36 @@ async function loadDailySync(silent = false) {
     state.cache.dailySync = Date.now();
     if (!silent && apiStatusEl) apiStatusEl.textContent = '✅ Connected';
     renderDailySync();
+    
+    // Also try to load journal from dailySync if available
+    if (state.dailySync?.journals) {
+      console.log('[DailySync] Found journals in dailySync:', state.dailySync.journals);
+      
+      // Merge with state.journals if empty
+      if (!state.journals?.morning && state.dailySync.journals.morning) {
+        if (!state.journals) state.journals = { morning: null, evening: null };
+        let content = {};
+        try {
+          const m = state.dailySync.journals.morning;
+          content = typeof m.content === 'string' ? JSON.parse(m.content) : (m.content || {});
+        } catch(e) { content = {}; }
+        state.journals.morning = { ...state.dailySync.journals.morning, parsed: content };
+        console.log('[DailySync] Set morning journal from dailySync');
+      }
+      
+      if (!state.journals?.evening && state.dailySync.journals.evening) {
+        if (!state.journals) state.journals = { morning: null, evening: null };
+        let content = {};
+        try {
+          const e = state.dailySync.journals.evening;
+          content = typeof e.content === 'string' ? JSON.parse(e.content) : (e.content || {});
+        } catch(e2) { content = {}; }
+        state.journals.evening = { ...state.dailySync.journals.evening, parsed: content };
+        console.log('[DailySync] Set evening journal from dailySync');
+      }
+      
+      renderJournal();
+    }
   } catch (err) {
     const apiStatusEl = document.getElementById('settingApiStatus');
     if (!silent && apiStatusEl) apiStatusEl.textContent = '❌ ' + err.message;
