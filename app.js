@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbyB7zq7hPHEmOpiwIy8IM-byn7eNa0ZT8lNtOaX34scoY5Fxo9fEAVEFaUMq0wLtJpOPA/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwu26bd6NAj8aILYL0RlOvK17-kDj0qk9XJYcWTZWXvhbr_jy9RXTbdxxUkYRDwptfQAw/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -3700,12 +3700,14 @@ function submitJournal(type) {
     state.dailySync.journals[type] = state.journals[type];
   }
   
-  // ADD TO QUEUE - gunakan saveJournal yang ada di backend
+  // ADD TO QUEUE - send mood and energy as separate fields too
   addToQueue('saveJournal', { 
     data: {
       tanggal: today,
       type: type === 'morning' ? 'MORNING_JOURNAL' : 'EVENING_JOURNAL',
-      content: JSON.stringify(content)
+      content: JSON.stringify(content),
+      mood: content.mood,
+      energy: content.energy
     }
   });
   
@@ -4143,10 +4145,6 @@ function getWeekNumber(d) {
 // ============================================
 // JOURNAL - UPDATED FOR HOME PAGE
 // ============================================
-function openJournalForm(type) {
-  openModal('journal-' + type);
-}
-
 function renderHomeJournals() {
   // Just call renderJournal since it handles everything now
   renderJournal();
