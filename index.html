@@ -928,6 +928,137 @@
     .pomodoro-type-icon { font-size: 24px; display: block; margin-bottom: 4px; }
     .pomodoro-type-name { font-size: 12px; font-weight: 600; }
     
+    /* Pomodoro Timer Ring */
+    .pomodoro-start-container,
+    .pomodoro-active-container,
+    .pomodoro-complete {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .pomodoro-icon { font-size: 48px; margin-bottom: 16px; }
+    .pomodoro-timer-ring {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 24px;
+    }
+    .pomodoro-timer-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .pomodoro-timer-ring .timer-bg {
+      fill: none;
+      stroke: var(--gray-200);
+      stroke-width: 8;
+    }
+    .pomodoro-timer-ring .timer-progress {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .pomodoro-timer-ring .timer-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .timer-time {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    .timer-label {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+    .pomodoro-task {
+      margin: 20px 0;
+      padding: 16px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+    }
+    .pomodoro-task-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+    .pomodoro-task-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+    .pomodoro-controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .pomodoro-ctrl-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pomodoro-ctrl-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+    .pomodoro-ctrl-btn.secondary {
+      background: var(--gray-200);
+      color: var(--gray-700);
+    }
+    .pomodoro-complete .complete-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .quick-pomodoro-goals {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .quick-goal-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: left;
+    }
+    .quick-goal-btn:hover {
+      border-color: var(--primary);
+      background: var(--info-light);
+    }
+    .quick-goal-rank {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .quick-goal-title {
+      flex: 1;
+      font-size: 14px;
+    }
+    
     /* Loading */
     .loading { display: flex; justify-content: center; padding: 32px; }
     .spinner {
@@ -1285,6 +1416,168 @@
       border-bottom: 1px solid var(--gray-100);
       font-size: 13px;
     }
+    
+    /* Pomodoro Timer Active */
+    .pomodoro-active-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+    .pomodoro-timer-ring {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin-bottom: 24px;
+    }
+    .pomodoro-timer-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .pomodoro-timer-ring .timer-bg {
+      fill: none;
+      stroke: var(--gray-200);
+      stroke-width: 8;
+    }
+    .pomodoro-timer-ring .timer-progress {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .timer-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .timer-time {
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'SF Mono', monospace;
+    }
+    .timer-label {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+    .pomodoro-task {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .pomodoro-task-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+    .pomodoro-task-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .pomodoro-controls {
+      display: flex;
+      gap: 12px;
+    }
+    .pomodoro-ctrl-btn {
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pomodoro-ctrl-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+    .pomodoro-ctrl-btn.secondary {
+      background: var(--gray-200);
+      color: var(--gray-700);
+    }
+    
+    /* Pomodoro Start */
+    .pomodoro-start-container {
+      text-align: center;
+      padding: 24px;
+    }
+    .pomodoro-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .pomodoro-types {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .pomodoro-type-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 24px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pomodoro-type-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .pomodoro-type-icon {
+      font-size: 32px;
+    }
+    .pomodoro-type-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .quick-pomodoro-goals {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .quick-goal-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: white;
+      cursor: pointer;
+      text-align: left;
+    }
+    .quick-goal-btn:hover {
+      background: var(--gray-50);
+    }
+    .quick-goal-rank {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .quick-goal-title {
+      flex: 1;
+      font-size: 14px;
+    }
       justify-content: space-between;
       gap: 8px;
       padding: 8px;
@@ -1577,7 +1870,7 @@
       <div class="section-title">🍅 Pomodoro Timer</div>
       
       <div class="card">
-        <div id="pomodoroContent">
+        <div id="pomodoroContainer">
           <div class="pomodoro-timer" id="pomodoroStart">
             <div style="font-size: 48px; margin-bottom: 16px;">🍅</div>
             <h2 style="font-size: 20px; margin-bottom: 8px;">Mulai Sesi Fokus</h2>
@@ -2574,6 +2867,37 @@
           </div>
         </div>
         <button class="btn-submit" onclick="submitWeeklyReview()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Pomodoro Start -->
+  <div class="modal-overlay" id="modal-pomodoro-start" onclick="if(event.target===this)closeModal('pomodoro-start')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🍅 Mulai Sesi Fokus</span>
+        <button class="modal-close" onclick="closeModal('pomodoro-start')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Durasi</label>
+          <select class="form-input" id="pomodoroType">
+            <option value="POMODORO_25">🍅 Pomodoro - 25 menit</option>
+            <option value="DEEP_WORK_60">🧠 Deep Work - 60 menit</option>
+            <option value="DEEP_WORK_90">🚀 Ultra Focus - 90 menit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Task yang dikerjakan</label>
+          <input type="text" class="form-input" id="pomodoroTask" placeholder="Apa yang akan dikerjakan?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Atau pilih dari Goal</label>
+          <select class="form-input" id="pomodoroGoal" onchange="document.getElementById('pomodoroTask').value = this.options[this.selectedIndex].text">
+            <option value="">-- Pilih Goal --</option>
+          </select>
+        </div>
+        <button class="btn-submit" onclick="startPomodoroFromModal()">🚀 Mulai Fokus!</button>
       </div>
     </div>
   </div>
