@@ -280,6 +280,195 @@
       border-color: var(--primary);
     }
     
+    /* Enhanced Journal Form Styles */
+    .journal-enhanced {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .journal-section {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .section-icon {
+      font-size: 18px;
+    }
+    .section-title {
+      font-weight: 600;
+      color: var(--gray-800);
+      font-size: 14px;
+    }
+    .section-hint {
+      font-size: 11px;
+      color: var(--gray-500);
+      font-weight: normal;
+    }
+    .helper-text {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+    .form-label-sm {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-600);
+      margin-bottom: 4px;
+      display: block;
+    }
+    
+    /* Mood & Energy Row */
+    .mood-energy-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .mood-selector, .energy-selector {
+      flex: 1;
+      min-width: 140px;
+    }
+    .mood-options {
+      display: flex;
+      gap: 6px;
+    }
+    .mood-btn {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--gray-200);
+      border-radius: 50%;
+      background: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mood-btn:hover {
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+    .mood-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: scale(1.15);
+    }
+    .energy-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--gray-200);
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .energy-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    }
+    
+    /* State Options (NLP Anchoring) */
+    .state-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .state-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .state-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .state-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+    
+    /* Sedona Method Section */
+    .sedona-section {
+      background: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%);
+    }
+    .sedona-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sedona-step {
+      background: white;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+    }
+    .emotion-options, .accept-options, .release-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .emotion-btn, .accept-btn, .release-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      background: white;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .emotion-btn:hover, .accept-btn:hover, .release-btn:hover {
+      border-color: var(--primary);
+    }
+    .emotion-btn.selected {
+      border-color: var(--warning);
+      background: #fff8e6;
+    }
+    .accept-btn.selected, .release-btn.selected {
+      border-color: var(--success);
+      background: var(--success-light);
+    }
+    
+    /* Saved Journal Display */
+    .mood-energy-display {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 8px;
+    }
+    .mood-badge {
+      font-size: 24px;
+    }
+    .energy-badge, .state-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      color: var(--gray-600);
+    }
+    .state-badge {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+    .sedona-summary {
+      background: #f0f7ff;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+    }
+    
     /* Page Back Button */
     .page-header {
       display: flex;

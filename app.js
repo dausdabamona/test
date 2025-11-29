@@ -2975,6 +2975,38 @@ function renderJournal() {
     return content || {};
   }
   
+  // Mood emoji helper
+  function getMoodEmoji(mood) {
+    const moods = { '1': '😫', '2': '😢', '3': '😐', '4': '🙂', '5': '😊' };
+    return moods[mood] || '😐';
+  }
+  
+  // State label helper
+  function getStateLabel(state) {
+    const states = {
+      'confident': '💪 Percaya Diri',
+      'focused': '🎯 Fokus',
+      'calm': '🧘 Tenang',
+      'energetic': '🔥 Energik',
+      'creative': '🎨 Kreatif',
+      'grateful': '🙏 Bersyukur'
+    };
+    return states[state] || state;
+  }
+  
+  // Emotion label helper
+  function getEmotionLabel(emotion) {
+    const emotions = {
+      'anxiety': '😰 Cemas',
+      'anger': '😠 Marah',
+      'sadness': '😢 Sedih',
+      'fear': '😨 Takut',
+      'guilt': '😔 Bersalah',
+      'none': '😌 Netral'
+    };
+    return emotions[emotion] || emotion;
+  }
+  
   // Get morning journal from state.journals OR dailySync
   let morningData = state.journals?.morning;
   if (!morningData && state.dailySync?.journals?.morning) {
@@ -2983,32 +3015,34 @@ function renderJournal() {
   
   const morningParsed = parseJournalContent(morningData);
   
-  if (morningParsed && (morningParsed.gratitude || morningParsed.focus || morningParsed.affirmation || morningParsed.text)) {
+  if (morningParsed && (morningParsed.gratitude || morningParsed.focus || morningParsed.affirmation || morningParsed.mood)) {
     morningStatus.textContent = '✓ Ditulis';
     morningStatus.className = 'status done';
     morningContent.innerHTML = `
       <div class="journal-saved-content">
+        ${morningParsed.mood || morningParsed.energy ? `
+          <div class="journal-item mood-energy-display">
+            ${morningParsed.mood ? `<span class="mood-badge">${getMoodEmoji(morningParsed.mood)}</span>` : ''}
+            ${morningParsed.energy ? `<span class="energy-badge">⚡ ${morningParsed.energy}/10</span>` : ''}
+            ${morningParsed.desired_state ? `<span class="state-badge">${getStateLabel(morningParsed.desired_state)}</span>` : ''}
+          </div>
+        ` : ''}
         ${morningParsed.gratitude ? `
           <div class="journal-item">
             <div class="journal-label">🙏 Syukur:</div>
             <div class="journal-text">${escapeHtml(morningParsed.gratitude)}</div>
           </div>
         ` : ''}
+        ${morningParsed.affirmation ? `
+          <div class="journal-item">
+            <div class="journal-label">✨ Afirmasi:</div>
+            <div class="journal-text">${escapeHtml(morningParsed.affirmation)}</div>
+          </div>
+        ` : ''}
         ${morningParsed.focus ? `
           <div class="journal-item">
             <div class="journal-label">🎯 Fokus:</div>
             <div class="journal-text">${escapeHtml(morningParsed.focus)}</div>
-          </div>
-        ` : ''}
-        ${morningParsed.affirmation ? `
-          <div class="journal-item">
-            <div class="journal-label">💪 Afirmasi:</div>
-            <div class="journal-text">${escapeHtml(morningParsed.affirmation)}</div>
-          </div>
-        ` : ''}
-        ${morningParsed.text ? `
-          <div class="journal-item">
-            <div class="journal-text">${escapeHtml(morningParsed.text)}</div>
           </div>
         ` : ''}
       </div>
@@ -3019,7 +3053,7 @@ function renderJournal() {
     morningStatus.className = 'status pending';
     morningContent.innerHTML = `
       <div class="content" style="color: var(--gray-400); font-style: italic;">
-        Mulai hari dengan rasa syukur dan fokus yang jelas...
+        Mulai hari dengan check-in mood, gratitude, dan afirmasi positif...
       </div>
       <button class="btn-submit" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Tulis Jurnal Pagi</button>
     `;
@@ -3033,15 +3067,15 @@ function renderJournal() {
   
   const eveningParsed = parseJournalContent(eveningData);
   
-  if (eveningParsed && (eveningParsed.wins || eveningParsed.improve || eveningParsed.lesson || eveningParsed.plan || eveningParsed.text)) {
+  if (eveningParsed && (eveningParsed.wins || eveningParsed.sedona_emotion || eveningParsed.lesson || eveningParsed.plan || eveningParsed.mood)) {
     eveningStatus.textContent = '✓ Ditulis';
     eveningStatus.className = 'status done';
     eveningContent.innerHTML = `
       <div class="journal-saved-content">
-        ${eveningParsed.plan ? `
-          <div class="journal-item">
-            <div class="journal-label">📋 Rencana:</div>
-            <div class="journal-text">${escapeHtml(eveningParsed.plan)}</div>
+        ${eveningParsed.mood || eveningParsed.energy ? `
+          <div class="journal-item mood-energy-display">
+            ${eveningParsed.mood ? `<span class="mood-badge">${getMoodEmoji(eveningParsed.mood)}</span>` : ''}
+            ${eveningParsed.energy ? `<span class="energy-badge">⚡ ${eveningParsed.energy}/10</span>` : ''}
           </div>
         ` : ''}
         ${eveningParsed.wins ? `
@@ -3050,10 +3084,19 @@ function renderJournal() {
             <div class="journal-text">${escapeHtml(eveningParsed.wins)}</div>
           </div>
         ` : ''}
-        ${eveningParsed.improve ? `
+        ${eveningParsed.sedona_emotion && eveningParsed.sedona_emotion !== 'none' ? `
+          <div class="journal-item sedona-summary">
+            <div class="journal-label">🌊 Sedona:</div>
+            <div class="journal-text">
+              ${getEmotionLabel(eveningParsed.sedona_emotion)}
+              ${eveningParsed.sedona_release === 'yes' ? ' → 🕊️ Dilepaskan' : eveningParsed.sedona_release === 'partial' ? ' → 🌱 Proses' : ''}
+            </div>
+          </div>
+        ` : ''}
+        ${eveningParsed.reframe ? `
           <div class="journal-item">
-            <div class="journal-label">📈 Perbaiki:</div>
-            <div class="journal-text">${escapeHtml(eveningParsed.improve)}</div>
+            <div class="journal-label">🔄 Reframe:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.reframe)}</div>
           </div>
         ` : ''}
         ${eveningParsed.lesson ? `
@@ -3062,9 +3105,10 @@ function renderJournal() {
             <div class="journal-text">${escapeHtml(eveningParsed.lesson)}</div>
           </div>
         ` : ''}
-        ${eveningParsed.text ? `
+        ${eveningParsed.plan ? `
           <div class="journal-item">
-            <div class="journal-text">${escapeHtml(eveningParsed.text)}</div>
+            <div class="journal-label">📋 Rencana:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.plan)}</div>
           </div>
         ` : ''}
       </div>
@@ -3078,7 +3122,7 @@ function renderJournal() {
     eveningStatus.className = 'status pending';
     eveningContent.innerHTML = `
       <div class="content" style="color: var(--gray-400); font-style: italic;">
-        Tuliskan rencana atau refleksi hari ini...
+        Refleksi dengan Sedona Method dan NLP Reframing...
       </div>
       <div style="display: flex; gap: 8px; margin-top: 12px;">
         <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis</button>
@@ -3111,52 +3155,264 @@ function openJournalForm(type) {
   }
   
   if (type === 'morning') {
+    // ===== JURNAL PAGI dengan NLP =====
     document.getElementById('journalMorningContent').innerHTML = `
-      <div class="journal-form">
-        <div class="form-group">
-          <label class="form-label">🙏 3 hal yang disyukuri hari ini:</label>
-          <textarea id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ...">${escapeHtml(parsed.gratitude || '')}</textarea>
+      <div class="journal-form journal-enhanced">
+        <!-- Step 1: Mood & Energy Check-in -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🌅</span>
+            <span class="section-title">Check-in Pagi</span>
+          </div>
+          
+          <div class="mood-energy-row">
+            <div class="mood-selector">
+              <label class="form-label-sm">Mood saat ini:</label>
+              <div class="mood-options" id="morningMoodOptions">
+                <button type="button" class="mood-btn ${parsed.mood === '1' ? 'selected' : ''}" data-mood="1" onclick="selectMood('morning', '1')">😫</button>
+                <button type="button" class="mood-btn ${parsed.mood === '2' ? 'selected' : ''}" data-mood="2" onclick="selectMood('morning', '2')">😢</button>
+                <button type="button" class="mood-btn ${parsed.mood === '3' ? 'selected' : ''}" data-mood="3" onclick="selectMood('morning', '3')">😐</button>
+                <button type="button" class="mood-btn ${parsed.mood === '4' ? 'selected' : ''}" data-mood="4" onclick="selectMood('morning', '4')">🙂</button>
+                <button type="button" class="mood-btn ${parsed.mood === '5' ? 'selected' : ''}" data-mood="5" onclick="selectMood('morning', '5')">😊</button>
+              </div>
+              <input type="hidden" id="journalMorningMood" value="${parsed.mood || ''}">
+            </div>
+            
+            <div class="energy-selector">
+              <label class="form-label-sm">Energi: <span id="morningEnergyValue">${parsed.energy || '5'}</span>/10</label>
+              <input type="range" class="energy-slider" id="journalMorningEnergy" min="1" max="10" value="${parsed.energy || '5'}" oninput="document.getElementById('morningEnergyValue').textContent = this.value">
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">🎯 Fokus utama hari ini:</label>
-          <textarea id="journalFocus" placeholder="Apa yang harus saya selesaikan hari ini?">${escapeHtml(parsed.focus || '')}</textarea>
+        
+        <!-- Step 2: NLP State Selection (Anchoring) -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">⚡</span>
+            <span class="section-title">State yang Diinginkan</span>
+            <span class="section-hint">(NLP Anchoring)</span>
+          </div>
+          <p class="helper-text">Pilih state/kondisi mental yang ingin kamu rasakan hari ini:</p>
+          <div class="state-options" id="desiredStateOptions">
+            <button type="button" class="state-btn ${parsed.desired_state === 'confident' ? 'selected' : ''}" onclick="selectState('confident')">💪 Percaya Diri</button>
+            <button type="button" class="state-btn ${parsed.desired_state === 'focused' ? 'selected' : ''}" onclick="selectState('focused')">🎯 Fokus</button>
+            <button type="button" class="state-btn ${parsed.desired_state === 'calm' ? 'selected' : ''}" onclick="selectState('calm')">🧘 Tenang</button>
+            <button type="button" class="state-btn ${parsed.desired_state === 'energetic' ? 'selected' : ''}" onclick="selectState('energetic')">🔥 Energik</button>
+            <button type="button" class="state-btn ${parsed.desired_state === 'creative' ? 'selected' : ''}" onclick="selectState('creative')">🎨 Kreatif</button>
+            <button type="button" class="state-btn ${parsed.desired_state === 'grateful' ? 'selected' : ''}" onclick="selectState('grateful')">🙏 Bersyukur</button>
+          </div>
+          <input type="hidden" id="journalDesiredState" value="${parsed.desired_state || ''}">
         </div>
-        <div class="form-group">
-          <label class="form-label">💪 Afirmasi positif:</label>
-          <textarea id="journalAffirmation" placeholder="Hari ini saya akan...">${escapeHtml(parsed.affirmation || '')}</textarea>
+        
+        <!-- Step 3: Gratitude -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🙏</span>
+            <span class="section-title">Syukur Pagi</span>
+          </div>
+          <p class="helper-text">Sebutkan 3 hal yang kamu syukuri pagi ini:</p>
+          <textarea id="journalGratitude" placeholder="1. Masih diberi kesehatan&#10;2. Keluarga yang sehat&#10;3. Kesempatan baru hari ini">${escapeHtml(parsed.gratitude || '')}</textarea>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn-submit" style="flex:1;" onclick="submitJournal('morning')">💾 Simpan</button>
+        
+        <!-- Step 4: NLP Affirmation -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">✨</span>
+            <span class="section-title">Afirmasi Positif</span>
+            <span class="section-hint">(Present, Positive, Personal)</span>
+          </div>
+          <p class="helper-text">Tulis dalam bentuk "Saya adalah..." atau "Saya mampu...":</p>
+          <textarea id="journalAffirmation" placeholder="Saya adalah pribadi yang produktif dan fokus.&#10;Saya mampu menyelesaikan semua tugas dengan baik.&#10;Saya layak mendapatkan kesuksesan.">${escapeHtml(parsed.affirmation || '')}</textarea>
+        </div>
+        
+        <!-- Step 5: Visualization & Focus -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🎯</span>
+            <span class="section-title">Visualisasi & Fokus</span>
+          </div>
+          <p class="helper-text">Bayangkan hari idealmu. Apa yang akan kamu capai?</p>
+          <textarea id="journalFocus" placeholder="Hari ini saya akan:&#10;1. Menyelesaikan laporan dengan fokus penuh&#10;2. Hadir 100% dalam setiap percakapan&#10;3. Menjaga energi positif sepanjang hari">${escapeHtml(parsed.focus || '')}</textarea>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button class="btn-submit" style="flex:1;" onclick="submitJournal('morning')">💾 Simpan Jurnal Pagi</button>
           <button class="btn-submit btn-secondary" style="flex:1;" onclick="renderJournal()">Batal</button>
         </div>
       </div>
     `;
   } else {
+    // ===== JURNAL MALAM dengan Sedona Method =====
     document.getElementById('journalEveningContent').innerHTML = `
-      <div class="journal-form">
-        <div class="form-group">
-          <label class="form-label">📋 Rencana untuk besok:</label>
-          <textarea id="journalPlan" placeholder="3 hal yang akan saya kerjakan besok...">${escapeHtml(parsed.plan || '')}</textarea>
+      <div class="journal-form journal-enhanced">
+        <!-- Step 1: Mood & Energy Check-in -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🌙</span>
+            <span class="section-title">Check-in Malam</span>
+          </div>
+          
+          <div class="mood-energy-row">
+            <div class="mood-selector">
+              <label class="form-label-sm">Mood saat ini:</label>
+              <div class="mood-options" id="eveningMoodOptions">
+                <button type="button" class="mood-btn ${parsed.mood === '1' ? 'selected' : ''}" data-mood="1" onclick="selectMood('evening', '1')">😫</button>
+                <button type="button" class="mood-btn ${parsed.mood === '2' ? 'selected' : ''}" data-mood="2" onclick="selectMood('evening', '2')">😢</button>
+                <button type="button" class="mood-btn ${parsed.mood === '3' ? 'selected' : ''}" data-mood="3" onclick="selectMood('evening', '3')">😐</button>
+                <button type="button" class="mood-btn ${parsed.mood === '4' ? 'selected' : ''}" data-mood="4" onclick="selectMood('evening', '4')">🙂</button>
+                <button type="button" class="mood-btn ${parsed.mood === '5' ? 'selected' : ''}" data-mood="5" onclick="selectMood('evening', '5')">😊</button>
+              </div>
+              <input type="hidden" id="journalEveningMood" value="${parsed.mood || ''}">
+            </div>
+            
+            <div class="energy-selector">
+              <label class="form-label-sm">Energi: <span id="eveningEnergyValue">${parsed.energy || '5'}</span>/10</label>
+              <input type="range" class="energy-slider" id="journalEveningEnergy" min="1" max="10" value="${parsed.energy || '5'}" oninput="document.getElementById('eveningEnergyValue').textContent = this.value">
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">🏆 Apa yang berjalan baik hari ini?</label>
-          <textarea id="journalWins" placeholder="Hal positif yang terjadi...">${escapeHtml(parsed.wins || '')}</textarea>
+        
+        <!-- Step 2: Wins & Gratitude -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🏆</span>
+            <span class="section-title">Wins Hari Ini</span>
+          </div>
+          <p class="helper-text">Apa yang berjalan baik? Sekecil apapun itu:</p>
+          <textarea id="journalWins" placeholder="1. Berhasil menyelesaikan meeting tepat waktu&#10;2. Tidak tergoda membuka sosmed saat kerja&#10;3. Makan siang tepat waktu">${escapeHtml(parsed.wins || '')}</textarea>
         </div>
-        <div class="form-group">
-          <label class="form-label">📈 Apa yang bisa diperbaiki?</label>
-          <textarea id="journalImprove" placeholder="Hal yang perlu ditingkatkan...">${escapeHtml(parsed.improve || '')}</textarea>
+        
+        <!-- Step 3: Sedona Method - Release -->
+        <div class="journal-section sedona-section">
+          <div class="section-header">
+            <span class="section-icon">🌊</span>
+            <span class="section-title">Sedona Method</span>
+            <span class="section-hint">(Lepaskan Emosi)</span>
+          </div>
+          
+          <div class="sedona-steps">
+            <div class="sedona-step">
+              <label class="form-label-sm">1️⃣ Apa yang kamu rasakan saat ini? (Identify)</label>
+              <div class="emotion-options" id="emotionOptions">
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'anxiety' ? 'selected' : ''}" onclick="selectEmotion('anxiety')">😰 Cemas</button>
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'anger' ? 'selected' : ''}" onclick="selectEmotion('anger')">😠 Marah</button>
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'sadness' ? 'selected' : ''}" onclick="selectEmotion('sadness')">😢 Sedih</button>
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'fear' ? 'selected' : ''}" onclick="selectEmotion('fear')">😨 Takut</button>
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'guilt' ? 'selected' : ''}" onclick="selectEmotion('guilt')">😔 Bersalah</button>
+                <button type="button" class="emotion-btn ${parsed.sedona_emotion === 'none' ? 'selected' : ''}" onclick="selectEmotion('none')">😌 Netral</button>
+              </div>
+              <input type="hidden" id="journalSedonaEmotion" value="${parsed.sedona_emotion || ''}">
+            </div>
+            
+            <div class="sedona-step">
+              <label class="form-label-sm">2️⃣ Ceritakan lebih detail (apa yang memicunya?):</label>
+              <textarea id="journalSedonaDetail" placeholder="Saya merasa cemas karena...">${escapeHtml(parsed.sedona_detail || '')}</textarea>
+            </div>
+            
+            <div class="sedona-step">
+              <label class="form-label-sm">3️⃣ Bisakah kamu menerima perasaan ini? (Accept)</label>
+              <div class="accept-options">
+                <button type="button" class="accept-btn ${parsed.sedona_accept === 'yes' ? 'selected' : ''}" onclick="selectAccept('yes')">✅ Ya, saya terima</button>
+                <button type="button" class="accept-btn ${parsed.sedona_accept === 'partial' ? 'selected' : ''}" onclick="selectAccept('partial')">🤔 Sebagian</button>
+                <button type="button" class="accept-btn ${parsed.sedona_accept === 'no' ? 'selected' : ''}" onclick="selectAccept('no')">❌ Belum bisa</button>
+              </div>
+              <input type="hidden" id="journalSedonaAccept" value="${parsed.sedona_accept || ''}">
+            </div>
+            
+            <div class="sedona-step">
+              <label class="form-label-sm">4️⃣ Bisakah kamu melepaskannya? (Release)</label>
+              <div class="release-options">
+                <button type="button" class="release-btn ${parsed.sedona_release === 'yes' ? 'selected' : ''}" onclick="selectRelease('yes')">🕊️ Ya, saya lepaskan</button>
+                <button type="button" class="release-btn ${parsed.sedona_release === 'partial' ? 'selected' : ''}" onclick="selectRelease('partial')">🌱 Sedikit demi sedikit</button>
+                <button type="button" class="release-btn ${parsed.sedona_release === 'no' ? 'selected' : ''}" onclick="selectRelease('no')">🔒 Belum siap</button>
+              </div>
+              <input type="hidden" id="journalSedonaRelease" value="${parsed.sedona_release || ''}">
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">💡 Pelajaran hari ini:</label>
-          <textarea id="journalLesson" placeholder="Apa yang saya pelajari...">${escapeHtml(parsed.lesson || '')}</textarea>
+        
+        <!-- Step 4: NLP Reframing -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">🔄</span>
+            <span class="section-title">Reframing</span>
+            <span class="section-hint">(NLP - Ubah Perspektif)</span>
+          </div>
+          <p class="helper-text">Jika ada hal negatif, bagaimana sudut pandang lain yang lebih memberdayakan?</p>
+          <textarea id="journalReframe" placeholder="Daripada berpikir 'Saya gagal...'&#10;Saya memilih berpikir 'Ini adalah kesempatan belajar...'&#10;&#10;Atau: 'Apa hikmah dari kejadian ini?'">${escapeHtml(parsed.reframe || '')}</textarea>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn-submit" style="flex:1;" onclick="submitJournal('evening')">💾 Simpan</button>
+        
+        <!-- Step 5: Lesson & Plan -->
+        <div class="journal-section">
+          <div class="section-header">
+            <span class="section-icon">💡</span>
+            <span class="section-title">Pelajaran & Rencana</span>
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label-sm">Pelajaran hari ini:</label>
+            <textarea id="journalLesson" placeholder="Apa yang saya pelajari hari ini...">${escapeHtml(parsed.lesson || '')}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Rencana untuk besok:</label>
+            <textarea id="journalPlan" placeholder="3 hal yang akan saya fokuskan besok...">${escapeHtml(parsed.plan || '')}</textarea>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button class="btn-submit" style="flex:1;" onclick="submitJournal('evening')">💾 Simpan Jurnal Malam</button>
           <button class="btn-submit btn-secondary" style="flex:1;" onclick="renderJournal()">Batal</button>
         </div>
       </div>
     `;
   }
+}
+
+// Helper functions for journal form
+function selectMood(type, mood) {
+  const container = document.getElementById(type === 'morning' ? 'morningMoodOptions' : 'eveningMoodOptions');
+  const input = document.getElementById(type === 'morning' ? 'journalMorningMood' : 'journalEveningMood');
+  
+  container.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+  container.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+  input.value = mood;
+}
+
+function selectState(state) {
+  const container = document.getElementById('desiredStateOptions');
+  const input = document.getElementById('journalDesiredState');
+  
+  container.querySelectorAll('.state-btn').forEach(btn => btn.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  input.value = state;
+}
+
+function selectEmotion(emotion) {
+  const container = document.getElementById('emotionOptions');
+  const input = document.getElementById('journalSedonaEmotion');
+  
+  container.querySelectorAll('.emotion-btn').forEach(btn => btn.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  input.value = emotion;
+}
+
+function selectAccept(value) {
+  const container = event.currentTarget.parentElement;
+  const input = document.getElementById('journalSedonaAccept');
+  
+  container.querySelectorAll('.accept-btn').forEach(btn => btn.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  input.value = value;
+}
+
+function selectRelease(value) {
+  const container = event.currentTarget.parentElement;
+  const input = document.getElementById('journalSedonaRelease');
+  
+  container.querySelectorAll('.release-btn').forEach(btn => btn.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  input.value = value;
 }
 
 function submitJournal(type) {
@@ -3165,16 +3421,34 @@ function submitJournal(type) {
   
   if (type === 'morning') {
     content = {
+      // Mood & Energy
+      mood: document.getElementById('journalMorningMood')?.value || '',
+      energy: document.getElementById('journalMorningEnergy')?.value || '',
+      // NLP State
+      desired_state: document.getElementById('journalDesiredState')?.value || '',
+      // Gratitude & Affirmation
       gratitude: document.getElementById('journalGratitude')?.value.trim() || '',
-      focus: document.getElementById('journalFocus')?.value.trim() || '',
-      affirmation: document.getElementById('journalAffirmation')?.value.trim() || ''
+      affirmation: document.getElementById('journalAffirmation')?.value.trim() || '',
+      // Focus
+      focus: document.getElementById('journalFocus')?.value.trim() || ''
     };
   } else {
     content = {
-      plan: document.getElementById('journalPlan')?.value.trim() || '',
+      // Mood & Energy
+      mood: document.getElementById('journalEveningMood')?.value || '',
+      energy: document.getElementById('journalEveningEnergy')?.value || '',
+      // Wins
       wins: document.getElementById('journalWins')?.value.trim() || '',
-      improve: document.getElementById('journalImprove')?.value.trim() || '',
-      lesson: document.getElementById('journalLesson')?.value.trim() || ''
+      // Sedona Method
+      sedona_emotion: document.getElementById('journalSedonaEmotion')?.value || '',
+      sedona_detail: document.getElementById('journalSedonaDetail')?.value.trim() || '',
+      sedona_accept: document.getElementById('journalSedonaAccept')?.value || '',
+      sedona_release: document.getElementById('journalSedonaRelease')?.value || '',
+      // NLP Reframe
+      reframe: document.getElementById('journalReframe')?.value.trim() || '',
+      // Lesson & Plan
+      lesson: document.getElementById('journalLesson')?.value.trim() || '',
+      plan: document.getElementById('journalPlan')?.value.trim() || ''
     };
   }
   
