@@ -1601,6 +1601,9 @@ function completePomodoro() {
     }
   });
   
+  // SYNC IMMEDIATELY after pomodoro completes
+  syncPendingQueue();
+  
   // Update local stats
   if (state.dailySync?.stats) {
     state.dailySync.stats.pomodoro_count = (state.dailySync.stats.pomodoro_count || 0) + 1;
@@ -1625,6 +1628,7 @@ function completePomodoro() {
         <h2>Sesi Selesai!</h2>
         <p>Kamu telah fokus selama ${durationMinutes} menit</p>
         <p style="color: var(--gray-600); margin-top: 8px;">Task: ${escapeHtml(state.pomodoro.task)}</p>
+        <p style="color: var(--success); margin-top: 8px; font-size: 12px;">✓ Tersimpan ke database</p>
         <button class="btn-submit" style="margin-top: 24px;" onclick="renderPomodoroPage()">
           🍅 Mulai Sesi Baru
         </button>
@@ -2243,10 +2247,319 @@ function filterKanban(goalId) {
   loadKanban(true);
 }
 
-function viewGoalDetail(goalId) {
-  state.selectedGoalFilter = goalId;
-  state.cache.kanban = 0;
-  showPage('kanban');
+async function viewGoalDetail(goalId) {
+  state.selectedGoalId = goalId;
+  
+  // Find goal from state
+  const goal = state.goals?.find(g => g.goal_id === goalId);
+  if (!goal) {
+    showToast('Goal tidak ditemukan', 'error');
+    return;
+  }
+  
+  // Show goal detail page
+  showPage('goal-detail');
+  
+  // Load goal tasks from API
+  try {
+    const tasks = await apiGet('getTasks');
+    const goalTasks = (tasks || []).filter(t => t.goal_id === goalId);
+    state.goalTasks = goalTasks;
+    
+    renderGoalDetail(goal, goalTasks);
+  } catch (err) {
+    console.error('Failed to load goal tasks:', err);
+    renderGoalDetail(goal, []);
+  }
+}
+
+function renderGoalDetail(goal, tasks) {
+  const container = document.getElementById('goalDetailContent');
+  if (!container) return;
+  
+  // Group tasks by status
+  const todoTasks = tasks.filter(t => t.status === 'todo' || t.status === 'backlog');
+  const progressTasks = tasks.filter(t => t.status === 'progress');
+  const doneTasks = tasks.filter(t => t.status === 'done');
+  
+  // Calculate progress
+  const totalTasks = tasks.length;
+  const completedTasks = doneTasks.length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  // Milestones
+  const milestones = goal.milestones || [];
+  const completedMilestones = milestones.filter(m => m.completed === true || m.completed === 'true').length;
+  
+  container.innerHTML = `
+    <div class="goal-detail-header">
+      <button class="back-btn" onclick="showPage('goals')">← Kembali</button>
+      <div class="goal-detail-actions">
+        <button class="edit-btn" onclick="openEditGoal('${goal.goal_id}')">✏️ Edit</button>
+        <button class="delete-btn" onclick="confirmDeleteGoal('${goal.goal_id}')">🗑️</button>
+      </div>
+    </div>
+    
+    <div class="goal-detail-info">
+      <h2 class="goal-detail-title">${escapeHtml(goal.title)}</h2>
+      <div class="goal-detail-meta">
+        <span class="goal-quarter-badge">Q${goal.quarter} ${goal.year}</span>
+        ${goal.deadline ? `<span class="goal-deadline">📅 ${formatDate(goal.deadline)}</span>` : ''}
+      </div>
+      ${goal.description ? `<p class="goal-detail-desc">${escapeHtml(goal.description)}</p>` : ''}
+    </div>
+    
+    <div class="goal-detail-progress">
+      <div class="progress-header">
+        <span>Progress</span>
+        <span class="progress-percent">${progress}%</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: ${progress}%"></div>
+      </div>
+      <div class="progress-stats">
+        <span>✅ ${completedTasks}/${totalTasks} tasks</span>
+        <span>🏁 ${completedMilestones}/${milestones.length} milestones</span>
+      </div>
+    </div>
+    
+    ${milestones.length > 0 ? `
+    <div class="goal-section">
+      <h3 class="section-title">🏁 Milestones</h3>
+      <div class="milestone-list">
+        ${milestones.map(m => `
+          <div class="milestone-item ${m.completed ? 'done' : ''}" onclick="toggleMilestone('${m.milestone_id}', ${m.completed ? true : false})">
+            <div class="milestone-check">${m.completed ? '✓' : ''}</div>
+            <div class="milestone-info">
+              <div class="milestone-title">${escapeHtml(m.title)}</div>
+              <div class="milestone-week">Minggu ${m.week || 1}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+    
+    <div class="goal-section">
+      <div class="section-header">
+        <h3 class="section-title">📋 Tasks</h3>
+        <button class="add-task-mini-btn" onclick="openAddTaskForGoal('${goal.goal_id}')">+ Task</button>
+      </div>
+      
+      ${tasks.length === 0 ? `
+        <div class="empty-state" style="padding: 20px;">
+          <p>Belum ada task untuk goal ini</p>
+          <button class="btn-submit" style="width: auto; margin-top: 12px;" onclick="openAddTaskForGoal('${goal.goal_id}')">+ Tambah Task</button>
+        </div>
+      ` : `
+        <!-- Progress Tasks -->
+        ${progressTasks.length > 0 ? `
+          <div class="task-group">
+            <div class="task-group-header">🔄 Sedang Dikerjakan (${progressTasks.length})</div>
+            ${progressTasks.map(t => renderGoalTaskItem(t)).join('')}
+          </div>
+        ` : ''}
+        
+        <!-- Todo Tasks -->
+        ${todoTasks.length > 0 ? `
+          <div class="task-group">
+            <div class="task-group-header">📥 To Do (${todoTasks.length})</div>
+            ${todoTasks.map(t => renderGoalTaskItem(t)).join('')}
+          </div>
+        ` : ''}
+        
+        <!-- Done Tasks -->
+        ${doneTasks.length > 0 ? `
+          <div class="task-group">
+            <div class="task-group-header collapsed" onclick="toggleTaskGroup(this)">
+              ✅ Selesai (${doneTasks.length}) <span class="toggle-icon">▼</span>
+            </div>
+            <div class="task-group-items" style="display: none;">
+              ${doneTasks.map(t => renderGoalTaskItem(t)).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `}
+    </div>
+  `;
+}
+
+function renderGoalTaskItem(task) {
+  const priorityColors = { high: '#e53e3e', medium: '#dd6b20', low: '#38a169' };
+  const statusIcons = { todo: '○', backlog: '○', progress: '◐', done: '●' };
+  const isDone = task.status === 'done';
+  
+  return `
+    <div class="goal-task-item ${isDone ? 'done' : ''}" data-task-id="${task.task_id}">
+      <button class="task-status-btn ${task.status}" onclick="cycleTaskStatus('${task.task_id}', '${task.status}')" title="Ubah status">
+        ${statusIcons[task.status] || '○'}
+      </button>
+      <div class="task-content">
+        <div class="task-title-row">
+          <span class="task-title ${isDone ? 'completed' : ''}">${escapeHtml(task.title)}</span>
+          <span class="task-priority" style="background: ${priorityColors[task.priority] || priorityColors.medium}">
+            ${task.priority === 'high' ? '🔴' : task.priority === 'low' ? '🟢' : '🟡'}
+          </span>
+        </div>
+        <div class="task-meta-row">
+          ${task.due_date ? `<span class="task-due">📅 ${formatDateShort(task.due_date)}</span>` : ''}
+          ${task.estimated_pomodoro ? `<span class="task-pomo">🍅 ${task.estimated_pomodoro}</span>` : ''}
+          <span class="task-status-label">${task.status}</span>
+        </div>
+      </div>
+      <div class="task-actions-mini">
+        ${!isDone ? `<button class="task-done-btn" onclick="quickDoneTask('${task.task_id}')" title="Selesai">✓</button>` : ''}
+        <button class="task-menu-btn" onclick="openTaskMenu('${task.task_id}')" title="Menu">⋮</button>
+      </div>
+    </div>
+  `;
+}
+
+function cycleTaskStatus(taskId, currentStatus) {
+  // Cycle: todo → progress → done → todo
+  const nextStatus = {
+    'backlog': 'todo',
+    'todo': 'progress',
+    'progress': 'done',
+    'done': 'todo'
+  };
+  
+  const newStatus = nextStatus[currentStatus] || 'progress';
+  
+  // Update UI immediately
+  const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+  if (taskItem) {
+    const statusBtn = taskItem.querySelector('.task-status-btn');
+    const statusLabel = taskItem.querySelector('.task-status-label');
+    const statusIcons = { todo: '○', backlog: '○', progress: '◐', done: '●' };
+    
+    statusBtn.className = `task-status-btn ${newStatus}`;
+    statusBtn.textContent = statusIcons[newStatus];
+    statusBtn.setAttribute('onclick', `cycleTaskStatus('${taskId}', '${newStatus}')`);
+    
+    if (statusLabel) statusLabel.textContent = newStatus;
+    
+    if (newStatus === 'done') {
+      taskItem.classList.add('done');
+      taskItem.querySelector('.task-title')?.classList.add('completed');
+    } else {
+      taskItem.classList.remove('done');
+      taskItem.querySelector('.task-title')?.classList.remove('completed');
+    }
+  }
+  
+  // Update state
+  if (state.goalTasks) {
+    const task = state.goalTasks.find(t => t.task_id === taskId);
+    if (task) task.status = newStatus;
+  }
+  
+  // Send to backend
+  addToQueue('moveTask', {
+    task_id: taskId,
+    status: newStatus,
+    order_index: 0
+  });
+  
+  showToast(`Task → ${newStatus}`, 'success');
+  
+  // Refresh after delay
+  setTimeout(() => {
+    if (state.selectedGoalId) {
+      const goal = state.goals?.find(g => g.goal_id === state.selectedGoalId);
+      if (goal) renderGoalDetail(goal, state.goalTasks || []);
+    }
+  }, 500);
+}
+
+function quickDoneTask(taskId) {
+  cycleTaskStatus(taskId, 'progress'); // Will move to done
+  
+  // If current status is not progress, force to done
+  setTimeout(() => {
+    const task = state.goalTasks?.find(t => t.task_id === taskId);
+    if (task && task.status !== 'done') {
+      addToQueue('moveTask', { task_id: taskId, status: 'done', order_index: 0 });
+      task.status = 'done';
+      
+      const goal = state.goals?.find(g => g.goal_id === state.selectedGoalId);
+      if (goal) renderGoalDetail(goal, state.goalTasks || []);
+    }
+  }, 100);
+}
+
+function toggleMilestone(milestoneId, isCompleted) {
+  // Update UI immediately
+  const milestoneItem = document.querySelector(`[onclick*="${milestoneId}"]`);
+  if (milestoneItem) {
+    if (isCompleted) {
+      milestoneItem.classList.remove('done');
+      milestoneItem.querySelector('.milestone-check').textContent = '';
+    } else {
+      milestoneItem.classList.add('done');
+      milestoneItem.querySelector('.milestone-check').textContent = '✓';
+    }
+  }
+  
+  // Update state
+  const goal = state.goals?.find(g => g.goal_id === state.selectedGoalId);
+  if (goal?.milestones) {
+    const milestone = goal.milestones.find(m => m.milestone_id === milestoneId);
+    if (milestone) milestone.completed = !isCompleted;
+  }
+  
+  // Send to backend
+  addToQueue('toggleMilestone', {
+    milestone_id: milestoneId,
+    completed: !isCompleted
+  });
+  
+  showToast(isCompleted ? 'Milestone dibatalkan' : 'Milestone selesai! ✓', isCompleted ? 'info' : 'success');
+}
+
+function toggleTaskGroup(header) {
+  const items = header.nextElementSibling;
+  const icon = header.querySelector('.toggle-icon');
+  
+  if (items.style.display === 'none') {
+    items.style.display = 'block';
+    header.classList.remove('collapsed');
+    if (icon) icon.textContent = '▲';
+  } else {
+    items.style.display = 'none';
+    header.classList.add('collapsed');
+    if (icon) icon.textContent = '▼';
+  }
+}
+
+function openAddTaskForGoal(goalId) {
+  state.addTaskGoalId = goalId;
+  document.getElementById('taskGoal').value = goalId;
+  openModal('task');
+}
+
+function openEditGoal(goalId) {
+  const goal = state.goals?.find(g => g.goal_id === goalId);
+  if (!goal) return;
+  
+  state.editingGoalId = goalId;
+  document.getElementById('goalTitle').value = goal.title || '';
+  document.getElementById('goalDesc').value = goal.description || '';
+  document.getElementById('goalDeadline').value = goal.deadline || '';
+  
+  openModal('goal');
+}
+
+function confirmDeleteGoal(goalId) {
+  if (confirm('Hapus goal ini? Semua milestones dan tasks terkait akan terhapus.')) {
+    addToQueue('deleteGoal', { goal_id: goalId });
+    
+    // Remove from state
+    state.goals = state.goals?.filter(g => g.goal_id !== goalId) || [];
+    
+    showToast('Goal dihapus', 'success');
+    showPage('goals');
+  }
 }
 
 function saveVision(level) {
@@ -2587,87 +2900,182 @@ function renderJournal() {
   
   if (!morningStatus || !eveningStatus) return;
   
+  // Parse journal content helper
+  function parseJournalContent(journal) {
+    if (!journal) return null;
+    let content = journal.content;
+    // Try to parse if it's a string
+    if (typeof content === 'string') {
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        return { text: content };
+      }
+    }
+    return content || {};
+  }
+  
   // Morning Journal
-  if (state.journals.morning) {
-    const m = state.journals.morning.parsed || {};
+  const morningData = state.journals?.morning;
+  const morningParsed = parseJournalContent(morningData);
+  
+  if (morningParsed && (morningParsed.gratitude || morningParsed.focus || morningParsed.affirmation || morningParsed.text)) {
     morningStatus.textContent = '✓ Ditulis';
-    morningStatus.className = 'section-status done';
+    morningStatus.className = 'status done';
     morningContent.innerHTML = `
-      <div class="journal-content">
-        <div class="label">3 hal yang disyukuri:</div>
-        <div>${escapeHtml(m.gratitude || '-')}</div>
-        <div class="label">Fokus utama:</div>
-        <div>${escapeHtml(m.focus || '-')}</div>
-        <div class="label">Afirmasi:</div>
-        <div>${escapeHtml(m.affirmation || '-')}</div>
+      <div class="journal-saved-content">
+        ${morningParsed.gratitude ? `
+          <div class="journal-item">
+            <div class="journal-label">🙏 Syukur:</div>
+            <div class="journal-text">${escapeHtml(morningParsed.gratitude)}</div>
+          </div>
+        ` : ''}
+        ${morningParsed.focus ? `
+          <div class="journal-item">
+            <div class="journal-label">🎯 Fokus:</div>
+            <div class="journal-text">${escapeHtml(morningParsed.focus)}</div>
+          </div>
+        ` : ''}
+        ${morningParsed.affirmation ? `
+          <div class="journal-item">
+            <div class="journal-label">💪 Afirmasi:</div>
+            <div class="journal-text">${escapeHtml(morningParsed.affirmation)}</div>
+          </div>
+        ` : ''}
+        ${morningParsed.text ? `
+          <div class="journal-item">
+            <div class="journal-text">${escapeHtml(morningParsed.text)}</div>
+          </div>
+        ` : ''}
       </div>
-      <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="editJournal('morning')">✏️ Edit</button>
+      <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Edit</button>
     `;
   } else {
     morningStatus.textContent = 'Belum ditulis';
-    morningStatus.className = 'section-status pending';
+    morningStatus.className = 'status pending';
+    morningContent.innerHTML = `
+      <div class="content" style="color: var(--gray-400); font-style: italic;">
+        Mulai hari dengan rasa syukur dan fokus yang jelas...
+      </div>
+      <button class="btn-submit" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Tulis Jurnal Pagi</button>
+    `;
   }
   
   // Evening Journal
-  if (state.journals.evening) {
-    const e = state.journals.evening.parsed || {};
+  const eveningData = state.journals?.evening;
+  const eveningParsed = parseJournalContent(eveningData);
+  
+  if (eveningParsed && (eveningParsed.wins || eveningParsed.improve || eveningParsed.lesson || eveningParsed.plan || eveningParsed.text)) {
     eveningStatus.textContent = '✓ Ditulis';
-    eveningStatus.className = 'section-status done';
+    eveningStatus.className = 'status done';
     eveningContent.innerHTML = `
-      <div class="journal-content">
-        <div class="label">Yang berjalan baik:</div>
-        <div>${escapeHtml(e.wins || '-')}</div>
-        <div class="label">Yang bisa diperbaiki:</div>
-        <div>${escapeHtml(e.improve || '-')}</div>
-        <div class="label">Pelajaran:</div>
-        <div>${escapeHtml(e.lesson || '-')}</div>
+      <div class="journal-saved-content">
+        ${eveningParsed.plan ? `
+          <div class="journal-item">
+            <div class="journal-label">📋 Rencana:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.plan)}</div>
+          </div>
+        ` : ''}
+        ${eveningParsed.wins ? `
+          <div class="journal-item">
+            <div class="journal-label">🏆 Wins:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.wins)}</div>
+          </div>
+        ` : ''}
+        ${eveningParsed.improve ? `
+          <div class="journal-item">
+            <div class="journal-label">📈 Perbaiki:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.improve)}</div>
+          </div>
+        ` : ''}
+        ${eveningParsed.lesson ? `
+          <div class="journal-item">
+            <div class="journal-label">💡 Pelajaran:</div>
+            <div class="journal-text">${escapeHtml(eveningParsed.lesson)}</div>
+          </div>
+        ` : ''}
+        ${eveningParsed.text ? `
+          <div class="journal-item">
+            <div class="journal-text">${escapeHtml(eveningParsed.text)}</div>
+          </div>
+        ` : ''}
       </div>
-      <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="editJournal('evening')">✏️ Edit</button>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-submit btn-secondary" style="flex:1;" onclick="openJournalForm('evening')">✏️ Edit</button>
+        <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+      </div>
     `;
   } else {
     eveningStatus.textContent = 'Belum ditulis';
-    eveningStatus.className = 'section-status pending';
+    eveningStatus.className = 'status pending';
+    eveningContent.innerHTML = `
+      <div class="content" style="color: var(--gray-400); font-style: italic;">
+        Tuliskan rencana atau refleksi hari ini...
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis</button>
+        <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+      </div>
+    `;
   }
 }
 
-function editJournal(type) {
-  const journal = state.journals[type];
-  const parsed = journal?.parsed || {};
+function openJournalForm(type) {
+  const journal = state.journals?.[type];
+  let parsed = {};
+  
+  if (journal?.content) {
+    try {
+      parsed = typeof journal.content === 'string' ? JSON.parse(journal.content) : journal.content;
+    } catch (e) {
+      parsed = {};
+    }
+  }
   
   if (type === 'morning') {
     document.getElementById('journalMorningContent').innerHTML = `
       <div class="journal-form">
         <div class="form-group">
-          <label class="form-label">3 hal yang disyukuri hari ini:</label>
+          <label class="form-label">🙏 3 hal yang disyukuri hari ini:</label>
           <textarea id="journalGratitude" placeholder="1. ...&#10;2. ...&#10;3. ...">${escapeHtml(parsed.gratitude || '')}</textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Fokus utama hari ini:</label>
+          <label class="form-label">🎯 Fokus utama hari ini:</label>
           <textarea id="journalFocus" placeholder="Apa yang harus saya selesaikan hari ini?">${escapeHtml(parsed.focus || '')}</textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Afirmasi positif:</label>
+          <label class="form-label">💪 Afirmasi positif:</label>
           <textarea id="journalAffirmation" placeholder="Hari ini saya akan...">${escapeHtml(parsed.affirmation || '')}</textarea>
         </div>
-        <button class="btn-submit" onclick="submitJournal('morning')">💾 Simpan Jurnal Pagi</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-submit" style="flex:1;" onclick="submitJournal('morning')">💾 Simpan</button>
+          <button class="btn-submit btn-secondary" style="flex:1;" onclick="renderJournal()">Batal</button>
+        </div>
       </div>
     `;
   } else {
     document.getElementById('journalEveningContent').innerHTML = `
       <div class="journal-form">
         <div class="form-group">
-          <label class="form-label">Apa yang berjalan baik hari ini?</label>
+          <label class="form-label">📋 Rencana untuk besok:</label>
+          <textarea id="journalPlan" placeholder="3 hal yang akan saya kerjakan besok...">${escapeHtml(parsed.plan || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🏆 Apa yang berjalan baik hari ini?</label>
           <textarea id="journalWins" placeholder="Hal positif yang terjadi...">${escapeHtml(parsed.wins || '')}</textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Apa yang bisa diperbaiki?</label>
+          <label class="form-label">📈 Apa yang bisa diperbaiki?</label>
           <textarea id="journalImprove" placeholder="Hal yang perlu ditingkatkan...">${escapeHtml(parsed.improve || '')}</textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Pelajaran hari ini:</label>
+          <label class="form-label">💡 Pelajaran hari ini:</label>
           <textarea id="journalLesson" placeholder="Apa yang saya pelajari...">${escapeHtml(parsed.lesson || '')}</textarea>
         </div>
-        <button class="btn-submit" onclick="submitJournal('evening')">💾 Simpan Jurnal Malam</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-submit" style="flex:1;" onclick="submitJournal('evening')">💾 Simpan</button>
+          <button class="btn-submit btn-secondary" style="flex:1;" onclick="renderJournal()">Batal</button>
+        </div>
       </div>
     `;
   }
@@ -2685,6 +3093,7 @@ function submitJournal(type) {
     };
   } else {
     content = {
+      plan: document.getElementById('journalPlan')?.value.trim() || '',
       wins: document.getElementById('journalWins')?.value.trim() || '',
       improve: document.getElementById('journalImprove')?.value.trim() || '',
       lesson: document.getElementById('journalLesson')?.value.trim() || ''

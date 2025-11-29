@@ -240,6 +240,30 @@
       margin-top: 8px;
     }
     .journal-card .content .label:first-child { margin-top: 0; }
+    
+    /* Journal Saved Content */
+    .journal-saved-content {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+    .journal-item {
+      margin-bottom: 10px;
+    }
+    .journal-item:last-child { margin-bottom: 0; }
+    .journal-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: 2px;
+    }
+    .journal-text {
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    
     .journal-card textarea {
       width: 100%;
       min-height: 50px;
@@ -254,6 +278,33 @@
     .journal-card textarea:focus {
       outline: none;
       border-color: var(--primary);
+    }
+    
+    /* Page Back Button */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .back-btn:hover { text-decoration: underline; }
+    .page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin: 0;
     }
     
     /* Focus Card */
@@ -458,6 +509,322 @@
       background: var(--info-light);
       color: var(--info);
       border-radius: var(--radius-full);
+    }
+    
+    /* ===== GOAL DETAIL PAGE ===== */
+    .goal-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .goal-detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .edit-btn, .delete-btn {
+      background: var(--gray-100);
+      border: none;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .delete-btn { color: var(--danger); }
+    
+    .goal-detail-info {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .goal-detail-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin: 0 0 8px 0;
+    }
+    .goal-detail-meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .goal-quarter-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .goal-deadline {
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    .goal-detail-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin: 8px 0 0 0;
+      line-height: 1.5;
+    }
+    
+    .goal-detail-progress {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .progress-percent {
+      color: var(--primary);
+    }
+    .progress-bar-container {
+      height: 8px;
+      background: var(--gray-100);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      border-radius: var(--radius-full);
+      transition: width 0.3s;
+    }
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+    
+    .goal-section {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin: 0 0 12px 0;
+    }
+    .section-header .section-title { margin: 0; }
+    .add-task-mini-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    /* Milestone List */
+    .milestone-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .milestone-item:hover { background: var(--gray-100); }
+    .milestone-item.done { background: var(--success-light); }
+    .milestone-check {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--gray-300);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .milestone-item.done .milestone-check {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    .milestone-info { flex: 1; }
+    .milestone-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .milestone-item.done .milestone-title {
+      text-decoration: line-through;
+      color: var(--gray-500);
+    }
+    .milestone-week {
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+    
+    /* Task Groups */
+    .task-group {
+      margin-bottom: 16px;
+    }
+    .task-group:last-child { margin-bottom: 0; }
+    .task-group-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+      margin-bottom: 8px;
+    }
+    .task-group-header.collapsed {
+      cursor: pointer;
+      color: var(--gray-400);
+    }
+    .toggle-icon {
+      float: right;
+      font-size: 10px;
+    }
+    
+    /* Goal Task Item */
+    .goal-task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+    .goal-task-item:hover { background: var(--gray-100); }
+    .goal-task-item.done {
+      background: var(--success-light);
+      opacity: 0.8;
+    }
+    
+    .task-status-btn {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--gray-300);
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .task-status-btn.todo { border-color: var(--gray-300); color: var(--gray-400); }
+    .task-status-btn.backlog { border-color: var(--gray-300); color: var(--gray-400); }
+    .task-status-btn.progress { 
+      border-color: var(--primary); 
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .task-status-btn.done { 
+      border-color: var(--success); 
+      background: var(--success);
+      color: white;
+    }
+    
+    .task-content { flex: 1; min-width: 0; }
+    .task-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .task-title.completed {
+      text-decoration: line-through;
+      color: var(--gray-400);
+    }
+    .task-priority {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .task-meta-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+    .task-status-label {
+      background: var(--gray-200);
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+    }
+    
+    .task-actions-mini {
+      display: flex;
+      gap: 4px;
+    }
+    .task-done-btn, .task-menu-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .task-done-btn {
+      background: var(--success);
+      color: white;
+    }
+    .task-menu-btn {
+      background: var(--gray-200);
+      color: var(--gray-600);
     }
     
     /* Task Mini in Goal */
@@ -1851,7 +2218,24 @@
   <main class="main">
     <!-- ==================== PAGE: HOME ==================== -->
     <div class="page active" id="page-home">
-      <!-- Jurnal Pagi -->
+      <!-- Jurnal Malam - Rencana Hari Ini (tampil di atas) -->
+      <div class="journal-card evening" id="journalEveningCard">
+        <div class="header">
+          <div class="title">🌙 Rencana & Refleksi</div>
+          <span class="status pending" id="journalEveningStatus">Belum ditulis</span>
+        </div>
+        <div id="journalEveningContent">
+          <div class="content" style="color: var(--gray-400); font-style: italic;">
+            Tuliskan rencana atau refleksi hari ini...
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis</button>
+            <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Jurnal Pagi - Syukur & Fokus -->
       <div class="journal-card morning" id="journalMorningCard">
         <div class="header">
           <div class="title">☀️ Jurnal Pagi</div>
@@ -1862,23 +2246,6 @@
             Mulai hari dengan rasa syukur dan fokus yang jelas...
           </div>
           <button class="btn-submit" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Tulis Jurnal Pagi</button>
-        </div>
-      </div>
-      
-      <!-- Jurnal Malam (tampil setelah jam 17:00) -->
-      <div class="journal-card evening" id="journalEveningCard" style="display: none;">
-        <div class="header">
-          <div class="title">🌙 Jurnal Malam</div>
-          <span class="status pending" id="journalEveningStatus">Belum ditulis</span>
-        </div>
-        <div id="journalEveningContent">
-          <div class="content" style="color: var(--gray-400); font-style: italic;">
-            Akhiri hari dengan refleksi dan rasa syukur...
-          </div>
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis Jurnal</button>
-            <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
-          </div>
         </div>
       </div>
       
@@ -1977,7 +2344,10 @@
     
     <!-- ==================== PAGE: POMODORO ==================== -->
     <div class="page" id="page-pomodoro">
-      <div class="section-title">🍅 Pomodoro Timer</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('home')">← Kembali</button>
+        <h1 class="page-title">🍅 Pomodoro Timer</h1>
+      </div>
       
       <div class="card">
         <div id="pomodoroContainer">
@@ -2059,6 +2429,13 @@
       </div>
       
       <button class="btn-submit" style="margin-top: 16px;" onclick="openModal('goal')">+ Tambah Goal</button>
+    </div>
+    
+    <!-- ==================== PAGE: GOAL DETAIL ==================== -->
+    <div class="page" id="page-goal-detail">
+      <div id="goalDetailContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
     </div>
     
     <!-- ==================== PAGE: MENU ==================== -->
@@ -2240,7 +2617,10 @@
     
     <!-- ==================== PAGE: IBADAH ==================== -->
     <div class="page" id="page-ibadah">
-      <div class="section-title">🕌 Tracker Sholat</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">🕌 Tracker Sholat</h1>
+      </div>
       <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tap untuk log waktu sholat</p>
       
       <div class="card">
@@ -2252,7 +2632,10 @@
     
     <!-- ==================== PAGE: HABITS ==================== -->
     <div class="page" id="page-habits">
-      <div class="section-title">📿 Sunnah Rasulullah ﷺ</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">📿 Sunnah Rasulullah ﷺ</h1>
+      </div>
       <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Amalan harian berbasis sunnah</p>
       
       <div class="tabs">
@@ -2331,7 +2714,10 @@
     
     <!-- ==================== PAGE: BRAIN DUMP ==================== -->
     <div class="page" id="page-braindump">
-      <div class="section-title">🧠 Brain Dump</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">🧠 Brain Dump</h1>
+      </div>
       <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Tulis semua yang ada di pikiran</p>
       
       <div class="card">
@@ -2352,7 +2738,10 @@
     
     <!-- ==================== PAGE: DON'T LIST ==================== -->
     <div class="page" id="page-dontlist">
-      <div class="section-title">🚫 Don't List</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">🚫 Don't List</h1>
+      </div>
       <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Hal-hal yang harus dihindari</p>
       
       <button class="btn-submit btn-secondary" onclick="openModal('dont-add')" style="margin-bottom: 16px;">+ Tambah Item</button>
@@ -2639,7 +3028,10 @@
     
     <!-- ==================== PAGE: STATS ==================== -->
     <div class="page" id="page-stats">
-      <div class="section-title">📈 Statistik Pomodoro</div>
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">📈 Statistik Pomodoro</h1>
+      </div>
       
       <div class="tabs">
         <button class="tab-btn active" onclick="loadStats('week')">Minggu</button>
