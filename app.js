@@ -2619,6 +2619,175 @@ function toggleTaskGroup(header) {
   }
 }
 
+// Task Menu - Edit, Delete, etc
+function openTaskMenu(taskId) {
+  // Find task from goalTasks or kanban
+  let task = state.goalTasks?.find(t => t.task_id === taskId);
+  if (!task) {
+    const board = state.kanban?.board || state.kanban || {};
+    ['backlog', 'todo', 'progress', 'done'].forEach(status => {
+      if (!task && board[status]) {
+        task = board[status].find(t => t.task_id === taskId);
+      }
+    });
+  }
+  
+  if (!task) {
+    showToast('Task tidak ditemukan', 'error');
+    return;
+  }
+  
+  state.editingTaskId = taskId;
+  state.editingTask = task;
+  
+  // Show task action modal
+  const modal = document.getElementById('modal-task-edit');
+  if (modal) {
+    // Populate form with task data
+    document.getElementById('editTaskTitle').value = task.title || '';
+    document.getElementById('editTaskDesc').value = (task.description || '').replace(/\n\n🔗 Link:.*$/s, '').replace(/\n\n👤 Didelegasikan ke:.*$/s, '');
+    document.getElementById('editTaskPriority').value = task.priority || 'medium';
+    document.getElementById('editTaskStatus').value = task.status || 'todo';
+    document.getElementById('editTaskDueDate').value = task.due_date || '';
+    document.getElementById('editTaskEstPomodoro').value = task.estimated_pomodoro || 2;
+    
+    // Extract link from description
+    const linkMatch = task.description?.match(/🔗 Link: (https?:\/\/[^\s\n]+)/);
+    document.getElementById('editTaskLink').value = linkMatch ? linkMatch[1] : (task.link || '');
+    
+    modal.classList.add('active');
+  }
+}
+
+function submitEditTask() {
+  const taskId = state.editingTaskId;
+  const task = state.editingTask;
+  
+  if (!taskId || !task) {
+    showToast('Task tidak ditemukan', 'error');
+    return;
+  }
+  
+  const title = document.getElementById('editTaskTitle')?.value.trim();
+  if (!title) {
+    showToast('Judul tidak boleh kosong', 'error');
+    return;
+  }
+  
+  let description = document.getElementById('editTaskDesc')?.value.trim() || '';
+  const link = document.getElementById('editTaskLink')?.value.trim() || '';
+  const priority = document.getElementById('editTaskPriority')?.value || 'medium';
+  const status = document.getElementById('editTaskStatus')?.value || task.status;
+  const dueDate = document.getElementById('editTaskDueDate')?.value || '';
+  const estPomodoro = parseInt(document.getElementById('editTaskEstPomodoro')?.value) || 2;
+  
+  // Add link to description if provided
+  if (link) {
+    description = description ? `${description}\n\n🔗 Link: ${link}` : `🔗 Link: ${link}`;
+  }
+  
+  const updatedData = {
+    title,
+    description,
+    priority,
+    status,
+    due_date: dueDate,
+    estimated_pomodoro: estPomodoro
+  };
+  
+  // Update local state immediately (Optimistic UI)
+  Object.assign(task, updatedData);
+  
+  // Update in goalTasks
+  if (state.goalTasks) {
+    const idx = state.goalTasks.findIndex(t => t.task_id === taskId);
+    if (idx >= 0) {
+      state.goalTasks[idx] = { ...state.goalTasks[idx], ...updatedData };
+    }
+  }
+  
+  // Update in kanban
+  if (state.kanban) {
+    const board = state.kanban.board || state.kanban;
+    ['backlog', 'todo', 'progress', 'done'].forEach(s => {
+      if (board[s]) {
+        const idx = board[s].findIndex(t => t.task_id === taskId);
+        if (idx >= 0) {
+          board[s][idx] = { ...board[s][idx], ...updatedData };
+        }
+      }
+    });
+  }
+  
+  // Close modal
+  closeModal('task-edit');
+  
+  // Re-render
+  if (state.selectedGoalId) {
+    const goal = state.goals?.find(g => g.goal_id === state.selectedGoalId);
+    if (goal) renderGoalDetail(goal, state.goalTasks || []);
+  }
+  renderKanban();
+  
+  // Sync to backend
+  addToQueue('updateTask', {
+    task_id: taskId,
+    data: updatedData
+  });
+  syncPendingQueue();
+  
+  showToast('Task diupdate! ✓', 'success');
+  
+  // Clear editing state
+  state.editingTaskId = null;
+  state.editingTask = null;
+}
+
+function deleteTaskFromMenu() {
+  const taskId = state.editingTaskId;
+  
+  if (!taskId) {
+    showToast('Task tidak ditemukan', 'error');
+    return;
+  }
+  
+  if (!confirm('Hapus task ini?')) return;
+  
+  // Remove from local state
+  if (state.goalTasks) {
+    state.goalTasks = state.goalTasks.filter(t => t.task_id !== taskId);
+  }
+  
+  if (state.kanban) {
+    const board = state.kanban.board || state.kanban;
+    ['backlog', 'todo', 'progress', 'done'].forEach(status => {
+      if (board[status]) {
+        board[status] = board[status].filter(t => t.task_id !== taskId);
+      }
+    });
+  }
+  
+  // Close modal
+  closeModal('task-edit');
+  
+  // Re-render
+  if (state.selectedGoalId) {
+    const goal = state.goals?.find(g => g.goal_id === state.selectedGoalId);
+    if (goal) renderGoalDetail(goal, state.goalTasks || []);
+  }
+  renderKanban();
+  
+  // Sync to backend
+  addToQueue('deleteTask', { task_id: taskId });
+  syncPendingQueue();
+  
+  showToast('Task dihapus', 'success');
+  
+  // Clear editing state
+  state.editingTaskId = null;
+  state.editingTask = null;
+}
+
 function openAddTaskForGoal(goalId) {
   state.addTaskGoalId = goalId;
   document.getElementById('taskGoal').value = goalId;

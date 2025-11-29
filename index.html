@@ -4129,6 +4129,71 @@
     </div>
   </div>
   
+  <!-- Modal: Edit Task -->
+  <div class="modal-overlay" id="modal-task-edit" onclick="if(event.target===this)closeModal('task-edit')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">✏️ Edit Task</span>
+        <button class="modal-close" onclick="closeModal('task-edit')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Judul Task</label>
+          <input type="text" class="form-input" id="editTaskTitle" placeholder="Judul task">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi</label>
+          <textarea class="form-input form-textarea" id="editTaskDesc" rows="3" placeholder="Detail atau catatan..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔗 Link Terkait</label>
+          <input type="url" class="form-input" id="editTaskLink" placeholder="https://...">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Prioritas</label>
+            <select class="form-input form-select" id="editTaskPriority">
+              <option value="urgent">🔥 Urgent</option>
+              <option value="high">🔴 High</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+              <option value="someday">⚪ Someday</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-input form-select" id="editTaskStatus">
+              <option value="backlog">📥 Backlog</option>
+              <option value="todo">📋 Todo</option>
+              <option value="progress">🔄 Progress</option>
+              <option value="done">✅ Done</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">📅 Due Date</label>
+            <input type="date" class="form-input" id="editTaskDueDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🍅 Est. Pomodoro</label>
+            <select class="form-input form-select" id="editTaskEstPomodoro">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5+</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button class="btn-submit" style="flex: 1;" onclick="submitEditTask()">💾 Simpan</button>
+          <button class="btn-submit btn-secondary" style="width: auto;" onclick="deleteTaskFromMenu()">🗑️ Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Modal: Goal -->
   <div class="modal-overlay" id="modal-goal" onclick="if(event.target===this)closeModal('goal')">
     <div class="modal">
