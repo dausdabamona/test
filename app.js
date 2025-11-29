@@ -1124,34 +1124,54 @@ function renderVisions() {
     } else {
       v10.innerHTML = '<span class="vision-empty">Tap untuk menentukan visi 10 tahun...</span>';
     }
+    
+    // Prefill modal visi 10 tahun
+    visions.forEach(v => {
+      if (v.vision_10_tahun) {
+        const input = document.getElementById(`vision10${v.bidang.charAt(0) + v.bidang.slice(1).toLowerCase()}`);
+        if (input) input.value = v.vision_10_tahun;
+      }
+    });
   }
   
   // Render Vision 3 Tahun
   if (v3) {
-    const content3 = visions
+    const umum = visions.find(v => v.bidang === 'UMUM');
+    const content3All = visions
       .filter(v => v.vision_3_tahun)
       .map(v => `<div class="vision-item"><strong>${v.bidang}:</strong> ${escapeHtml(v.vision_3_tahun)}</div>`)
       .join('');
     
-    if (content3) {
-      v3.innerHTML = content3;
+    if (content3All) {
+      v3.innerHTML = content3All;
     } else {
       v3.innerHTML = '<span class="vision-empty">Tap untuk menentukan target 3 tahun...</span>';
     }
+    
+    // Prefill modal (cari dari UMUM atau bidang pertama yang punya vision_3_tahun)
+    const v3Data = umum?.vision_3_tahun || visions.find(v => v.vision_3_tahun)?.vision_3_tahun;
+    const v3Input = document.querySelector('#modal-vision-3 textarea');
+    if (v3Input && v3Data) v3Input.value = v3Data;
   }
   
   // Render Vision 1 Tahun
   if (v1) {
-    const content1 = visions
+    const umum = visions.find(v => v.bidang === 'UMUM');
+    const content1All = visions
       .filter(v => v.vision_1_tahun)
       .map(v => `<div class="vision-item"><strong>${v.bidang}:</strong> ${escapeHtml(v.vision_1_tahun)}</div>`)
       .join('');
     
-    if (content1) {
-      v1.innerHTML = content1;
+    if (content1All) {
+      v1.innerHTML = content1All;
     } else {
       v1.innerHTML = '<span class="vision-empty">Tap untuk menentukan target 1 tahun...</span>';
     }
+    
+    // Prefill modal
+    const v1Data = umum?.vision_1_tahun || visions.find(v => v.vision_1_tahun)?.vision_1_tahun;
+    const v1Input = document.querySelector('#modal-vision-1 textarea');
+    if (v1Input && v1Data) v1Input.value = v1Data;
   }
 }
 
@@ -1917,42 +1937,73 @@ function viewGoalDetail(goalId) {
 }
 
 function saveVision(level) {
-  let data = {};
-  
+  // Visi 10 tahun: simpan per bidang (SPIRITUAL, KARIR, RELASI, KESEHATAN)
   if (level === '10') {
-    data = {
-      spiritual: document.getElementById('vision10Spiritual')?.value.trim(),
-      karir: document.getElementById('vision10Karir')?.value.trim(),
-      relasi: document.getElementById('vision10Relasi')?.value.trim(),
-      kesehatan: document.getElementById('vision10Kesehatan')?.value.trim()
+    const bidangData = {
+      SPIRITUAL: document.getElementById('vision10Spiritual')?.value.trim(),
+      KARIR: document.getElementById('vision10Karir')?.value.trim(),
+      RELASI: document.getElementById('vision10Relasi')?.value.trim(),
+      KESEHATAN: document.getElementById('vision10Kesehatan')?.value.trim()
     };
-  } else if (level === '3') {
-    data = { content: document.getElementById('vision3Content')?.value.trim() };
-  } else if (level === '1') {
-    data = { content: document.getElementById('vision1Content')?.value.trim() };
+    
+    // Simpan setiap bidang yang ada isinya
+    let hasSaved = false;
+    for (const [bidang, content] of Object.entries(bidangData)) {
+      if (content) {
+        addToQueue('saveVision', { 
+          data: {
+            bidang: bidang,
+            vision_10_tahun: content
+          }
+        });
+        hasSaved = true;
+        
+        // Update local state
+        if (!state.visions) state.visions = [];
+        const existing = state.visions.find(v => v.bidang === bidang);
+        if (existing) {
+          existing.vision_10_tahun = content;
+        } else {
+          state.visions.push({ bidang, vision_10_tahun: content });
+        }
+      }
+    }
+    
+    if (!hasSaved) {
+      showToast('Isi minimal satu bidang', 'error');
+      return;
+    }
+  } 
+  // Visi 3 tahun & 1 tahun: simpan sebagai bidang UMUM
+  else if (level === '3' || level === '1') {
+    const content = document.getElementById(`vision${level}Content`)?.value.trim();
+    if (!content) {
+      showToast('Isi visi terlebih dahulu', 'error');
+      return;
+    }
+    
+    const fieldName = level === '3' ? 'vision_3_tahun' : 'vision_1_tahun';
+    
+    addToQueue('saveVision', {
+      data: {
+        bidang: 'UMUM',
+        [fieldName]: content
+      }
+    });
+    
+    // Update local state
+    if (!state.visions) state.visions = [];
+    const existing = state.visions.find(v => v.bidang === 'UMUM');
+    if (existing) {
+      existing[fieldName] = content;
+    } else {
+      state.visions.push({ bidang: 'UMUM', [fieldName]: content });
+    }
   }
-  
-  // Validasi - pastikan ada isi
-  const hasContent = Object.values(data).some(v => v && v.length > 0);
-  if (!hasContent) {
-    showToast('Isi minimal satu field', 'error');
-    return;
-  }
-  
-  // Update local state langsung
-  if (!state.visions) state.visions = {};
-  state.visions[level] = data;
-  
-  // Add to queue
-  addToQueue('saveVision', { level, data });
   
   closeModal('vision-' + level);
   showToast('Visi tersimpan! ✓', 'success');
-  
-  // Re-render vision page jika sedang dibuka
-  if (state.pageLoaded.vision) {
-    renderVisions();
-  }
+  renderVisions();
 }
 
 // ============================================
