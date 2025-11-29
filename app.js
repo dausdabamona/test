@@ -1090,6 +1090,13 @@ function renderTaskCard(task, currentStatus) {
 
 // Start Pomodoro langsung dari Task
 function startPomodoroForTask(taskId, taskTitle, estimatedPomodoro) {
+  // Cek apakah sudah ada pomodoro aktif
+  if (state.pomodoro.active) {
+    showToast('⚠️ Ada sesi fokus yang sedang berjalan. Hentikan dulu sebelum memulai yang baru.', 'warning');
+    showPage('pomodoro');
+    return;
+  }
+  
   // Set task sebagai current focus
   state.currentFocusTask = { task_id: taskId, title: taskTitle };
   
@@ -1379,10 +1386,24 @@ function selectPomodoroType(type) {
 }
 
 function quickStartPomodoro(goalId, title) {
+  // Cek apakah sudah ada pomodoro aktif
+  if (state.pomodoro.active) {
+    showToast('⚠️ Ada sesi fokus yang sedang berjalan', 'warning');
+    showPage('pomodoro');
+    return;
+  }
   startPomodoroTimer('POMODORO_25', title);
 }
 
 async function startPomodoroFromModal() {
+  // Cek apakah sudah ada pomodoro aktif
+  if (state.pomodoro.active) {
+    showToast('⚠️ Ada sesi fokus yang sedang berjalan', 'warning');
+    closeModal('pomodoro-start');
+    showPage('pomodoro');
+    return;
+  }
+  
   const task = document.getElementById('pomodoroTask').value.trim();
   const type = document.getElementById('pomodoroType').value;
   
@@ -1409,12 +1430,7 @@ function startPomodoroTimer(type, task) {
     isPaused: false
   };
   
-  // Add to queue - log start
-  addToQueue('logPomodoro', {
-    options: { type, planned_task: task }
-  });
-  
-  // Start timer
+  // Start timer (tidak log saat start, hanya saat complete)
   state.pomodoro.interval = setInterval(updatePomodoroTimer, 1000);
   
   showToast(`${typeInfo.label} dimulai! 🍅`, 'success');
@@ -1459,6 +1475,7 @@ function completePomodoro() {
   clearInterval(state.pomodoro.interval);
   
   const typeInfo = POMODORO_TYPES[state.pomodoro.type];
+  const durationMinutes = Math.floor(typeInfo.duration / 60);
   
   // Play notification sound
   playNotificationSound();
@@ -1466,38 +1483,50 @@ function completePomodoro() {
   // Show completion
   showToast(`${typeInfo.label} selesai! 🎉`, 'success');
   
-  // Add to queue - log completion
+  // Add to queue - log completion with correct format for backend
+  const today = new Date().toISOString().split('T')[0];
   addToQueue('logPomodoro', {
-    type: state.pomodoro.type,
-    task: state.pomodoro.task,
-    duration_minutes: Math.floor(typeInfo.duration / 60)
+    data: {
+      type: state.pomodoro.type,
+      duration: durationMinutes,
+      task_id: state.currentFocusTask?.task_id || '',
+      notes: state.pomodoro.task,
+      started_at: new Date(state.pomodoro.startTime).toISOString(),
+      completed_at: new Date().toISOString(),
+      status: 'completed'
+    }
   });
   
   // Update local stats
   if (state.dailySync?.stats) {
     state.dailySync.stats.pomodoro_count = (state.dailySync.stats.pomodoro_count || 0) + 1;
-    state.dailySync.stats.focus_minutes = (state.dailySync.stats.focus_minutes || 0) + Math.floor(typeInfo.duration / 60);
+    state.dailySync.stats.pomodoro_minutes = (state.dailySync.stats.pomodoro_minutes || 0) + durationMinutes;
     
-    document.getElementById('pomodoroCount').textContent = state.dailySync.stats.pomodoro_count;
-    document.getElementById('focusMinutes').textContent = state.dailySync.stats.focus_minutes + 'm';
+    const countEl = document.getElementById('pomodoroCount');
+    const minutesEl = document.getElementById('focusMinutes');
+    if (countEl) countEl.textContent = state.dailySync.stats.pomodoro_count;
+    if (minutesEl) minutesEl.textContent = state.dailySync.stats.pomodoro_minutes + 'm';
   }
   
   // Reset state
   state.pomodoro.active = false;
+  state.currentFocusTask = null;
   
   // Show completion screen
   const container = document.getElementById('pomodoroContainer');
-  container.innerHTML = `
-    <div class="pomodoro-complete">
-      <div class="complete-icon">🎉</div>
-      <h2>Sesi Selesai!</h2>
-      <p>Kamu telah fokus selama ${Math.floor(typeInfo.duration / 60)} menit</p>
-      <p style="color: var(--gray-600); margin-top: 8px;">Task: ${escapeHtml(state.pomodoro.task)}</p>
-      <button class="btn-submit" style="margin-top: 24px;" onclick="renderPomodoroPage()">
-        🍅 Mulai Sesi Baru
-      </button>
-    </div>
-  `;
+  if (container) {
+    container.innerHTML = `
+      <div class="pomodoro-complete">
+        <div class="complete-icon">🎉</div>
+        <h2>Sesi Selesai!</h2>
+        <p>Kamu telah fokus selama ${durationMinutes} menit</p>
+        <p style="color: var(--gray-600); margin-top: 8px;">Task: ${escapeHtml(state.pomodoro.task)}</p>
+        <button class="btn-submit" style="margin-top: 24px;" onclick="renderPomodoroPage()">
+          🍅 Mulai Sesi Baru
+        </button>
+      </div>
+    `;
+  }
 }
 
 function playNotificationSound() {
@@ -2329,32 +2358,35 @@ async function loadJournalToday() {
     
     state.journals = { morning: null, evening: null };
     
-    if (data && data.length > 0) {
-      data.forEach(entry => {
-        // Parse content
+    // Backend returns { morning: {...}, evening: {...} }
+    if (data) {
+      // Handle morning journal
+      if (data.morning) {
         let content = {};
         try {
-          content = typeof entry.content === 'string' ? JSON.parse(entry.content) : (entry.content || {});
+          content = typeof data.morning.content === 'string' ? JSON.parse(data.morning.content) : (data.morning.content || {});
         } catch (e) {
           content = {};
         }
-        
-        // Detect morning vs evening by type or content
-        const isMorning = entry.type === 'MORNING_JOURNAL' || 
-                         content.gratitude || content.focus || content.affirmation ||
-                         (entry.created_at && new Date(entry.created_at).getHours() < 12);
-        
-        if (isMorning) {
-          state.journals.morning = { ...entry, parsed: content };
-        } else {
-          state.journals.evening = { ...entry, parsed: content };
+        state.journals.morning = { ...data.morning, parsed: content };
+      }
+      
+      // Handle evening journal
+      if (data.evening) {
+        let content = {};
+        try {
+          content = typeof data.evening.content === 'string' ? JSON.parse(data.evening.content) : (data.evening.content || {});
+        } catch (e) {
+          content = {};
         }
-      });
+        state.journals.evening = { ...data.evening, parsed: content };
+      }
     }
     
     renderJournal();
     renderHomeJournals();
   } catch (err) {
+    console.error('Failed to load journal:', err);
     renderJournal();
     renderHomeJournals();
   }
