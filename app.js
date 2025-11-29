@@ -3,7 +3,7 @@
 // ============================================
 
 // Default API URL (bisa diubah di Pengaturan)
-const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwvgSyz0ck_kUfrQoVhl0baQstfzTm3kPNRmFy94BM8nKzZpRVE62kThFnDBVxaL3KmZA/exec';
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyqzXjX3MiE6AcZdaweWEXTXJAhK4T6-BSk8kQ3_nMPqnv3_GKOQUh6jH8QJt7KgySSsg/exec';
 
 // CONFIG - Load dari localStorage jika ada
 const CONFIG = {
