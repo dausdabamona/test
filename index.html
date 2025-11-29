@@ -861,11 +861,39 @@
       border-radius: var(--radius-md);
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
+      border: 2px solid transparent;
     }
-    .sholat-item.done { background: var(--success-light); }
+    .sholat-item:hover { 
+      background: var(--gray-100); 
+      transform: scale(1.02);
+    }
+    .sholat-item:active { 
+      transform: scale(0.98); 
+    }
+    .sholat-item.done { 
+      background: var(--success-light); 
+      border-color: var(--success);
+    }
+    .sholat-item.done::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--success);
+      color: white;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
     .sholat-item .icon { font-size: 24px; margin-bottom: 4px; }
     .sholat-item .name { font-size: 11px; font-weight: 600; }
-    .sholat-item .time { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+    .sholat-item .time { font-size: 10px; color: var(--success); margin-top: 2px; font-weight: 500; }
     
     /* Habit Item */
     .habit-item {

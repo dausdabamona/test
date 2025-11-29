@@ -1765,8 +1765,20 @@ function savePairwiseResults() {
 // ACTIONS
 // ============================================
 function openSholatModal(waktu) {
-  const data = state.dailySync?.sholat?.[waktu];
-  if (data?.done) { showToast(waktu + ' sudah dicatat', 'info'); return; }
+  // Check if already done - sholat is array in v3
+  const sholatArray = state.dailySync?.sholat || [];
+  const existing = Array.isArray(sholatArray) 
+    ? sholatArray.find(s => s.waktu === waktu)
+    : null;
+  
+  if (existing && (existing.status === 'done' || existing.status === true)) {
+    // Already done - offer to cancel
+    if (confirm(`${waktu} sudah dicatat. Batalkan?`)) {
+      toggleSholatDirect(waktu, true);
+    }
+    return;
+  }
+  
   state.selectedSholat = waktu;
   document.getElementById('sholatModalTitle').textContent = '🕌 ' + waktu;
   document.getElementById('sholatJam').value = new Date().toTimeString().slice(0, 5);
@@ -1782,7 +1794,8 @@ function submitSholat() {
   // INSTANT UI UPDATE - Update grid langsung
   const sholatItems = document.querySelectorAll('.sholat-item');
   sholatItems.forEach(item => {
-    if (item.querySelector('.name')?.textContent.toUpperCase() === waktu) {
+    const nameEl = item.querySelector('.name');
+    if (nameEl && nameEl.textContent.toUpperCase() === waktu) {
       item.classList.add('done');
       // Tambah waktu jika belum ada
       let timeEl = item.querySelector('.time');
@@ -1795,27 +1808,97 @@ function submitSholat() {
     }
   });
   
-  // Update local state langsung
+  // Update local state (array format untuk v3)
   if (state.dailySync) {
-    if (!state.dailySync.sholat) state.dailySync.sholat = {};
-    state.dailySync.sholat[waktu] = { done: true, jam_pelaksanaan: jam };
+    if (!Array.isArray(state.dailySync.sholat)) {
+      state.dailySync.sholat = [];
+    }
+    
+    const existing = state.dailySync.sholat.find(s => s.waktu === waktu);
+    if (existing) {
+      existing.status = 'done';
+      existing.lokasi = lokasi;
+      existing.berjamaah = berjamaah;
+    } else {
+      state.dailySync.sholat.push({ 
+        waktu, 
+        status: 'done', 
+        lokasi, 
+        berjamaah,
+        jam_pelaksanaan: jam 
+      });
+    }
     
     // Update stats di header
     if (state.dailySync.stats) {
-      state.dailySync.stats.sholat_completed++;
-      document.getElementById('sholatCount').textContent = 
-        state.dailySync.stats.sholat_completed + '/8';
+      const wajibList = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
+      const completedWajib = state.dailySync.sholat.filter(s => 
+        wajibList.includes(s.waktu) && (s.status === 'done' || s.status === true)
+      ).length;
+      state.dailySync.stats.sholat_completed = completedWajib;
+      
+      const sholatCountEl = document.getElementById('sholatCount');
+      if (sholatCountEl) {
+        sholatCountEl.textContent = completedWajib + '/5';
+      }
     }
   }
   
-  // ADD TO QUEUE - akan sync saat pindah halaman
+  // ADD TO QUEUE - format untuk backend v3
   addToQueue('logSholat', {
-    waktu_sholat: waktu,
-    options: { jam, lokasi, berjamaah }
+    data: {
+      waktu: waktu,
+      tanggal: new Date().toISOString().split('T')[0],
+      status: 'done',
+      lokasi: lokasi,
+      berjamaah: berjamaah,
+      catatan: 'Jam: ' + jam
+    }
   });
   
   closeModal('sholat');
-  showToast('Tersimpan ✓', 'success');
+  showToast('Alhamdulillah! ' + waktu + ' ✓', 'success');
+}
+
+// Direct toggle without modal (for quick toggle)
+function toggleSholatDirect(waktu, isDone) {
+  // Update UI
+  const sholatItems = document.querySelectorAll('.sholat-item');
+  sholatItems.forEach(item => {
+    const nameEl = item.querySelector('.name');
+    if (nameEl && nameEl.textContent.toUpperCase() === waktu) {
+      if (isDone) {
+        item.classList.remove('done');
+        const timeEl = item.querySelector('.time');
+        if (timeEl) timeEl.remove();
+      } else {
+        item.classList.add('done');
+      }
+    }
+  });
+  
+  // Update state
+  if (state.dailySync?.sholat && Array.isArray(state.dailySync.sholat)) {
+    if (isDone) {
+      state.dailySync.sholat = state.dailySync.sholat.filter(s => s.waktu !== waktu);
+    } else {
+      state.dailySync.sholat.push({ waktu, status: 'done' });
+    }
+  }
+  
+  // Send to backend
+  addToQueue('logSholat', {
+    data: {
+      waktu: waktu,
+      tanggal: new Date().toISOString().split('T')[0],
+      status: isDone ? 'pending' : 'done',
+      lokasi: 'rumah',
+      berjamaah: false,
+      catatan: ''
+    }
+  });
+  
+  showToast(isDone ? 'Dibatalkan' : 'Alhamdulillah! ' + waktu + ' ✓', isDone ? 'info' : 'success');
 }
 
 function toggleHabitRosul(habitId, isCompleted) {
