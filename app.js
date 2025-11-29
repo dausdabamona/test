@@ -1,11 +1,14 @@
 // ============================================
-// SYNC PLANNER v3.0 - OPTIMIZED VERSION
+// SYNC PLANNER v4.1 - OPTIMIZED VERSION
 // ============================================
 
-// CONFIG
+// Default API URL (bisa diubah di Pengaturan)
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwvgSyz0ck_kUfrQoVhl0baQstfzTm3kPNRmFy94BM8nKzZpRVE62kThFnDBVxaL3KmZA/exec';
+
+// CONFIG - Load dari localStorage jika ada
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwvgSyz0ck_kUfrQoVhl0baQstfzTm3kPNRmFy94BM8nKzZpRVE62kThFnDBVxaL3KmZA/exec',
-  USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
+  API_URL: localStorage.getItem('syncplanner_api_url') || DEFAULT_API_URL,
+  USER_ID: localStorage.getItem('syncplanner_user_id') || 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
 };
@@ -366,10 +369,7 @@ function showPage(pageName, navEl) {
       state.pageLoaded.refleksi = true;
       break;
     case 'settings':
-      const userIdEl = document.getElementById('settingUserId');
-      const pendingEl = document.getElementById('settingPendingCount');
-      if (userIdEl) userIdEl.textContent = CONFIG.USER_ID;
-      if (pendingEl) pendingEl.textContent = state.pendingQueue.length;
+      loadSettingsPage();
       break;
   }
 }
@@ -736,6 +736,8 @@ function renderSholatGrid(sholatData) {
   const container = document.getElementById('sholatGrid');
   if (!container) return;
   
+  console.log('[Sholat] renderSholatGrid received:', sholatData);
+  
   const sholatList = [
     { id: 'TAHAJUD', name: 'Tahajud', icon: '🌙' },
     { id: 'SUBUH', name: 'Subuh', icon: '🌅' },
@@ -751,7 +753,10 @@ function renderSholatGrid(sholatData) {
   const sholatMap = {};
   if (Array.isArray(sholatData)) {
     sholatData.forEach(s => {
-      sholatMap[s.waktu] = { done: s.status === 'done' || s.status === true, ...s };
+      // Status bisa 'done', true, atau 'TRUE'
+      const isDone = s.status === 'done' || s.status === true || s.status === 'TRUE' || s.status === 'true';
+      sholatMap[s.waktu] = { done: isDone, ...s };
+      console.log('[Sholat] Mapped:', s.waktu, '-> done:', isDone, 'status:', s.status);
     });
   } else if (sholatData) {
     Object.assign(sholatMap, sholatData);
@@ -2956,6 +2961,114 @@ function refreshAllData() {
   state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
+}
+
+// ============================================
+// API URL MANAGEMENT (Settings)
+// ============================================
+function loadSettingsPage() {
+  // Load saved API URL
+  const apiUrlInput = document.getElementById('settingApiUrl');
+  if (apiUrlInput) {
+    apiUrlInput.value = CONFIG.API_URL;
+  }
+  
+  // Show User ID
+  const userIdEl = document.getElementById('settingUserId');
+  if (userIdEl) {
+    userIdEl.textContent = CONFIG.USER_ID;
+  }
+  
+  // Show pending count
+  const pendingEl = document.getElementById('settingPendingCount');
+  if (pendingEl) {
+    pendingEl.textContent = state.pendingQueue.length;
+  }
+  
+  // Test connection
+  testApiConnection();
+}
+
+function saveApiUrl() {
+  const apiUrlInput = document.getElementById('settingApiUrl');
+  const newUrl = apiUrlInput?.value?.trim();
+  
+  if (!newUrl) {
+    showToast('URL tidak boleh kosong', 'error');
+    return;
+  }
+  
+  // Validasi format URL
+  if (!newUrl.startsWith('https://script.google.com/macros/s/')) {
+    showToast('URL harus dari Google Apps Script', 'error');
+    return;
+  }
+  
+  if (!newUrl.endsWith('/exec')) {
+    showToast('URL harus diakhiri /exec', 'error');
+    return;
+  }
+  
+  // Simpan ke localStorage
+  localStorage.setItem('syncplanner_api_url', newUrl);
+  CONFIG.API_URL = newUrl;
+  
+  showToast('URL API tersimpan! ✓', 'success');
+  
+  // Test koneksi dengan URL baru
+  testApiConnection();
+}
+
+async function testApiConnection() {
+  const statusEl = document.getElementById('settingApiStatus');
+  if (statusEl) statusEl.innerHTML = '🔄 Testing...';
+  
+  try {
+    const response = await fetch(CONFIG.API_URL + '?action=ping&user_id=' + CONFIG.USER_ID, {
+      method: 'GET',
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success || data.status === 'ok' || data.pong) {
+        if (statusEl) statusEl.innerHTML = '✅ <span style="color: var(--success);">Terhubung</span>';
+        return true;
+      }
+    }
+    
+    // Coba dengan getDailySync
+    const testData = await apiGet('getDailySync');
+    if (testData) {
+      if (statusEl) statusEl.innerHTML = '✅ <span style="color: var(--success);">Terhubung</span>';
+      return true;
+    }
+    
+    if (statusEl) statusEl.innerHTML = '⚠️ <span style="color: var(--warning);">Tidak dapat terhubung</span>';
+    return false;
+  } catch (err) {
+    console.error('[API Test] Error:', err);
+    if (statusEl) statusEl.innerHTML = '❌ <span style="color: var(--danger);">Error: ' + err.message + '</span>';
+    return false;
+  }
+}
+
+function resetAllSettings() {
+  if (!confirm('Reset semua pengaturan? Data lokal akan dihapus.')) return;
+  
+  localStorage.removeItem('syncplanner_api_url');
+  localStorage.removeItem('syncplanner_user_id');
+  localStorage.removeItem('pomodoroSettings');
+  localStorage.removeItem('pendingQueue');
+  
+  // Reset CONFIG
+  CONFIG.API_URL = DEFAULT_API_URL;
+  
+  showToast('Pengaturan direset! Memuat ulang...', 'info');
+  
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
 }
 
 // Force sync sekarang (dari header button atau settings)

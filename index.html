@@ -4127,7 +4127,24 @@
     <div class="page" id="page-settings">
       <div class="section-title">⚙️ Pengaturan</div>
       
+      <!-- API URL Configuration -->
       <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔗 URL Backend API</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <input type="url" id="settingApiUrl" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 12px;">
+          <div style="font-size: 11px; color: var(--gray-500); margin-top: 6px;">
+            Masukkan URL deployment dari Google Apps Script
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-submit" onclick="saveApiUrl()" style="flex: 1;">💾 Simpan URL</button>
+          <button class="btn-submit btn-secondary" onclick="testApiConnection()" style="flex: 1;">🧪 Test</button>
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 16px;">
         <div class="card-header">
           <span class="card-title">🌐 Status API</span>
         </div>
@@ -4158,13 +4175,20 @@
           <span class="card-title">ℹ️ Tentang</span>
         </div>
         <div style="font-size: 13px; line-height: 1.8;">
-          <p><strong>Sync Planner v3.0</strong></p>
+          <p><strong>Sync Planner v4.1</strong></p>
           <p style="color: var(--gray-600);">Produktivitas Islami untuk ASN</p>
           <p style="font-size: 11px; color: var(--gray-500); margin-top: 8px;">✨ Full Features Edition</p>
         </div>
       </div>
       
       <button class="btn-submit" onclick="refreshAllData()" style="margin-top: 16px;">🔄 Refresh Data</button>
+      
+      <div class="card" style="margin-top: 16px; background: var(--danger-light);">
+        <div class="card-header">
+          <span class="card-title" style="color: var(--danger);">⚠️ Reset</span>
+        </div>
+        <button class="btn-submit" style="background: var(--danger);" onclick="resetAllSettings()">🗑️ Reset Semua Pengaturan</button>
+      </div>
     </div>
   </main>
   
