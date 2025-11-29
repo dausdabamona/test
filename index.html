@@ -1148,11 +1148,205 @@
     .dont-mini-item {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      background: #fff5f5;
+      border-left: 3px solid #e53e3e;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+    .dont-mini-item.obeyed {
+      background: var(--success-light);
+      border-left-color: var(--success);
+    }
+    .dont-mini-item.violated {
+      background: #fee2e2;
+      border-left-color: #dc2626;
+    }
+    .dont-item-text {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+    .dont-item-text span:last-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dont-item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .dont-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid var(--gray-300);
+      background: white;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dont-btn.obey:hover, .dont-btn.obey.active {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+    .dont-btn.violate:hover, .dont-btn.violate.active {
+      background: #dc2626;
+      color: white;
+      border-color: #dc2626;
+    }
+    
+    /* Journal Display */
+    .journal-display {
+      padding: 8px 0;
+    }
+    .journal-item {
+      margin-bottom: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .journal-item .label {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    /* Journal Evening Card */
+    .journal-card.evening {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+      color: white;
+    }
+    .journal-card.evening .status.pending {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    .journal-card.evening .status.done {
+      background: var(--success);
+    }
+    
+    /* Refleksi Page */
+    .refleksi-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .refleksi-stat {
+      text-align: center;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+    }
+    .refleksi-stat .value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .refleksi-stat .label {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+    .refleksi-schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .refleksi-schedule-item:last-child {
+      border-bottom: none;
+    }
+    .refleksi-schedule-item .time {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 50px;
+    }
+    .refleksi-schedule-item .activity {
+      flex: 1;
+    }
+    .refleksi-dont-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .refleksi-dont-item.obeyed { color: var(--success); }
+    .refleksi-dont-item.violated { color: #dc2626; text-decoration: line-through; }
+    .refleksi-task-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+      justify-content: space-between;
       gap: 8px;
       padding: 8px;
       background: #fff5f5;
       border-left: 3px solid #e53e3e;
       border-radius: var(--radius-sm);
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .dont-mini-item.obeyed {
+      background: var(--success-light);
+      border-left-color: var(--success);
+    }
+    .dont-mini-item.violated {
+      background: #fee2e2;
+      border-left-color: #dc2626;
+    }
+    .dont-item-text {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .dont-item-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .dont-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.5;
+      transition: all 0.2s;
+    }
+    .dont-btn:hover { opacity: 1; }
+    .dont-btn.obey { background: var(--success-light); color: var(--success); }
+    .dont-btn.violate { background: #fee2e2; color: #dc2626; }
+    .dont-btn.active { opacity: 1; transform: scale(1.1); }
+    .dont-btn.obey.active { background: var(--success); color: white; }
+    .dont-btn.violate.active { background: #dc2626; color: white; }
+    
+    /* Refleksi Page */
+    .refleksi-section {
+      padding: 12px;
+      font-size: 13px;
+    }
+    .refleksi-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .refleksi-item:last-child { border-bottom: none; }
+    .refleksi-item.done { color: var(--success); }
+    .refleksi-item.missed { color: var(--gray-400); text-decoration: line-through; }
       font-size: 12px;
     }
     .dont-mini-item .icon { font-size: 14px; }
@@ -1268,6 +1462,23 @@
         </div>
       </div>
       
+      <!-- Jurnal Malam (tampil setelah jam 17:00) -->
+      <div class="journal-card evening" id="journalEveningCard" style="display: none;">
+        <div class="header">
+          <div class="title">🌙 Jurnal Malam</div>
+          <span class="status pending" id="journalEveningStatus">Belum ditulis</span>
+        </div>
+        <div id="journalEveningContent">
+          <div class="content" style="color: var(--gray-400); font-style: italic;">
+            Akhiri hari dengan refleksi dan rasa syukur...
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis Jurnal</button>
+            <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+          </div>
+        </div>
+      </div>
+      
       <!-- Row: Tracker Sholat & Sunnah + Don't List -->
       <div class="home-two-column">
         <!-- Left: Sholat & Sunnah -->
@@ -1329,9 +1540,9 @@
           <span class="icon">📋</span>
           <span class="label">Task</span>
         </button>
-        <button class="action-btn" onclick="openModal('goal')">
-          <span class="icon">🎯</span>
-          <span class="label">Goal</span>
+        <button class="action-btn" onclick="showPage('refleksi')">
+          <span class="icon">🌙</span>
+          <span class="label">Refleksi</span>
         </button>
         <button class="action-btn" onclick="showPage('kanban')">
           <span class="icon">📊</span>
@@ -1341,6 +1552,12 @@
       
       <!-- Jurnal Malam -->
       <div class="section-title">🌙 Refleksi Hari Ini</div>
+      <div class="card" style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 13px;">Review aktivitas sebelum jurnal malam</span>
+          <button class="btn-submit btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px;" onclick="showPage('refleksi')">📊 Buka Refleksi</button>
+        </div>
+      </div>
       <div class="journal-card evening" id="journalEveningCard">
         <div class="header">
           <div class="title">🌙 Jurnal Malam</div>
@@ -1778,6 +1995,162 @@
           <p style="font-size: 12px;">Belum ada riwayat review</p>
         </div>
       </div>
+    </div>
+    
+    <!-- ==================== PAGE: REFLEKSI (untuk Jurnal Malam) ==================== -->
+    <div class="page" id="page-refleksi">
+      <div class="section-title">🌙 Refleksi Hari Ini</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Review aktivitas hari ini sebelum menulis jurnal malam</p>
+      
+      <!-- Jadwal Best Week Hari Ini -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📆 Jadwal Ideal Hari Ini</span>
+          <span class="badge info" id="refleksiBestWeekDay">-</span>
+        </div>
+        <div id="refleksiBestWeek" class="refleksi-section">
+          <p style="color: var(--gray-400); font-size: 12px;">Belum ada jadwal best week</p>
+        </div>
+      </div>
+      
+      <!-- Sholat Hari Ini -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🕌 Sholat Hari Ini</span>
+          <span class="badge" id="refleksiSholatBadge">0/8</span>
+        </div>
+        <div id="refleksiSholat" class="refleksi-section"></div>
+      </div>
+      
+      <!-- Sunnah/Habit Hari Ini -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📿 Sunnah Hari Ini</span>
+          <span class="badge" id="refleksiHabitBadge">0/11</span>
+        </div>
+        <div id="refleksiHabit" class="refleksi-section"></div>
+      </div>
+      
+      <!-- Task yang Dikerjakan -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">✅ Task Selesai</span>
+          <span class="badge success" id="refleksiTaskBadge">0</span>
+        </div>
+        <div id="refleksiTasks" class="refleksi-section"></div>
+      </div>
+      
+      <!-- Pomodoro -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🍅 Fokus Hari Ini</span>
+          <span class="badge warning" id="refleksiPomodoroBadge">0 sesi</span>
+        </div>
+        <div id="refleksiPomodoro" class="refleksi-section"></div>
+      </div>
+      
+      <!-- Don't List -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🚫 Don't List</span>
+        </div>
+        <div id="refleksiDontList" class="refleksi-section"></div>
+      </div>
+      
+      <!-- Jurnal Pagi -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">☀️ Jurnal Pagi</span>
+        </div>
+        <div id="refleksiJurnalPagi" class="refleksi-section">
+          <p style="color: var(--gray-400); font-size: 12px;">Belum ditulis</p>
+        </div>
+      </div>
+      
+      <!-- Tombol Tulis Jurnal Malam -->
+      <button class="btn-submit" style="margin-top: 20px; width: 100%;" onclick="openJournalForm('evening')">
+        🌙 Tulis Jurnal Malam
+      </button>
+    </div>
+    
+    <!-- ==================== PAGE: BEST WEEK ==================== -->
+    <!-- ==================== PAGE: REFLEKSI ==================== -->
+    <div class="page" id="page-refleksi">
+      <div class="section-title">📊 Refleksi Hari Ini</div>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Review aktivitas hari ini untuk jurnal malam</p>
+      
+      <!-- Best Week Template untuk Hari Ini -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📆 Jadwal Ideal Hari Ini</span>
+          <span class="badge info" id="refleksiHariIni">-</span>
+        </div>
+        <div id="refleksiBestWeek">
+          <div class="empty-state" style="padding: 16px;">
+            <p style="font-size: 12px;">Belum ada jadwal ideal</p>
+            <button class="btn-link" onclick="showPage('bestweek')">Atur Best Week →</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Ringkasan Ibadah -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">🕌 Ibadah Hari Ini</span>
+        </div>
+        <div class="refleksi-stats" id="refleksiIbadah">
+          <div class="refleksi-stat">
+            <div class="value" id="refleksiSholat">0/8</div>
+            <div class="label">Sholat</div>
+          </div>
+          <div class="refleksi-stat">
+            <div class="value" id="refleksiSunnah">0/11</div>
+            <div class="label">Sunnah</div>
+          </div>
+          <div class="refleksi-stat">
+            <div class="value" id="refleksiPomodoro">0</div>
+            <div class="label">Pomodoro</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Don't List Status -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">🚫 Don't List</span>
+          <span class="badge" id="refleksiDontBadge">-</span>
+        </div>
+        <div id="refleksiDontList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Task Selesai -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">✅ Task Selesai Hari Ini</span>
+        </div>
+        <div id="refleksiTaskDone">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Jurnal Pagi -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">☀️ Jurnal Pagi</span>
+        </div>
+        <div id="refleksiJurnalPagi">
+          <div class="empty-state" style="padding: 12px;">
+            <p style="font-size: 12px; color: var(--gray-400);">Belum ditulis</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tombol Tulis Jurnal Malam -->
+      <button class="btn-submit" style="margin-top: 20px; width: 100%;" onclick="openJournalForm('evening')">
+        🌙 Tulis Jurnal Malam
+      </button>
     </div>
     
     <!-- ==================== PAGE: BEST WEEK ==================== -->

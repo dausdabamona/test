@@ -354,6 +354,10 @@ function showPage(pageName, navEl) {
       }
       state.pageLoaded.wellbeing = true;
       break;
+    case 'refleksi':
+      renderRefleksiPage();
+      state.pageLoaded.refleksi = true;
+      break;
     case 'settings':
       const userIdEl = document.getElementById('settingUserId');
       const pendingEl = document.getElementById('settingPendingCount');
@@ -420,10 +424,12 @@ async function loadAllData() {
     Promise.all([
       loadGoals(true),
       loadKanban(false),
-      loadDontList()
+      loadDontList(),
+      loadJournalToday()
     ]).then(() => {
-      // After kanban loaded, render today focus
+      // After data loaded, render home components
       renderTodayFocus();
+      renderHomeJournals();
     }).catch(() => {});
     
     // Load less critical in background
@@ -743,12 +749,13 @@ function renderSunnahMiniList(habits) {
   if (badge) badge.textContent = `${completedCount}/${habitsList.length}`;
 }
 
-// Render Don't List Mini untuk Beranda
+// Render Don't List Mini untuk Beranda dengan checklist
 function renderDontListMini() {
   const container = document.getElementById('dontListMini');
   if (!container) return;
   
   const items = state.dontList || [];
+  const today = new Date().toISOString().split('T')[0];
   
   if (items.length === 0) {
     container.innerHTML = `<div style="padding: 12px; text-align: center;">
@@ -758,12 +765,50 @@ function renderDontListMini() {
     return;
   }
   
-  container.innerHTML = items.slice(0, 4).map(item => `
-    <div class="dont-mini-item">
-      <span class="icon">🚫</span>
-      <span>${escapeHtml(item.item || item.content)}</span>
-    </div>
-  `).join('');
+  // Get today's violations from state
+  const todayViolations = state.dontViolations || {};
+  
+  container.innerHTML = items.slice(0, 4).map(item => {
+    const itemId = item.dont_id || item.id;
+    const isViolated = todayViolations[itemId] === true;
+    const isObeyed = todayViolations[itemId] === false;
+    
+    return `
+    <div class="dont-mini-item ${isViolated ? 'violated' : ''} ${isObeyed ? 'obeyed' : ''}">
+      <div class="dont-item-text">
+        <span class="icon">${isViolated ? '❌' : isObeyed ? '✅' : '🚫'}</span>
+        <span>${escapeHtml(item.item || item.content)}</span>
+      </div>
+      <div class="dont-item-actions">
+        <button class="dont-btn obey ${isObeyed ? 'active' : ''}" onclick="event.stopPropagation();markDontItem('${itemId}', false)" title="Dipatuhi">✓</button>
+        <button class="dont-btn violate ${isViolated ? 'active' : ''}" onclick="event.stopPropagation();markDontItem('${itemId}', true)" title="Dilanggar">✗</button>
+      </div>
+    </div>`;
+  }).join('') + 
+  `<button class="btn-link" style="font-size: 11px; padding: 4px 0; margin-top: 4px;" onclick="showPage('dontlist')">Lihat Semua →</button>`;
+}
+
+// Mark don't list item as obeyed or violated
+function markDontItem(dontId, isViolated) {
+  if (!state.dontViolations) state.dontViolations = {};
+  
+  // Toggle if same value
+  if (state.dontViolations[dontId] === isViolated) {
+    delete state.dontViolations[dontId];
+  } else {
+    state.dontViolations[dontId] = isViolated;
+  }
+  
+  // Save to queue
+  const today = new Date().toISOString().split('T')[0];
+  addToQueue('logDontViolation', {
+    dont_id: dontId,
+    tanggal: today,
+    violated: isViolated
+  });
+  
+  renderDontListMini();
+  showToast(isViolated ? 'Tercatat dilanggar' : 'Alhamdulillah dipatuhi! ✓', isViolated ? 'warning' : 'success');
 }
 
 function renderBrainDumpMini() {
@@ -2278,14 +2323,26 @@ function deleteBrainDump(logId) {
 // ============================================
 async function loadJournalToday() {
   try {
-    const data = await apiGet('getJournal', { date: todayString() });
+    const data = await apiGet('getJournalToday');
     
     state.journals = { morning: null, evening: null };
     
     if (data && data.length > 0) {
       data.forEach(entry => {
-        const content = parseJSON(entry.content) || {};
-        if (content.type === 'morning' || (entry.time && entry.time < '12:00')) {
+        // Parse content
+        let content = {};
+        try {
+          content = typeof entry.content === 'string' ? JSON.parse(entry.content) : (entry.content || {});
+        } catch (e) {
+          content = {};
+        }
+        
+        // Detect morning vs evening by type or content
+        const isMorning = entry.type === 'MORNING_JOURNAL' || 
+                         content.gratitude || content.focus || content.affirmation ||
+                         (entry.created_at && new Date(entry.created_at).getHours() < 12);
+        
+        if (isMorning) {
           state.journals.morning = { ...entry, parsed: content };
         } else {
           state.journals.evening = { ...entry, parsed: content };
@@ -2294,9 +2351,10 @@ async function loadJournalToday() {
     }
     
     renderJournal();
+    renderHomeJournals();
   } catch (err) {
-    console.error('Failed to load journal:', err);
     renderJournal();
+    renderHomeJournals();
   }
 }
 
@@ -2860,48 +2918,98 @@ function openJournalForm(type) {
 }
 
 function renderHomeJournals() {
-  // Morning
+  // Morning Journal
   const morningCard = document.getElementById('journalMorningCard');
   const morningStatus = document.getElementById('journalMorningStatus');
   const morningContent = document.getElementById('journalMorningContent');
   
-  if (morningCard && state.journals.morning) {
-    const m = state.journals.morning.parsed || {};
-    morningStatus.textContent = '✓ Ditulis';
-    morningStatus.className = 'status done';
-    morningContent.innerHTML = `
-      <div class="content">
-        <div class="label">🙏 Syukur:</div>
-        <div>${escapeHtml(m.gratitude || '-')}</div>
-        <div class="label">🎯 Fokus:</div>
-        <div>${escapeHtml(m.focus || '-')}</div>
-        <div class="label">✨ Afirmasi:</div>
-        <div>${escapeHtml(m.affirmation || '-')}</div>
-      </div>
-      <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Edit</button>
-    `;
+  // Get morning journal from dailySync or state.journals
+  let morningData = state.journals?.morning;
+  if (!morningData && state.dailySync?.journals?.morning) {
+    morningData = state.dailySync.journals.morning;
   }
   
-  // Evening
-  const eveningCard = document.getElementById('journalEveningCard');
-  const eveningStatus = document.getElementById('journalEveningStatus');
-  const eveningContent = document.getElementById('journalEveningContent');
+  if (morningCard && morningData) {
+    // Parse content if it's a string
+    let m = {};
+    if (typeof morningData.content === 'string') {
+      try { m = JSON.parse(morningData.content); } catch(e) { m = {}; }
+    } else if (morningData.parsed) {
+      m = morningData.parsed;
+    } else if (morningData.content) {
+      m = morningData.content;
+    }
+    
+    if (m.gratitude || m.focus || m.affirmation) {
+      morningStatus.textContent = '✓ Ditulis';
+      morningStatus.className = 'status done';
+      morningContent.innerHTML = `
+        <div class="journal-display">
+          ${m.gratitude ? `<div class="journal-item"><span class="label">🙏 Syukur:</span> ${escapeHtml(m.gratitude)}</div>` : ''}
+          ${m.focus ? `<div class="journal-item"><span class="label">🎯 Fokus:</span> ${escapeHtml(m.focus)}</div>` : ''}
+          ${m.affirmation ? `<div class="journal-item"><span class="label">✨ Afirmasi:</span> ${escapeHtml(m.affirmation)}</div>` : ''}
+        </div>
+        <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Edit</button>
+      `;
+    }
+  }
   
-  if (eveningCard && state.journals.evening) {
-    const e = state.journals.evening.parsed || {};
-    eveningStatus.textContent = '✓ Ditulis';
-    eveningStatus.className = 'status done';
-    eveningContent.innerHTML = `
-      <div class="content">
-        <div class="label">🏆 Wins:</div>
-        <div>${escapeHtml(e.wins || '-')}</div>
-        <div class="label">🔧 Improve:</div>
-        <div>${escapeHtml(e.improve || '-')}</div>
-        <div class="label">💡 Pelajaran:</div>
-        <div>${escapeHtml(e.lesson || '-')}</div>
-      </div>
-      <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('evening')">✏️ Edit</button>
-    `;
+  // Evening Journal - tampilkan card jika sudah sore (setelah jam 17:00)
+  const now = new Date();
+  const isEvening = now.getHours() >= 17;
+  const eveningCard = document.getElementById('journalEveningCard');
+  
+  if (eveningCard) {
+    if (isEvening) {
+      eveningCard.style.display = 'block';
+      
+      let eveningData = state.journals?.evening;
+      if (!eveningData && state.dailySync?.journals?.evening) {
+        eveningData = state.dailySync.journals.evening;
+      }
+      
+      const eveningStatus = document.getElementById('journalEveningStatus');
+      const eveningContent = document.getElementById('journalEveningContent');
+      
+      if (eveningData) {
+        let e = {};
+        if (typeof eveningData.content === 'string') {
+          try { e = JSON.parse(eveningData.content); } catch(err) { e = {}; }
+        } else if (eveningData.parsed) {
+          e = eveningData.parsed;
+        } else if (eveningData.content) {
+          e = eveningData.content;
+        }
+        
+        if (e.wins || e.improve || e.lesson) {
+          eveningStatus.textContent = '✓ Ditulis';
+          eveningStatus.className = 'status done';
+          eveningContent.innerHTML = `
+            <div class="journal-display">
+              ${e.wins ? `<div class="journal-item"><span class="label">🏆 Wins:</span> ${escapeHtml(e.wins)}</div>` : ''}
+              ${e.improve ? `<div class="journal-item"><span class="label">🔧 Improve:</span> ${escapeHtml(e.improve)}</div>` : ''}
+              ${e.lesson ? `<div class="journal-item"><span class="label">💡 Pelajaran:</span> ${escapeHtml(e.lesson)}</div>` : ''}
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="btn-submit btn-secondary" style="flex:1;" onclick="openJournalForm('evening')">✏️ Edit</button>
+              <button class="btn-submit" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+            </div>
+          `;
+        } else {
+          eveningContent.innerHTML = `
+            <div class="content" style="color: var(--gray-400); font-style: italic;">
+              Akhiri hari dengan refleksi dan rasa syukur...
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis Jurnal</button>
+              <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
+            </div>
+          `;
+        }
+      }
+    } else {
+      eveningCard.style.display = 'none';
+    }
   }
 }
 
@@ -3409,6 +3517,131 @@ function savePomodoroSettings() {
   updatePomodoroLabels();
   closeModal('pomodoro-settings');
   showToast('Settings tersimpan! ✓', 'success');
+}
+
+// ============================================
+// REFLEKSI PAGE - untuk Jurnal Malam
+// ============================================
+function renderRefleksiPage() {
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const today = new Date();
+  const dayNum = today.getDay() === 0 ? 7 : today.getDay();
+  
+  // Set day label
+  const dayLabel = document.getElementById('refleksiHariIni');
+  if (dayLabel) dayLabel.textContent = days[today.getDay()];
+  
+  // Best Week Template
+  const bestWeekContainer = document.getElementById('refleksiBestWeek');
+  if (bestWeekContainer) {
+    const jadwal = state.bestWeek?.[dayNum] || [];
+    if (jadwal.length > 0) {
+      bestWeekContainer.innerHTML = jadwal.map(j => `
+        <div class="refleksi-schedule-item">
+          <span class="time">${j.jam || j.time || ''}</span>
+          <span class="activity">${escapeHtml(j.aktivitas || j.activity || '')}</span>
+        </div>
+      `).join('');
+    } else {
+      bestWeekContainer.innerHTML = `<div style="padding: 12px; text-align: center;">
+        <p style="color: var(--gray-400); font-size: 12px;">Belum ada jadwal ideal untuk hari ini</p>
+        <button class="btn-link" onclick="showPage('bestweek')">Atur Best Week →</button>
+      </div>`;
+    }
+  }
+  
+  // Stats Ibadah
+  const sholatStat = document.getElementById('refleksiSholat');
+  const sunnahStat = document.getElementById('refleksiSunnah');
+  const pomoStat = document.getElementById('refleksiPomodoro');
+  
+  if (sholatStat) {
+    sholatStat.textContent = (state.dailySync?.stats?.sholat_completed || 0) + '/8';
+  }
+  if (sunnahStat) {
+    sholatStat.textContent = (state.dailySync?.stats?.habits_completed || 0) + '/' + (state.dailySync?.stats?.habits_total || 11);
+  }
+  if (pomoStat) {
+    pomoStat.textContent = state.dailySync?.stats?.pomodoro_count || 0;
+  }
+  
+  // Don't List dengan status
+  const dontContainer = document.getElementById('refleksiDontList');
+  const dontBadge = document.getElementById('refleksiDontBadge');
+  if (dontContainer) {
+    const items = state.dontList || [];
+    const violations = state.dontViolations || {};
+    
+    if (items.length > 0) {
+      const obeyed = items.filter(i => violations[i.dont_id || i.id] === false).length;
+      const violated = items.filter(i => violations[i.dont_id || i.id] === true).length;
+      if (dontBadge) dontBadge.textContent = `${obeyed}✓ ${violated}✗`;
+      
+      dontContainer.innerHTML = items.map(item => {
+        const itemId = item.dont_id || item.id;
+        const status = violations[itemId];
+        const statusClass = status === true ? 'violated' : status === false ? 'obeyed' : '';
+        const icon = status === true ? '❌' : status === false ? '✅' : '⚪';
+        return `<div class="refleksi-dont-item ${statusClass}">
+          ${icon} ${escapeHtml(item.item || item.content)}
+        </div>`;
+      }).join('');
+    } else {
+      dontContainer.innerHTML = '<p style="padding: 12px; color: var(--gray-400); font-size: 12px;">Belum ada don\'t list</p>';
+    }
+  }
+  
+  // Task Selesai Hari Ini
+  const taskContainer = document.getElementById('refleksiTaskDone');
+  if (taskContainer) {
+    const board = state.kanban?.board || state.kanban || {};
+    const doneTasks = board.done || [];
+    
+    // Filter task selesai hari ini (simple check)
+    const todayTasks = doneTasks.slice(0, 10);
+    
+    if (todayTasks.length > 0) {
+      taskContainer.innerHTML = todayTasks.map(t => `
+        <div class="refleksi-task-item">✅ ${escapeHtml(t.title)}</div>
+      `).join('');
+    } else {
+      taskContainer.innerHTML = '<p style="padding: 12px; color: var(--gray-400); font-size: 12px;">Belum ada task selesai</p>';
+    }
+  }
+  
+  // Jurnal Pagi
+  const jurnalContainer = document.getElementById('refleksiJurnalPagi');
+  if (jurnalContainer) {
+    let morningData = state.journals?.morning;
+    if (!morningData && state.dailySync?.journals?.morning) {
+      morningData = state.dailySync.journals.morning;
+    }
+    
+    if (morningData) {
+      let m = {};
+      if (typeof morningData.content === 'string') {
+        try { m = JSON.parse(morningData.content); } catch(e) { m = {}; }
+      } else if (morningData.parsed) {
+        m = morningData.parsed;
+      } else if (morningData.content) {
+        m = morningData.content;
+      }
+      
+      if (m.gratitude || m.focus || m.affirmation) {
+        jurnalContainer.innerHTML = `
+          <div class="journal-display" style="padding: 12px;">
+            ${m.gratitude ? `<div class="journal-item"><span class="label">🙏 Syukur:</span> ${escapeHtml(m.gratitude)}</div>` : ''}
+            ${m.focus ? `<div class="journal-item"><span class="label">🎯 Fokus:</span> ${escapeHtml(m.focus)}</div>` : ''}
+            ${m.affirmation ? `<div class="journal-item"><span class="label">✨ Afirmasi:</span> ${escapeHtml(m.affirmation)}</div>` : ''}
+          </div>
+        `;
+      } else {
+        jurnalContainer.innerHTML = '<p style="padding: 12px; color: var(--gray-400); font-size: 12px;">Jurnal pagi belum ditulis</p>';
+      }
+    } else {
+      jurnalContainer.innerHTML = '<p style="padding: 12px; color: var(--gray-400); font-size: 12px;">Jurnal pagi belum ditulis</p>';
+    }
+  }
 }
 
 // ============================================
