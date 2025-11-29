@@ -198,6 +198,61 @@
       margin: 24px 0 12px;
     }
     
+    /* ============================================
+       DAILY QUOTE CARD
+       ============================================ */
+    .quote-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: white;
+      position: relative;
+      box-shadow: var(--shadow-md);
+    }
+    .quote-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .quote-content {
+      flex: 1;
+    }
+    .quote-text {
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .quote-source {
+      font-size: 12px;
+      opacity: 0.85;
+      font-style: italic;
+    }
+    .quote-refresh {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .quote-refresh:hover {
+      background: rgba(255,255,255,0.3);
+      transform: rotate(180deg);
+    }
+    
     /* Journal Cards */
     .journal-card {
       background: white;
@@ -2799,21 +2854,14 @@
   <main class="main">
     <!-- ==================== PAGE: HOME ==================== -->
     <div class="page active" id="page-home">
-      <!-- Jurnal Malam - Rencana Hari Ini (tampil di atas) -->
-      <div class="journal-card evening" id="journalEveningCard">
-        <div class="header">
-          <div class="title">🌙 Rencana & Refleksi</div>
-          <span class="status pending" id="journalEveningStatus">Belum ditulis</span>
+      <!-- Daily Quote dari NLP/Sedona/Atomic Habits -->
+      <div class="quote-card" id="dailyQuoteCard">
+        <div class="quote-icon">💡</div>
+        <div class="quote-content" id="dailyQuoteContent">
+          <div class="quote-text">"Perubahan kecil yang konsisten menciptakan hasil luar biasa."</div>
+          <div class="quote-source">— Atomic Habits</div>
         </div>
-        <div id="journalEveningContent">
-          <div class="content" style="color: var(--gray-400); font-style: italic;">
-            Tuliskan rencana atau refleksi hari ini...
-          </div>
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis</button>
-            <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
-          </div>
-        </div>
+        <button class="quote-refresh" onclick="refreshDailyQuote()" title="Quote lain">🔄</button>
       </div>
       
       <!-- Jurnal Pagi - Syukur & Fokus -->

@@ -3110,42 +3110,50 @@ function deleteBrainDump(logId) {
 // ============================================
 async function loadJournalToday() {
   try {
+    console.log('[Journal] Loading journal today...');
+    
     // Try dedicated endpoint first
     const data = await apiGet('getJournalToday');
+    console.log('[Journal] API response:', data);
     
     state.journals = { morning: null, evening: null };
     
     // Backend returns { morning: {...}, evening: {...} }
     if (data) {
       // Handle morning journal
-      if (data.morning) {
+      if (data.morning && data.morning.content) {
         let content = {};
         try {
           content = typeof data.morning.content === 'string' ? JSON.parse(data.morning.content) : (data.morning.content || {});
         } catch (e) {
+          console.warn('[Journal] Failed to parse morning content:', e);
           content = {};
         }
         state.journals.morning = { ...data.morning, parsed: content };
+        console.log('[Journal] Morning journal loaded:', state.journals.morning);
       }
       
       // Handle evening journal
-      if (data.evening) {
+      if (data.evening && data.evening.content) {
         let content = {};
         try {
           content = typeof data.evening.content === 'string' ? JSON.parse(data.evening.content) : (data.evening.content || {});
         } catch (e) {
+          console.warn('[Journal] Failed to parse evening content:', e);
           content = {};
         }
         state.journals.evening = { ...data.evening, parsed: content };
+        console.log('[Journal] Evening journal loaded:', state.journals.evening);
       }
     }
     
-    renderJournal();
+    return state.journals;
   } catch (err) {
-    console.error('Failed to load journal from dedicated endpoint, using dailySync:', err);
+    console.error('[Journal] Failed to load from API:', err.message);
     
     // Fallback: use dailySync journals if available
     if (state.dailySync?.journals) {
+      console.log('[Journal] Using dailySync fallback');
       state.journals = { morning: null, evening: null };
       
       if (state.dailySync.journals.morning) {
@@ -3169,9 +3177,11 @@ async function loadJournalToday() {
         }
         state.journals.evening = { ...state.dailySync.journals.evening, parsed: content };
       }
+    } else {
+      state.journals = { morning: null, evening: null };
     }
     
-    renderJournal();
+    return state.journals;
   }
 }
 
@@ -4782,12 +4792,121 @@ function renderRefleksiPage() {
 }
 
 // ============================================
+// DAILY QUOTE SYSTEM
+// ============================================
+const DAILY_QUOTES = [
+  // NLP Quotes
+  { text: "Peta bukanlah wilayah. Persepsi kita tentang dunia bukanlah realita sebenarnya.", source: "NLP - Presupposition" },
+  { text: "Tidak ada kegagalan, hanya feedback. Setiap hasil adalah informasi untuk perbaikan.", source: "NLP - Presupposition" },
+  { text: "Makna komunikasi adalah respon yang didapat, bukan niat yang dimiliki.", source: "NLP - Presupposition" },
+  { text: "Jika satu orang bisa melakukan sesuatu, orang lain juga bisa mempelajarinya.", source: "NLP - Modeling" },
+  { text: "Setiap perilaku memiliki niat positif di baliknya.", source: "NLP - Presupposition" },
+  { text: "Orang dengan fleksibilitas tertinggi akan memiliki pengaruh terbesar.", source: "NLP - Presupposition" },
+  { text: "Kamu sudah memiliki semua sumber daya yang dibutuhkan untuk berubah.", source: "NLP - Presupposition" },
+  { text: "Ubah bingkai, ubah makna. Ubah makna, ubah hidup.", source: "NLP - Reframing" },
+  { text: "State menentukan perilaku. Kelola state-mu, kelola hidupmu.", source: "NLP - State Management" },
+  { text: "Afirmasi terbaik: Present, Positive, Personal - Saya ADALAH, bukan saya INGIN.", source: "NLP - Affirmation" },
+  
+  // Sedona Method Quotes
+  { text: "Emosi bukan kamu. Kamu MEMILIKI emosi, bukan MENJADI emosi.", source: "Sedona Method" },
+  { text: "Melepaskan itu natural, seperti melepas genggaman tangan.", source: "Sedona Method" },
+  { text: "Bisakah kamu menerimanya? Bisakah kamu melepaskannya? Kapan?", source: "Sedona Method - 4 Questions" },
+  { text: "Semakin sering melepaskan, semakin mudah melepaskan.", source: "Sedona Method" },
+  { text: "Keinginan mengontrol, diakui, dan aman adalah akar semua emosi negatif.", source: "Sedona Method - 3 Wants" },
+  { text: "Sambut emosi seperti tamu, bukan musuh yang harus dilawan.", source: "Sedona Method - Welcoming" },
+  { text: "Di balik setiap resistensi ada kebebasan yang menunggu.", source: "Sedona Method" },
+  { text: "Lepaskan keinginan untuk mengubah, dan perubahan akan datang.", source: "Sedona Method" },
+  { text: "Kebahagiaan adalah keadaan alami ketika kita berhenti menahan.", source: "Sedona Method" },
+  { text: "Apa keuntungan mempertahankan emosi ini? Bisakah kamu melepaskan keuntungan itu?", source: "Sedona Method - Advantages" },
+  
+  // Atomic Habits Quotes
+  { text: "1% lebih baik setiap hari = 37x lebih baik dalam setahun.", source: "Atomic Habits" },
+  { text: "Kamu tidak naik ke level tujuanmu, kamu jatuh ke level sistemmu.", source: "Atomic Habits" },
+  { text: "Setiap tindakan adalah vote untuk tipe orang yang ingin kamu jadi.", source: "Atomic Habits" },
+  { text: "Kebiasaan adalah compound interest dari perbaikan diri.", source: "Atomic Habits" },
+  { text: "Fokus pada siapa kamu ingin MENJADI, bukan apa yang ingin kamu CAPAI.", source: "Atomic Habits - Identity" },
+  { text: "Make it obvious, attractive, easy, and satisfying.", source: "Atomic Habits - 4 Laws" },
+  { text: "Motivasi itu overrated. Lingkungan lebih penting.", source: "Atomic Habits - Environment" },
+  { text: "Melewatkan sekali adalah kecelakaan. Melewatkan dua kali adalah awal habit baru.", source: "Atomic Habits" },
+  { text: "2-Minute Rule: Skalakan habit apapun ke versi 2 menitnya.", source: "Atomic Habits" },
+  { text: "Habit stacking: Setelah [HABIT LAMA], saya akan [HABIT BARU].", source: "Atomic Habits" },
+  { text: "Jangan putuskan rantainya. Tapi jika putus, jangan biarkan putus dua kali.", source: "Atomic Habits" },
+  { text: "Profesional tetap muncul meskipun tidak mood. Amatir menunggu motivasi.", source: "Atomic Habits" },
+  { text: "Perubahan terjadi bukan dari apa yang kamu lakukan sesekali, tapi apa yang kamu lakukan setiap hari.", source: "Atomic Habits" },
+  { text: "Tujuan menentukan arah, sistem menentukan kemajuan.", source: "Atomic Habits" },
+  { text: "Kemenangan kecil membangun momentum untuk kemenangan besar.", source: "Atomic Habits" }
+];
+
+function getDailyQuote() {
+  // Get quote based on day of year for consistency
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+  
+  // Use day of year to pick quote (same quote for whole day)
+  const quoteIndex = dayOfYear % DAILY_QUOTES.length;
+  return DAILY_QUOTES[quoteIndex];
+}
+
+function renderDailyQuote() {
+  const container = document.getElementById('dailyQuoteContent');
+  if (!container) return;
+  
+  const quote = getDailyQuote();
+  container.innerHTML = `
+    <div class="quote-text">"${quote.text}"</div>
+    <div class="quote-source">— ${quote.source}</div>
+  `;
+}
+
+function refreshDailyQuote() {
+  const container = document.getElementById('dailyQuoteContent');
+  if (!container) return;
+  
+  // Pick random quote different from current
+  const currentText = container.querySelector('.quote-text')?.textContent || '';
+  let newQuote;
+  let attempts = 0;
+  
+  do {
+    const randomIndex = Math.floor(Math.random() * DAILY_QUOTES.length);
+    newQuote = DAILY_QUOTES[randomIndex];
+    attempts++;
+  } while (currentText.includes(newQuote.text) && attempts < 10);
+  
+  container.innerHTML = `
+    <div class="quote-text">"${newQuote.text}"</div>
+    <div class="quote-source">— ${newQuote.source}</div>
+  `;
+  
+  // Animate
+  container.style.opacity = '0';
+  setTimeout(() => {
+    container.style.transition = 'opacity 0.3s';
+    container.style.opacity = '1';
+  }, 50);
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Render daily quote first
+  renderDailyQuote();
+  
   loadAllData();
   loadPomodoroSettings();
-  loadJournalToday().then(() => renderHomeJournals());
+  
+  // Load journal with better error handling
+  loadJournalToday().then(() => {
+    console.log('[Init] Journal loaded, state.journals:', state.journals);
+    renderJournal();
+  }).catch(err => {
+    console.error('[Init] Failed to load journal:', err);
+    renderJournal(); // Still render with empty state
+  });
 });
 
 // Register service worker
@@ -4807,6 +4926,7 @@ document.addEventListener('visibilitychange', () => {
     const lastActivity = state.cache.dailySync || 0;
     if (Date.now() - lastActivity > CONFIG.CACHE_DURATION) {
       loadDailySync(true);
+      loadJournalToday().then(() => renderJournal());
     }
     updateSyncIndicator();
   }
