@@ -973,6 +973,68 @@
     .btn-danger { background: #dc3545 !important; color: white !important; }
     .btn-danger:hover { background: #c82333 !important; }
     
+    /* Task quick actions (link & pomodoro) */
+    .task-quick-actions {
+      display: flex;
+      gap: 6px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+    .task-link-btn, .task-pomo-btn {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .task-link-btn {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .task-link-btn:hover {
+      background: #bbdefb;
+    }
+    .task-pomo-btn {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .task-pomo-btn:hover {
+      background: #ffcdd2;
+    }
+    
+    /* Today task buttons */
+    .today-task-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .today-task-btn.link-btn {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .today-task-btn.pomo-btn {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .today-task-btn.next-btn {
+      background: var(--primary);
+      color: white;
+    }
+    .today-task-btn.done-btn {
+      background: var(--success);
+      color: white;
+    }
+    
     /* Home Two Column Layout */
     .home-two-column {
       display: grid;
@@ -2286,7 +2348,7 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Target Utama 3 Tahun</label>
-          <textarea class="form-input form-textarea" id="vision3Content" placeholder="Apa yang ingin dicapai dalam 3 tahun?"></textarea>
+          <textarea class="form-input form-textarea" id="vision3Input" placeholder="Apa yang ingin dicapai dalam 3 tahun?"></textarea>
         </div>
         <button class="btn-submit" onclick="saveVision('3')">💾 Simpan</button>
       </div>
@@ -2302,7 +2364,7 @@
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Target Tahun Ini</label>
-          <textarea class="form-input form-textarea" id="vision1Content" placeholder="Apa yang HARUS tercapai tahun ini?"></textarea>
+          <textarea class="form-input form-textarea" id="vision1Input" placeholder="Apa yang HARUS tercapai tahun ini?"></textarea>
         </div>
         <button class="btn-submit" onclick="saveVision('1')">💾 Simpan</button>
       </div>

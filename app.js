@@ -898,17 +898,34 @@ function renderTodayFocus() {
   const priorityIcons = { urgent: '🔥', high: '🔴', medium: '🟡', low: '🟢', someday: '⚪' };
   
   container.innerHTML = `
-    <div class="card-header"><span class="card-title">📋 Task Hari Ini</span></div>
-    ${todayTasks.map(t => `
-      <div class="today-task-item" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 8px; border-left: 3px solid ${t.status === 'progress' ? 'var(--primary)' : 'var(--gray-300)'};">
-        <span style="font-size: 14px;">${priorityIcons[t.priority] || '🟡'}</span>
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(t.title)}</div>
-          <div style="font-size: 11px; color: var(--gray-500);">${t.status === 'progress' ? '🔄 Sedang dikerjakan' : '📋 To Do'}${t.due_date ? ' • 📅 ' + formatDateShort(t.due_date) : ''}</div>
+    ${todayTasks.map(t => {
+      // Extract link from description or link field
+      const linkMatch = t.description?.match(/🔗 Link: (https?:\/\/[^\s\n]+)/) || 
+                        t.link?.match(/(https?:\/\/[^\s]+)/) ||
+                        t.description?.match(/(https?:\/\/[^\s\n]+)/);
+      const link = linkMatch ? linkMatch[1] : (t.link || '');
+      
+      return `
+      <div class="today-task-item" style="padding: 12px; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 8px; border-left: 3px solid ${t.status === 'progress' ? 'var(--primary)' : 'var(--gray-300)'};">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 14px;">${priorityIcons[t.priority] || '🟡'}</span>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 500; font-size: 13px;">${escapeHtml(t.title)}</div>
+            <div style="font-size: 11px; color: var(--gray-500); margin-top: 2px;">
+              ${t.status === 'progress' ? '🔄 Progress' : '📋 To Do'}
+              ${t.due_date ? ' • 📅 ' + formatDateShort(t.due_date) : ''}
+              ${t.estimated_pomodoro ? ' • 🍅' + t.estimated_pomodoro : ''}
+            </div>
+          </div>
         </div>
-        <button onclick="moveTask('${t.task_id}','${t.status === 'progress' ? 'done' : 'progress'}')" style="background: var(--primary); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 12px;">${t.status === 'progress' ? '✓' : '→'}</button>
-      </div>
-    `).join('')}
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="today-task-btn link-btn">🔗 Buka File</a>` : ''}
+          <button onclick="startPomodoroForTask('${t.task_id}','${escapeHtml(t.title).replace(/'/g, "\\'")}',${t.estimated_pomodoro || 2})" class="today-task-btn pomo-btn">🍅 Fokus</button>
+          <button onclick="moveTask('${t.task_id}','${t.status === 'progress' ? 'done' : 'progress'}')" class="today-task-btn ${t.status === 'progress' ? 'done-btn' : 'next-btn'}">${t.status === 'progress' ? '✓ Selesai' : '→ Mulai'}</button>
+        </div>
+      </div>`;
+    }).join('')}
+    <button class="btn-link" style="margin-top: 8px; text-align: center; display: block; width: 100%;" onclick="showPage('kanban')">Lihat Semua Task →</button>
   `;
 }
 
@@ -970,10 +987,11 @@ function renderTaskCard(task, currentStatus) {
   const isDelegated = task.tags?.includes('delegated:');
   const delegatee = isDelegated ? task.tags.split('delegated:')[1]?.split(',')[0] : '';
   
-  // Check if has link
-  const hasLink = task.description?.includes('🔗 Link:');
-  const linkMatch = task.description?.match(/🔗 Link: (https?:\/\/[^\s]+)/);
-  const link = linkMatch ? linkMatch[1] : '';
+  // Check if has link - support multiple formats
+  const linkMatch = task.description?.match(/🔗 Link: (https?:\/\/[^\s\n]+)/) || 
+                    task.link?.match(/(https?:\/\/[^\s]+)/) ||
+                    task.description?.match(/(https?:\/\/[^\s\n]+)/);
+  const link = linkMatch ? linkMatch[1] : (task.link || '');
   
   // Priority icons
   const priorityIcons = {
@@ -984,35 +1002,71 @@ function renderTaskCard(task, currentStatus) {
     someday: '⚪'
   };
   
+  // Link button (prominent if has link)
+  const linkHtml = link ? `
+    <a href="${escapeHtml(link)}" target="_blank" class="task-link-btn" onclick="event.stopPropagation()" title="Buka Link">
+      🔗 Buka File
+    </a>` : '';
+  
+  // Pomodoro button (show on todo and progress)
+  const pomodoroBtn = (currentStatus === 'todo' || currentStatus === 'progress') ? `
+    <button class="task-pomo-btn" onclick="event.stopPropagation();startPomodoroForTask('${task.task_id}','${escapeHtml(task.title).replace(/'/g, "\\'")}',${task.estimated_pomodoro || 2})" title="Mulai Pomodoro">
+      🍅 Fokus
+    </button>` : '';
+  
   // Actions based on status
   let actionsHtml = '';
   if (currentStatus === 'done') {
-    // Task di Done - bisa undo ke progress atau todo
     actionsHtml = `
     <div class="task-actions">
-      <button class="task-action-btn warning" onclick="moveTask('${task.task_id}','progress')" title="Kembali ke Progress">↩</button>
-      <button class="task-action-btn danger" onclick="confirmDeleteTask('${task.task_id}')" title="Hapus">🗑</button>
+      <button class="task-action-btn warning" onclick="event.stopPropagation();moveTask('${task.task_id}','progress')" title="Kembali ke Progress">↩</button>
+      <button class="task-action-btn danger" onclick="event.stopPropagation();confirmDeleteTask('${task.task_id}')" title="Hapus">🗑</button>
     </div>`;
   } else {
-    // Task belum Done
     actionsHtml = `
     <div class="task-actions">
-      ${nextStatus[currentStatus] ? `<button class="task-action-btn primary" onclick="moveTask('${task.task_id}','${nextStatus[currentStatus]}')" title="Lanjutkan">→</button>` : ''}
-      <button class="task-action-btn success" onclick="moveTask('${task.task_id}','done')" title="Selesai">✓</button>
+      ${nextStatus[currentStatus] ? `<button class="task-action-btn primary" onclick="event.stopPropagation();moveTask('${task.task_id}','${nextStatus[currentStatus]}')" title="Lanjutkan">→</button>` : ''}
+      <button class="task-action-btn success" onclick="event.stopPropagation();moveTask('${task.task_id}','done')" title="Selesai">✓</button>
     </div>`;
   }
   
-  return `<div class="task-card priority-${task.priority || 'medium'}" onclick="openTaskDetail('${task.task_id}')">
+  return `<div class="task-card priority-${task.priority || 'medium'}">
     <div class="task-title">${escapeHtml(task.title)}</div>
     <div class="task-meta">
-      <span class="task-label priority-${task.priority}">${priorityIcons[task.priority] || '🟡'} ${task.priority || 'medium'}</span>
+      <span class="task-label priority-${task.priority}">${priorityIcons[task.priority] || '🟡'}</span>
       ${task.due_date ? `<span class="task-due ${isOverdue ? 'overdue' : ''}">📅 ${formatDateShort(task.due_date)}</span>` : ''}
       ${task.estimated_pomodoro ? `<span class="task-pomodoro">🍅 ${task.estimated_pomodoro}</span>` : ''}
     </div>
     ${isDelegated ? `<div class="task-delegate">👤 ${escapeHtml(delegatee)}</div>` : ''}
-    ${hasLink ? `<div class="task-link"><a href="${escapeHtml(link)}" target="_blank" onclick="event.stopPropagation()">🔗 Link</a></div>` : ''}
+    <div class="task-quick-actions">
+      ${linkHtml}
+      ${pomodoroBtn}
+    </div>
     ${actionsHtml}
   </div>`;
+}
+
+// Start Pomodoro langsung dari Task
+function startPomodoroForTask(taskId, taskTitle, estimatedPomodoro) {
+  // Set task sebagai current focus
+  state.currentFocusTask = { task_id: taskId, title: taskTitle };
+  
+  // Start pomodoro dengan task
+  startPomodoroTimer('POMODORO_25', taskTitle);
+  
+  // Move task to progress jika masih di todo
+  const board = state.kanban?.board || state.kanban;
+  if (board?.todo) {
+    const taskInTodo = board.todo.find(t => t.task_id === taskId);
+    if (taskInTodo) {
+      moveTask(taskId, 'progress');
+    }
+  }
+  
+  // Go to pomodoro page
+  showPage('pomodoro');
+  showToast(`🍅 Fokus: ${taskTitle}`, 'success');
+}
 }
 
 // Open task detail modal
@@ -1150,7 +1204,7 @@ function renderVisions() {
     
     // Prefill modal (cari dari UMUM atau bidang pertama yang punya vision_3_tahun)
     const v3Data = umum?.vision_3_tahun || visions.find(v => v.vision_3_tahun)?.vision_3_tahun;
-    const v3Input = document.querySelector('#modal-vision-3 textarea');
+    const v3Input = document.getElementById('vision3Input');
     if (v3Input && v3Data) v3Input.value = v3Data;
   }
   
@@ -1170,7 +1224,7 @@ function renderVisions() {
     
     // Prefill modal
     const v1Data = umum?.vision_1_tahun || visions.find(v => v.vision_1_tahun)?.vision_1_tahun;
-    const v1Input = document.querySelector('#modal-vision-1 textarea');
+    const v1Input = document.getElementById('vision1Input');
     if (v1Input && v1Data) v1Input.value = v1Data;
   }
 }
@@ -1976,7 +2030,7 @@ function saveVision(level) {
   } 
   // Visi 3 tahun & 1 tahun: simpan sebagai bidang UMUM
   else if (level === '3' || level === '1') {
-    const content = document.getElementById(`vision${level}Content`)?.value.trim();
+    const content = document.getElementById(`vision${level}Input`)?.value.trim();
     if (!content) {
       showToast('Isi visi terlebih dahulu', 'error');
       return;
