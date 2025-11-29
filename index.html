@@ -2639,6 +2639,130 @@
       .kanban-container { grid-template-columns: repeat(2, 1fr); }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
+    
+    /* ============================================
+       MOBILE FONT SIZE OPTIMIZATION
+       Memperbesar font untuk kenyamanan membaca di HP
+       ============================================ */
+    @media (max-width: 768px) {
+      /* Base font size increase */
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      
+      /* Header */
+      .header-top h1 { font-size: 22px; }
+      .header-date { font-size: 14px; }
+      .arabic { font-size: 24px; }
+      .translation { font-size: 13px; }
+      .header-stats .stat-item { font-size: 14px; }
+      .header-stats .value { font-size: 15px; }
+      
+      /* Cards */
+      .card-title { font-size: 17px; }
+      .card-header .badge { font-size: 12px; }
+      .section-title { font-size: 16px; }
+      
+      /* Sholat Grid */
+      .sholat-item .name { font-size: 12px; }
+      .sholat-item .time { font-size: 11px; }
+      .sholat-item .icon { font-size: 22px; }
+      
+      /* Habit Items */
+      .habit-label { font-size: 14px; }
+      .habit-checkbox { width: 26px; height: 26px; }
+      
+      /* Journal */
+      .journal-card .content { font-size: 14px; line-height: 1.7; }
+      .journal-card .header { font-size: 15px; }
+      .journal-section .section-title { font-size: 15px; }
+      .form-label { font-size: 14px; }
+      .form-label-sm { font-size: 13px; }
+      .form-input { font-size: 15px; padding: 12px; }
+      .form-textarea { font-size: 15px; line-height: 1.6; }
+      
+      /* Task Items */
+      .task-title { font-size: 15px; }
+      .task-meta-row { font-size: 12px; }
+      .goal-task-item .task-title { font-size: 15px; }
+      
+      /* Kanban */
+      .kanban-title { font-size: 14px; }
+      .kanban-count { font-size: 13px; }
+      .task-card .title { font-size: 14px; }
+      .task-card .meta { font-size: 12px; }
+      
+      /* Goals */
+      .goal-card .title { font-size: 16px; }
+      .goal-card .desc { font-size: 13px; }
+      .goal-detail-title { font-size: 20px; }
+      .goal-detail-desc { font-size: 14px; }
+      .milestone-title { font-size: 14px; }
+      
+      /* Buttons */
+      .btn-submit { font-size: 15px; padding: 14px 20px; }
+      .btn-secondary { font-size: 14px; }
+      .quick-action { font-size: 12px; }
+      .quick-action .icon { font-size: 26px; }
+      
+      /* Navigation */
+      .nav-item { font-size: 11px; }
+      .nav-item .icon { font-size: 28px; }
+      
+      /* Modal */
+      .modal-title { font-size: 18px; }
+      .modal-body { font-size: 15px; }
+      
+      /* Menu Page */
+      .menu-item .title { font-size: 15px; }
+      .menu-item .subtitle { font-size: 12px; }
+      .menu-group-title { font-size: 13px; }
+      
+      /* Pelajaran Page */
+      .pelajaran-tab { font-size: 13px; padding: 12px 14px; }
+      .pelajaran-intro { font-size: 14px; }
+      .pelajaran-section h4 { font-size: 15px; }
+      .pelajaran-list li { font-size: 13px; }
+      .technique-title { font-size: 14px; }
+      .technique-card p { font-size: 13px; }
+      .technique-steps .step { font-size: 12px; }
+      .example-box, .formula-box, .concept-box { font-size: 13px; }
+      
+      /* Stats */
+      .stat-box .value { font-size: 26px; }
+      .stat-box .label { font-size: 12px; }
+      
+      /* Empty State */
+      .empty-state p { font-size: 14px; }
+      
+      /* Toast */
+      .toast { font-size: 14px; }
+      
+      /* Don't List */
+      .dont-item .title { font-size: 14px; }
+      .dont-item .category { font-size: 11px; }
+      
+      /* Brain Dump */
+      #brainDumpInput { font-size: 15px; }
+      .brain-dump-item { font-size: 14px; }
+      
+      /* Settings */
+      .settings-item { font-size: 14px; }
+      
+      /* Pomodoro */
+      .pomodoro-display .time { font-size: 56px; }
+      .pomodoro-display .label { font-size: 14px; }
+      .pomodoro-task-name { font-size: 15px; }
+      
+      /* Mood & Energy */
+      .mood-btn { width: 42px; height: 42px; font-size: 22px; }
+      .energy-slider { height: 8px; }
+      
+      /* Back Button */
+      .back-btn { font-size: 15px; }
+      .page-title { font-size: 18px; }
+    }
   </style>
 </head>
 <body>
