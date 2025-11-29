@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwh1RvMAoke6pc77zCE-trjLNdCiehDAPgYwrkz0XbJXs_0HifdwtBMWlvCcSCfa213qw/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbw7TE25rdBNZDZ2mJVluxPichXKnaw54zNmBHAUxzidkZlEPbFR3cjKJdy_epaZsDFy-Q/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -806,14 +806,21 @@ function toggleSholat(waktu, isDone) {
     badge.textContent = `${isDone ? current - 1 : current + 1}/8`;
   }
   
-  // Update local state
-  if (state.dailySync?.sholat) {
+  const newStatus = isDone ? 'pending' : 'done';
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Update local state properly
+  if (state.dailySync) {
+    if (!state.dailySync.sholat) {
+      state.dailySync.sholat = [];
+    }
+    
     if (Array.isArray(state.dailySync.sholat)) {
-      const existing = state.dailySync.sholat.find(s => s.waktu === waktu);
-      if (existing) {
-        existing.status = isDone ? false : 'done';
-      } else if (!isDone) {
-        state.dailySync.sholat.push({ waktu, status: 'done' });
+      const existingIndex = state.dailySync.sholat.findIndex(s => s.waktu === waktu);
+      if (existingIndex >= 0) {
+        state.dailySync.sholat[existingIndex].status = newStatus;
+      } else {
+        state.dailySync.sholat.push({ waktu, status: newStatus, tanggal: today });
       }
     }
   }
@@ -822,13 +829,16 @@ function toggleSholat(waktu, isDone) {
   addToQueue('logSholat', {
     data: {
       waktu: waktu,
-      tanggal: new Date().toISOString().split('T')[0],
-      status: isDone ? 'pending' : 'done',
+      tanggal: today,
+      status: newStatus,
       lokasi: 'rumah',
       berjamaah: false,
       catatan: ''
     }
   });
+  
+  // SYNC IMMEDIATELY so data persists
+  syncPendingQueue();
   
   showToast(isDone ? 'Dibatalkan' : 'Alhamdulillah! ✓', isDone ? 'info' : 'success');
 }
@@ -1860,6 +1870,9 @@ function submitSholat() {
     }
   });
   
+  // SYNC IMMEDIATELY
+  syncPendingQueue();
+  
   closeModal('sholat');
   showToast('Alhamdulillah! ' + waktu + ' ✓', 'success');
 }
@@ -1881,12 +1894,22 @@ function toggleSholatDirect(waktu, isDone) {
     }
   });
   
-  // Update state
-  if (state.dailySync?.sholat && Array.isArray(state.dailySync.sholat)) {
-    if (isDone) {
-      state.dailySync.sholat = state.dailySync.sholat.filter(s => s.waktu !== waktu);
-    } else {
-      state.dailySync.sholat.push({ waktu, status: 'done' });
+  const newStatus = isDone ? 'pending' : 'done';
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Update state properly
+  if (state.dailySync) {
+    if (!state.dailySync.sholat) {
+      state.dailySync.sholat = [];
+    }
+    
+    if (Array.isArray(state.dailySync.sholat)) {
+      const existingIndex = state.dailySync.sholat.findIndex(s => s.waktu === waktu);
+      if (existingIndex >= 0) {
+        state.dailySync.sholat[existingIndex].status = newStatus;
+      } else {
+        state.dailySync.sholat.push({ waktu, status: newStatus, tanggal: today });
+      }
     }
   }
   
@@ -1894,13 +1917,16 @@ function toggleSholatDirect(waktu, isDone) {
   addToQueue('logSholat', {
     data: {
       waktu: waktu,
-      tanggal: new Date().toISOString().split('T')[0],
-      status: isDone ? 'pending' : 'done',
+      tanggal: today,
+      status: newStatus,
       lokasi: 'rumah',
       berjamaah: false,
       catatan: ''
     }
   });
+  
+  // SYNC IMMEDIATELY
+  syncPendingQueue();
   
   showToast(isDone ? 'Dibatalkan' : 'Alhamdulillah! ' + waktu + ' ✓', isDone ? 'info' : 'success');
 }
@@ -1955,6 +1981,9 @@ function toggleHabitRosul(habitId, isCompleted) {
     habit_id: habitId,
     tanggal: new Date().toISOString().split('T')[0]
   });
+  
+  // SYNC IMMEDIATELY
+  syncPendingQueue();
   
   showToast(isCompleted ? 'Dibatalkan' : 'Alhamdulillah! ✓', isCompleted ? 'info' : 'success');
 }
@@ -2854,6 +2883,7 @@ function deleteBrainDump(logId) {
 // ============================================
 async function loadJournalToday() {
   try {
+    // Try dedicated endpoint first
     const data = await apiGet('getJournalToday');
     
     state.journals = { morning: null, evening: null };
@@ -2884,11 +2914,37 @@ async function loadJournalToday() {
     }
     
     renderJournal();
-    renderHomeJournals();
   } catch (err) {
-    console.error('Failed to load journal:', err);
+    console.error('Failed to load journal from dedicated endpoint, using dailySync:', err);
+    
+    // Fallback: use dailySync journals if available
+    if (state.dailySync?.journals) {
+      state.journals = { morning: null, evening: null };
+      
+      if (state.dailySync.journals.morning) {
+        let content = {};
+        try {
+          const m = state.dailySync.journals.morning;
+          content = typeof m.content === 'string' ? JSON.parse(m.content) : (m.content || {});
+        } catch (e) {
+          content = {};
+        }
+        state.journals.morning = { ...state.dailySync.journals.morning, parsed: content };
+      }
+      
+      if (state.dailySync.journals.evening) {
+        let content = {};
+        try {
+          const e = state.dailySync.journals.evening;
+          content = typeof e.content === 'string' ? JSON.parse(e.content) : (e.content || {});
+        } catch (e2) {
+          content = {};
+        }
+        state.journals.evening = { ...state.dailySync.journals.evening, parsed: content };
+      }
+    }
+    
     renderJournal();
-    renderHomeJournals();
   }
 }
 
@@ -2903,6 +2959,10 @@ function renderJournal() {
   // Parse journal content helper
   function parseJournalContent(journal) {
     if (!journal) return null;
+    
+    // Check parsed first
+    if (journal.parsed) return journal.parsed;
+    
     let content = journal.content;
     // Try to parse if it's a string
     if (typeof content === 'string') {
@@ -2915,8 +2975,12 @@ function renderJournal() {
     return content || {};
   }
   
-  // Morning Journal
-  const morningData = state.journals?.morning;
+  // Get morning journal from state.journals OR dailySync
+  let morningData = state.journals?.morning;
+  if (!morningData && state.dailySync?.journals?.morning) {
+    morningData = state.dailySync.journals.morning;
+  }
+  
   const morningParsed = parseJournalContent(morningData);
   
   if (morningParsed && (morningParsed.gratitude || morningParsed.focus || morningParsed.affirmation || morningParsed.text)) {
@@ -2961,8 +3025,12 @@ function renderJournal() {
     `;
   }
   
-  // Evening Journal
-  const eveningData = state.journals?.evening;
+  // Get evening journal from state.journals OR dailySync
+  let eveningData = state.journals?.evening;
+  if (!eveningData && state.dailySync?.journals?.evening) {
+    eveningData = state.dailySync.journals.evening;
+  }
+  
   const eveningParsed = parseJournalContent(eveningData);
   
   if (eveningParsed && (eveningParsed.wins || eveningParsed.improve || eveningParsed.lesson || eveningParsed.plan || eveningParsed.text)) {
@@ -3021,14 +3089,24 @@ function renderJournal() {
 }
 
 function openJournalForm(type) {
-  const journal = state.journals?.[type];
+  // Get journal from state.journals OR dailySync
+  let journal = state.journals?.[type];
+  if (!journal && state.dailySync?.journals?.[type]) {
+    journal = state.dailySync.journals[type];
+  }
+  
   let parsed = {};
   
-  if (journal?.content) {
-    try {
-      parsed = typeof journal.content === 'string' ? JSON.parse(journal.content) : journal.content;
-    } catch (e) {
-      parsed = {};
+  if (journal) {
+    // Check parsed first
+    if (journal.parsed) {
+      parsed = journal.parsed;
+    } else if (journal.content) {
+      try {
+        parsed = typeof journal.content === 'string' ? JSON.parse(journal.content) : journal.content;
+      } catch (e) {
+        parsed = {};
+      }
     }
   }
   
@@ -3106,13 +3184,20 @@ function submitJournal(type) {
     return;
   }
   
-  // Update local state
-  state.journals = state.journals || {};
+  // Update local state with both content string and parsed object
+  state.journals = state.journals || { morning: null, evening: null };
   state.journals[type] = {
     content: JSON.stringify(content),
+    parsed: content,  // Store parsed for immediate display
     tanggal: today,
     type: type === 'morning' ? 'MORNING_JOURNAL' : 'EVENING_JOURNAL'
   };
+  
+  // Also update dailySync if exists (for consistency)
+  if (state.dailySync) {
+    state.dailySync.journals = state.dailySync.journals || {};
+    state.dailySync.journals[type] = state.journals[type];
+  }
   
   // ADD TO QUEUE - gunakan saveJournal yang ada di backend
   addToQueue('saveJournal', { 
@@ -3123,8 +3208,10 @@ function submitJournal(type) {
     }
   });
   
+  // Sync immediately
+  syncPendingQueue();
+  
   renderJournal();
-  renderHomeJournals();
   showToast('Jurnal tersimpan! ✓', 'success');
 }
 
@@ -3548,99 +3635,8 @@ function openJournalForm(type) {
 }
 
 function renderHomeJournals() {
-  // Morning Journal
-  const morningCard = document.getElementById('journalMorningCard');
-  const morningStatus = document.getElementById('journalMorningStatus');
-  const morningContent = document.getElementById('journalMorningContent');
-  
-  // Get morning journal from dailySync or state.journals
-  let morningData = state.journals?.morning;
-  if (!morningData && state.dailySync?.journals?.morning) {
-    morningData = state.dailySync.journals.morning;
-  }
-  
-  if (morningCard && morningData) {
-    // Parse content if it's a string
-    let m = {};
-    if (typeof morningData.content === 'string') {
-      try { m = JSON.parse(morningData.content); } catch(e) { m = {}; }
-    } else if (morningData.parsed) {
-      m = morningData.parsed;
-    } else if (morningData.content) {
-      m = morningData.content;
-    }
-    
-    if (m.gratitude || m.focus || m.affirmation) {
-      morningStatus.textContent = '✓ Ditulis';
-      morningStatus.className = 'status done';
-      morningContent.innerHTML = `
-        <div class="journal-display">
-          ${m.gratitude ? `<div class="journal-item"><span class="label">🙏 Syukur:</span> ${escapeHtml(m.gratitude)}</div>` : ''}
-          ${m.focus ? `<div class="journal-item"><span class="label">🎯 Fokus:</span> ${escapeHtml(m.focus)}</div>` : ''}
-          ${m.affirmation ? `<div class="journal-item"><span class="label">✨ Afirmasi:</span> ${escapeHtml(m.affirmation)}</div>` : ''}
-        </div>
-        <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="openJournalForm('morning')">✏️ Edit</button>
-      `;
-    }
-  }
-  
-  // Evening Journal - tampilkan card jika sudah sore (setelah jam 17:00)
-  const now = new Date();
-  const isEvening = now.getHours() >= 17;
-  const eveningCard = document.getElementById('journalEveningCard');
-  
-  if (eveningCard) {
-    if (isEvening) {
-      eveningCard.style.display = 'block';
-      
-      let eveningData = state.journals?.evening;
-      if (!eveningData && state.dailySync?.journals?.evening) {
-        eveningData = state.dailySync.journals.evening;
-      }
-      
-      const eveningStatus = document.getElementById('journalEveningStatus');
-      const eveningContent = document.getElementById('journalEveningContent');
-      
-      if (eveningData) {
-        let e = {};
-        if (typeof eveningData.content === 'string') {
-          try { e = JSON.parse(eveningData.content); } catch(err) { e = {}; }
-        } else if (eveningData.parsed) {
-          e = eveningData.parsed;
-        } else if (eveningData.content) {
-          e = eveningData.content;
-        }
-        
-        if (e.wins || e.improve || e.lesson) {
-          eveningStatus.textContent = '✓ Ditulis';
-          eveningStatus.className = 'status done';
-          eveningContent.innerHTML = `
-            <div class="journal-display">
-              ${e.wins ? `<div class="journal-item"><span class="label">🏆 Wins:</span> ${escapeHtml(e.wins)}</div>` : ''}
-              ${e.improve ? `<div class="journal-item"><span class="label">🔧 Improve:</span> ${escapeHtml(e.improve)}</div>` : ''}
-              ${e.lesson ? `<div class="journal-item"><span class="label">💡 Pelajaran:</span> ${escapeHtml(e.lesson)}</div>` : ''}
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-              <button class="btn-submit btn-secondary" style="flex:1;" onclick="openJournalForm('evening')">✏️ Edit</button>
-              <button class="btn-submit" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
-            </div>
-          `;
-        } else {
-          eveningContent.innerHTML = `
-            <div class="content" style="color: var(--gray-400); font-style: italic;">
-              Akhiri hari dengan refleksi dan rasa syukur...
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-              <button class="btn-submit" style="flex:1;" onclick="openJournalForm('evening')">✏️ Tulis Jurnal</button>
-              <button class="btn-submit btn-secondary" style="flex:1;" onclick="showPage('refleksi')">📊 Refleksi</button>
-            </div>
-          `;
-        }
-      }
-    } else {
-      eveningCard.style.display = 'none';
-    }
-  }
+  // Just call renderJournal since it handles everything now
+  renderJournal();
 }
 
 // ============================================
