@@ -387,6 +387,17 @@ function closeModal(name) {
   document.getElementById('modal-' + name)?.classList.remove('active');
 }
 
+// Show pelajaran tab
+function showPelajaranTab(tabName, btnEl) {
+  // Update tab buttons
+  document.querySelectorAll('.pelajaran-tab').forEach(tab => tab.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  
+  // Update content
+  document.querySelectorAll('.pelajaran-content').forEach(content => content.classList.remove('active'));
+  document.getElementById('pelajaran-' + tabName)?.classList.add('active');
+}
+
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
   const icons = { success: '✓', error: '✕', info: 'ℹ️', warning: '⚠️' };

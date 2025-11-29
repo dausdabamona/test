@@ -3,28 +3,32 @@
  * Offline support & caching
  */
 
-const CACHE_NAME = 'sync-planner-v2.1';
+const CACHE_NAME = 'sync-planner-v3.0';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.json',
-  '/icon-72.png',
-  '/icon-96.png',
-  '/icon-128.png',
-  '/icon-144.png',
-  '/icon-152.png',
-  '/icon-192.png',
-  '/icon-384.png',
-  '/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  './',
+  './index.html',
+  './app.js',
+  './manifest.json',
+  './icon-72.png',
+  './icon-96.png',
+  './icon-128.png',
+  './icon-144.png',
+  './icon-152.png',
+  './icon-192.png',
+  './icon-384.png',
+  './icon-512.png'
 ];
 
 // Install
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        // Cache assets one by one to handle failures gracefully
+        return Promise.allSettled(
+          ASSETS.map(url => cache.add(url).catch(err => console.log('Cache skip:', url)))
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -49,6 +53,9 @@ self.addEventListener('fetch', event => {
   // Skip API requests (always fetch fresh)
   if (event.request.url.includes('script.google.com')) return;
   
+  // Skip chrome-extension and other non-http requests
+  if (!event.request.url.startsWith('http')) return;
+  
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -56,13 +63,22 @@ self.addEventListener('fetch', event => {
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME)
-            .then(cache => cache.put(event.request, clone));
+            .then(cache => cache.put(event.request, clone))
+            .catch(() => {});
         }
         return response;
       })
       .catch(() => {
         // Fallback to cache
-        return caches.match(event.request);
+        return caches.match(event.request)
+          .then(cachedResponse => {
+            if (cachedResponse) return cachedResponse;
+            // If no cache, return offline page or empty response
+            if (event.request.destination === 'document') {
+              return caches.match('./index.html');
+            }
+            return new Response('Offline', { status: 503, statusText: 'Offline' });
+          });
       })
   );
 });

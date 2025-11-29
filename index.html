@@ -469,6 +469,274 @@
       border-radius: var(--radius-sm);
     }
     
+    /* Pelajaran Inti Page Styles */
+    .pelajaran-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .pelajaran-tab {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .pelajaran-tab:hover {
+      border-color: var(--primary);
+    }
+    .pelajaran-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .pelajaran-content {
+      display: none;
+    }
+    .pelajaran-content.active {
+      display: block;
+    }
+    .pelajaran-intro {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .pelajaran-section {
+      margin-bottom: 20px;
+    }
+    .pelajaran-section h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 10px;
+    }
+    .pelajaran-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .pelajaran-list li {
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .pelajaran-list li:last-child {
+      border-bottom: none;
+    }
+    .technique-card {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .technique-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+    }
+    .technique-card p {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+    }
+    .technique-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .technique-steps .step {
+      font-size: 11px;
+      padding: 6px 8px;
+      background: white;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--primary);
+    }
+    .example-box, .formula-box, .concept-box {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .formula-box {
+      background: linear-gradient(135deg, #f0f7ff, #e8f4f8);
+      border-color: var(--primary-light);
+    }
+    .concept-box {
+      background: linear-gradient(135deg, #fff9e6, #fff5cc);
+      border-color: var(--warning);
+    }
+    .note-text {
+      font-size: 11px;
+      color: var(--gray-500);
+      font-style: italic;
+      margin-top: 8px;
+    }
+    
+    /* Sedona Method Specific */
+    .sedona-questions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sedona-q {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .q-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .q-content strong {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .q-content p {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin: 0;
+    }
+    .wants-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .want-card {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: 10px;
+    }
+    .want-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .want-card p {
+      font-size: 11px;
+      color: var(--gray-600);
+      margin: 0 0 4px 0;
+    }
+    .release-q {
+      font-style: italic;
+      color: var(--primary) !important;
+    }
+    
+    /* Atomic Habits Specific */
+    .habit-loop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+    }
+    .loop-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+      min-width: 60px;
+    }
+    .loop-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .loop-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .loop-desc {
+      font-size: 9px;
+      color: var(--gray-500);
+    }
+    .loop-arrow {
+      color: var(--gray-300);
+      font-size: 16px;
+    }
+    .laws-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .law-card {
+      border-radius: var(--radius-md);
+      padding: 12px;
+      border: 1px solid;
+    }
+    .law-card.good {
+      background: linear-gradient(135deg, #f0fff4, #e6ffed);
+      border-color: var(--success);
+    }
+    .law-card.bad {
+      background: linear-gradient(135deg, #fff5f5, #ffe6e6);
+      border-color: #e53e3e;
+    }
+    .law-header {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .law-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .law-item:last-child {
+      margin-bottom: 0;
+    }
+    .law-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .law-item strong {
+      font-size: 12px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .law-item p {
+      font-size: 11px;
+      color: var(--gray-600);
+      margin: 2px 0 0 0;
+    }
+    
     /* Page Back Button */
     .page-header {
       display: flex;
@@ -2787,6 +3055,21 @@
           </div>
         </div>
         
+        <!-- Pelajaran -->
+        <div class="menu-group">
+          <div class="menu-group-title">📚 Pelajaran</div>
+          <div class="menu-item" onclick="showPage('pelajaran')">
+            <div class="left">
+              <span class="icon">📖</span>
+              <div class="info">
+                <div class="title">Pelajaran Inti</div>
+                <div class="subtitle">NLP, Sedona Method, Atomic Habits</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+        </div>
+        
         <!-- Settings -->
         <div class="menu-group">
           <div class="menu-group-title">⚙️ Pengaturan</div>
@@ -3257,6 +3540,414 @@
           </div>
         </div>
         <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="loadPomodoroHistory()">🔄 Muat Lebih Banyak</button>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: PELAJARAN INTI ==================== -->
+    <div class="page" id="page-pelajaran">
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">📖 Pelajaran Inti</h1>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="pelajaran-tabs">
+        <button class="pelajaran-tab active" onclick="showPelajaranTab('nlp', this)">🧠 NLP</button>
+        <button class="pelajaran-tab" onclick="showPelajaranTab('sedona', this)">🌊 Sedona</button>
+        <button class="pelajaran-tab" onclick="showPelajaranTab('atomic', this)">⚛️ Atomic</button>
+      </div>
+      
+      <!-- NLP Content -->
+      <div class="pelajaran-content active" id="pelajaran-nlp">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🧠 Neuro-Linguistic Programming (NLP)</span>
+          </div>
+          <p class="pelajaran-intro">NLP adalah pendekatan untuk komunikasi, pengembangan pribadi, dan psikoterapi yang diciptakan oleh Richard Bandler dan John Grinder.</p>
+          
+          <div class="pelajaran-section">
+            <h4>🎯 Presuppositions (Asumsi Dasar)</h4>
+            <ul class="pelajaran-list">
+              <li><strong>Peta bukanlah wilayah</strong> - Persepsi kita tentang dunia bukanlah realita sebenarnya</li>
+              <li><strong>Setiap perilaku punya niat positif</strong> - Di balik setiap tindakan ada kebutuhan yang ingin dipenuhi</li>
+              <li><strong>Tidak ada kegagalan, hanya feedback</strong> - Setiap hasil adalah informasi untuk perbaikan</li>
+              <li><strong>Makna komunikasi adalah respon yang didapat</strong> - Bukan niat, tapi hasil yang menentukan</li>
+              <li><strong>Jika satu orang bisa, orang lain juga bisa</strong> - Excellence bisa dimodelkan</li>
+            </ul>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>⚡ Teknik-Teknik Utama</h4>
+            
+            <div class="technique-card">
+              <div class="technique-title">1. Anchoring (Jangkar Emosi)</div>
+              <p>Menghubungkan stimulus tertentu dengan state emosional.</p>
+              <div class="technique-steps">
+                <span class="step">1. Ingat momen ketika kamu merasakan state yang diinginkan</span>
+                <span class="step">2. Perkuat dengan detail (lihat, dengar, rasakan)</span>
+                <span class="step">3. Di puncak emosi, buat anchor (sentuh jari, kata tertentu)</span>
+                <span class="step">4. Ulangi beberapa kali untuk memperkuat</span>
+                <span class="step">5. Test anchor dengan memicunya</span>
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">2. Reframing (Mengubah Bingkai)</div>
+              <p>Mengubah makna suatu pengalaman dengan melihat dari sudut pandang berbeda.</p>
+              <div class="technique-steps">
+                <span class="step"><strong>Context Reframe:</strong> "Di situasi apa ini berguna?"</span>
+                <span class="step"><strong>Content Reframe:</strong> "Apa makna positif lainnya?"</span>
+              </div>
+              <div class="example-box">
+                <strong>Contoh:</strong><br>
+                ❌ "Saya terlalu perfeksionis"<br>
+                ✅ "Saya memiliki standar tinggi dan perhatian pada detail"
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">3. Swish Pattern</div>
+              <p>Mengubah respon otomatis terhadap trigger.</p>
+              <div class="technique-steps">
+                <span class="step">1. Identifikasi trigger (gambar pemicu)</span>
+                <span class="step">2. Buat gambar diri ideal (state yang diinginkan)</span>
+                <span class="step">3. Letakkan gambar ideal kecil di pojok trigger</span>
+                <span class="step">4. "SWISH!" - kecilkan trigger, besarkan ideal dengan cepat</span>
+                <span class="step">5. Blank state, ulangi 5-7x</span>
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">4. Well-Formed Outcome</div>
+              <p>Merumuskan tujuan yang efektif.</p>
+              <div class="technique-steps">
+                <span class="step"><strong>Positif:</strong> Apa yang kamu INGINKAN (bukan tidak inginkan)?</span>
+                <span class="step"><strong>Spesifik:</strong> Kapan, di mana, dengan siapa?</span>
+                <span class="step"><strong>Sensori:</strong> Bagaimana kamu tahu sudah tercapai?</span>
+                <span class="step"><strong>Dalam kontrol:</strong> Apa yang bisa KAMU lakukan?</span>
+                <span class="step"><strong>Ekologis:</strong> Apa dampaknya ke area hidup lain?</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>✨ Afirmasi Efektif (Rumus NLP)</h4>
+            <div class="formula-box">
+              <strong>3P Formula:</strong> Present + Positive + Personal<br><br>
+              ❌ "Saya tidak akan malas lagi"<br>
+              ✅ "Saya adalah pribadi yang produktif dan penuh energi"<br><br>
+              ❌ "Saya ingin percaya diri"<br>
+              ✅ "Saya percaya pada kemampuan diri saya"
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sedona Method Content -->
+      <div class="pelajaran-content" id="pelajaran-sedona">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🌊 The Sedona Method</span>
+          </div>
+          <p class="pelajaran-intro">Dikembangkan oleh Lester Levenson dan dipopulerkan oleh Hale Dwoskin. Teknik sederhana namun powerful untuk melepaskan emosi negatif dan batasan mental.</p>
+          
+          <div class="pelajaran-section">
+            <h4>🔑 Prinsip Dasar</h4>
+            <ul class="pelajaran-list">
+              <li><strong>Emosi bukan kita</strong> - Kita MEMILIKI emosi, bukan MENJADI emosi</li>
+              <li><strong>Melepaskan itu natural</strong> - Seperti melepas genggaman tangan</li>
+              <li><strong>Bisa dilakukan kapan saja</strong> - Tidak butuh kondisi khusus</li>
+              <li><strong>Semakin sering, semakin mudah</strong> - Otot melepaskan bisa dilatih</li>
+            </ul>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>📝 4 Pertanyaan Dasar</h4>
+            <div class="sedona-questions">
+              <div class="sedona-q">
+                <span class="q-number">1</span>
+                <div class="q-content">
+                  <strong>Apa yang kamu rasakan saat ini?</strong>
+                  <p>Identifikasi dan beri nama emosi. Biarkan dirimu merasakannya sepenuhnya.</p>
+                </div>
+              </div>
+              <div class="sedona-q">
+                <span class="q-number">2</span>
+                <div class="q-content">
+                  <strong>Bisakah kamu menerimanya?</strong>
+                  <p>Bukan menyetujui atau menyukai, tapi mengakui keberadaannya. Jawab Ya atau Tidak.</p>
+                </div>
+              </div>
+              <div class="sedona-q">
+                <span class="q-number">3</span>
+                <div class="q-content">
+                  <strong>Bisakah kamu melepaskannya?</strong>
+                  <p>Apakah kamu BISA (bukan mau) melepaskan? Jawab Ya atau Tidak.</p>
+                </div>
+              </div>
+              <div class="sedona-q">
+                <span class="q-number">4</span>
+                <div class="q-content">
+                  <strong>Kapan?</strong>
+                  <p>Biarkan jawaban muncul. Sering kali jawabannya adalah "Sekarang".</p>
+                </div>
+              </div>
+            </div>
+            <p class="note-text">💡 Ulangi proses sampai intensitas emosi berkurang signifikan.</p>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>🎭 9 Emosi Dasar (Wants)</h4>
+            <p>Semua emosi negatif berakar dari 3 keinginan dasar:</p>
+            <div class="wants-grid">
+              <div class="want-card">
+                <div class="want-title">🎮 Want of Control</div>
+                <p>Emosi: Marah, Frustrasi, Tidak sabar</p>
+                <p class="release-q">"Bisakah saya melepaskan keinginan untuk mengontrol?"</p>
+              </div>
+              <div class="want-card">
+                <div class="want-title">👍 Want of Approval</div>
+                <p>Emosi: Sedih, Malu, Merasa tidak cukup</p>
+                <p class="release-q">"Bisakah saya melepaskan keinginan untuk diakui?"</p>
+              </div>
+              <div class="want-card">
+                <div class="want-title">🛡️ Want of Security</div>
+                <p>Emosi: Takut, Cemas, Khawatir</p>
+                <p class="release-q">"Bisakah saya melepaskan keinginan untuk aman?"</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>🚀 Teknik Lanjutan</h4>
+            
+            <div class="technique-card">
+              <div class="technique-title">Welcoming</div>
+              <p>Alih-alih melawan, sambut emosi seperti tamu:</p>
+              <div class="example-box">
+                "Selamat datang, kecemasan. Aku mengakui kehadiranmu.<br>
+                Bisakah aku melepaskanmu? Ya.<br>
+                Kapan? Sekarang."
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">Diving In</div>
+              <p>Untuk emosi yang sangat intens:</p>
+              <div class="technique-steps">
+                <span class="step">1. Masuk ke pusat emosi (di mana kamu merasakannya di tubuh?)</span>
+                <span class="step">2. Biarkan dirimu merasakan sepenuhnya</span>
+                <span class="step">3. Temukan keheningan di tengah intensitas</span>
+                <span class="step">4. Lepaskan dari sana</span>
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">Advantages & Disadvantages</div>
+              <p>Untuk kebiasaan atau emosi yang sulit dilepas:</p>
+              <div class="technique-steps">
+                <span class="step">"Apa keuntungan mempertahankan [emosi/kebiasaan] ini?"</span>
+                <span class="step">"Apa kerugiannya?"</span>
+                <span class="step">"Bisakah saya melepaskan keuntungan ini?"</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Atomic Habits Content -->
+      <div class="pelajaran-content" id="pelajaran-atomic">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⚛️ Atomic Habits</span>
+          </div>
+          <p class="pelajaran-intro">Framework dari James Clear untuk membangun kebiasaan baik dan menghilangkan kebiasaan buruk melalui perubahan kecil yang konsisten.</p>
+          
+          <div class="pelajaran-section">
+            <h4>📐 Konsep Dasar</h4>
+            <div class="concept-box">
+              <strong>1% Better Every Day</strong><br>
+              Jika kamu 1% lebih baik setiap hari selama setahun:<br>
+              1.01³⁶⁵ = <strong>37.78x lebih baik</strong><br><br>
+              Jika 1% lebih buruk setiap hari:<br>
+              0.99³⁶⁵ = <strong>0.03 (hampir nol)</strong>
+            </div>
+            
+            <ul class="pelajaran-list">
+              <li><strong>Fokus pada sistem, bukan tujuan</strong> - Tujuan menentukan arah, sistem menentukan kemajuan</li>
+              <li><strong>Identitas > Hasil</strong> - Bukan "ingin menulis buku" tapi "menjadi penulis"</li>
+              <li><strong>Habit adalah compound interest</strong> - Efeknya tidak terasa di awal, tapi luar biasa jangka panjang</li>
+            </ul>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>🔄 Habit Loop</h4>
+            <div class="habit-loop">
+              <div class="loop-step">
+                <span class="loop-icon">👁️</span>
+                <span class="loop-name">CUE</span>
+                <span class="loop-desc">Pemicu yang memulai</span>
+              </div>
+              <div class="loop-arrow">→</div>
+              <div class="loop-step">
+                <span class="loop-icon">💭</span>
+                <span class="loop-name">CRAVING</span>
+                <span class="loop-desc">Keinginan/motivasi</span>
+              </div>
+              <div class="loop-arrow">→</div>
+              <div class="loop-step">
+                <span class="loop-icon">⚡</span>
+                <span class="loop-name">RESPONSE</span>
+                <span class="loop-desc">Habit itu sendiri</span>
+              </div>
+              <div class="loop-arrow">→</div>
+              <div class="loop-step">
+                <span class="loop-icon">🎁</span>
+                <span class="loop-name">REWARD</span>
+                <span class="loop-desc">Hasil/kepuasan</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>✅ 4 Hukum Perubahan Perilaku</h4>
+            
+            <div class="laws-container">
+              <div class="law-card good">
+                <div class="law-header">MEMBANGUN Kebiasaan Baik</div>
+                <div class="law-item">
+                  <span class="law-num">1</span>
+                  <div>
+                    <strong>Make it OBVIOUS</strong>
+                    <p>Implementation intention: "Saya akan [HABIT] pada [WAKTU] di [LOKASI]"</p>
+                    <p>Habit stacking: "Setelah [HABIT LAMA], saya akan [HABIT BARU]"</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">2</span>
+                  <div>
+                    <strong>Make it ATTRACTIVE</strong>
+                    <p>Temptation bundling: Gabungkan dengan yang kamu suka</p>
+                    <p>Bergabung dengan komunitas yang sudah punya habit itu</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">3</span>
+                  <div>
+                    <strong>Make it EASY</strong>
+                    <p>Reduce friction: Kurangi langkah untuk melakukan</p>
+                    <p>2-Minute Rule: Mulai dengan versi 2 menit</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">4</span>
+                  <div>
+                    <strong>Make it SATISFYING</strong>
+                    <p>Immediate reward setelah selesai</p>
+                    <p>Habit tracker: "Don't break the chain"</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="law-card bad">
+                <div class="law-header">MENGHILANGKAN Kebiasaan Buruk</div>
+                <div class="law-item">
+                  <span class="law-num">1</span>
+                  <div>
+                    <strong>Make it INVISIBLE</strong>
+                    <p>Hilangkan cue dari lingkungan</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">2</span>
+                  <div>
+                    <strong>Make it UNATTRACTIVE</strong>
+                    <p>Reframe: Highlight kerugiannya</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">3</span>
+                  <div>
+                    <strong>Make it DIFFICULT</strong>
+                    <p>Tambah friction: Persulit akses</p>
+                  </div>
+                </div>
+                <div class="law-item">
+                  <span class="law-num">4</span>
+                  <div>
+                    <strong>Make it UNSATISFYING</strong>
+                    <p>Accountability partner, konsekuensi publik</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>🛠️ Strategi Praktis</h4>
+            
+            <div class="technique-card">
+              <div class="technique-title">Habit Stacking Formula</div>
+              <div class="formula-box">
+                "Setelah [CURRENT HABIT], saya akan [NEW HABIT]"<br><br>
+                <strong>Contoh:</strong><br>
+                • Setelah meletakkan kopi di meja, saya akan menulis 1 paragraf<br>
+                • Setelah sholat Subuh, saya akan baca 1 halaman Al-Quran<br>
+                • Setelah makan malam, saya akan journaling 5 menit
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">2-Minute Rule</div>
+              <p>Skalakan habit ke versi 2 menit:</p>
+              <div class="example-box">
+                • "Baca 30 halaman" → "Baca 1 halaman"<br>
+                • "Olahraga 30 menit" → "Pakai sepatu olahraga"<br>
+                • "Belajar coding" → "Buka laptop dan IDE"<br>
+                • "Meditasi 15 menit" → "Duduk dan napas 1 menit"
+              </div>
+              <p class="note-text">💡 Tujuannya adalah MUNCUL, bukan performa. Momentum akan datang.</p>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">Environment Design</div>
+              <p>Lingkungan > Motivasi. Desain environment untuk sukses:</p>
+              <div class="technique-steps">
+                <span class="step"><strong>Untuk habit baik:</strong> Letakkan cue di tempat terlihat</span>
+                <span class="step"><strong>Untuk habit buruk:</strong> Sembunyikan atau persulit akses</span>
+                <span class="step"><strong>One space, one use:</strong> Pisahkan zona kerja dan istirahat</span>
+              </div>
+            </div>
+            
+            <div class="technique-card">
+              <div class="technique-title">Never Miss Twice</div>
+              <div class="example-box">
+                "Melewatkan sekali adalah kecelakaan.<br>
+                Melewatkan dua kali adalah awal dari habit baru."<br><br>
+                Jika gagal hari ini, HARUS berhasil besok.
+              </div>
+            </div>
+          </div>
+          
+          <div class="pelajaran-section">
+            <h4>🔄 Identity-Based Habits</h4>
+            <div class="concept-box">
+              <strong>3 Layer Perubahan:</strong><br><br>
+              <strong>1. Outcomes</strong> (Hasil) - "Saya ingin menurunkan berat badan"<br>
+              <strong>2. Process</strong> (Proses) - "Saya akan diet dan olahraga"<br>
+              <strong>3. Identity</strong> (Identitas) - "Saya adalah orang yang sehat"<br><br>
+              💡 Mulai dari identitas. Setiap tindakan adalah vote untuk tipe orang yang ingin kamu jadi.
+            </div>
+            
+            <div class="example-box">
+              <strong>Pertanyaan Kunci:</strong><br>
+              "Tipe orang seperti apa yang bisa mencapai hasil ini?"<br>
+              "Apa yang akan dilakukan orang itu?"<br><br>
+              Bukan: "Saya ingin berhenti merokok"<br>
+              Tapi: "Saya bukan perokok"
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
