@@ -2189,6 +2189,9 @@ function submitTask() {
     description = description ? `${description}\n\n👤 Didelegasikan ke: ${delegateTo}` : `👤 Didelegasikan ke: ${delegateTo}`;
   }
   
+  const goalId = document.getElementById('taskGoal')?.value || '';
+  const milestoneId = document.getElementById('taskMilestone')?.value || '';
+  
   const taskData = {
     title,
     description,
@@ -2198,13 +2201,11 @@ function submitTask() {
     estimated_pomodoro: parseInt(document.getElementById('taskEstPomodoro')?.value) || 2,
     tags: delegateTo ? `delegated:${delegateTo}` : (assigneeType === 'self' ? 'self' : '')
   };
-  const goalId = document.getElementById('taskGoal')?.value || '';
-  const milestoneId = document.getElementById('taskMilestone')?.value || '';
   
   // Generate temporary ID
   const tempId = 'temp_' + Date.now();
   
-  // Update local state langsung
+  // Create new task object for optimistic UI
   const newTask = {
     task_id: tempId,
     goal_id: goalId,
@@ -2213,12 +2214,11 @@ function submitTask() {
     created_at: new Date().toISOString()
   };
   
-  // Handle both kanban formats: {board:{...}} or direct {backlog:[], todo:[],...}
+  // === OPTIMISTIC UI: Update semua state SEBELUM close modal ===
+  
+  // 1. Update kanban state
   if (!state.kanban) state.kanban = { board: { backlog: [], todo: [], progress: [], done: [] } };
-  
   const status = taskData.status || 'todo';
-  
-  // Check if using board wrapper or direct format
   if (state.kanban.board) {
     if (!state.kanban.board[status]) state.kanban.board[status] = [];
     state.kanban.board[status].unshift(newTask);
@@ -2227,7 +2227,33 @@ function submitTask() {
     state.kanban[status].unshift(newTask);
   }
   
-  // Add to queue with goal_id and milestone_id INSIDE data
+  // 2. Update goalTasks state jika task punya goal
+  if (goalId) {
+    if (!state.goalTasks) state.goalTasks = [];
+    state.goalTasks.unshift(newTask);
+  }
+  
+  // === RENDER UI LANGSUNG (sebelum sync ke server) ===
+  
+  // Close modal first
+  closeModal('task');
+  
+  // Render goal detail IMMEDIATELY jika di halaman goal-detail
+  if (goalId && state.selectedGoalId === goalId) {
+    const goal = state.goals?.find(g => g.goal_id === goalId);
+    if (goal) {
+      renderGoalDetail(goal, state.goalTasks);
+    }
+  }
+  
+  // Re-render kanban and today focus
+  renderKanban();
+  renderTodayFocus();
+  
+  // Show success toast
+  showToast('Task ditambahkan! ✓', 'success');
+  
+  // === SYNC KE SERVER (background, non-blocking) ===
   addToQueue('addTask', { 
     data: {
       ...taskData,
@@ -2235,9 +2261,9 @@ function submitTask() {
       milestone_id: milestoneId
     }
   });
-  syncPendingQueue(); // Sync immediately
+  syncPendingQueue(); // Fire and forget
   
-  // Clear form & close modal
+  // Clear form
   document.getElementById('taskTitle').value = '';
   document.getElementById('taskDesc').value = '';
   const linkEl = document.getElementById('taskLink');
@@ -2247,13 +2273,9 @@ function submitTask() {
   if (delegateEl) delegateEl.value = '';
   if (assigneeEl) assigneeEl.value = 'self';
   toggleDelegateInput('self');
-  closeModal('task');
   
-  showToast('Task tersimpan! ✓', 'success');
-  
-  // Re-render kanban and today focus
-  renderKanban();
-  renderTodayFocus();
+  // Clear the addTaskGoalId
+  state.addTaskGoalId = null;
 }
 
 function moveTask(taskId, newStatus) {
@@ -2306,19 +2328,25 @@ async function viewGoalDetail(goalId) {
     return;
   }
   
-  // Show goal detail page
+  // Initialize goalTasks
+  state.goalTasks = [];
+  
+  // Show goal detail page immediately with loading state
   showPage('goal-detail');
   
-  // Load goal tasks from API
+  // Render immediately with empty tasks (will update when loaded)
+  renderGoalDetail(goal, []);
+  
+  // Load goal tasks from API in background
   try {
     const tasks = await apiGet('getTasks');
     const goalTasks = (tasks || []).filter(t => t.goal_id === goalId);
     state.goalTasks = goalTasks;
     
+    // Re-render with loaded tasks
     renderGoalDetail(goal, goalTasks);
   } catch (err) {
     console.error('Failed to load goal tasks:', err);
-    renderGoalDetail(goal, []);
   }
 }
 
