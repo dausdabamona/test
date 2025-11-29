@@ -426,7 +426,8 @@ async function loadAllData() {
       loadGoals(true), // silent mode
       loadVisions(true),
       loadKanban(false), // load kanban for today's tasks
-      loadBrainDumps(true)
+      loadBrainDumps(true),
+      loadDontList() // for home page don't list
     ]).catch(console.error);
     
   } catch (err) {
@@ -567,10 +568,10 @@ function renderDailySync() {
   if (focusEl) focusEl.textContent = (data.stats?.pomodoro_minutes || 0) + 'm';
   
   renderSholatGrid(data.sholat);
-  renderSholatMiniGrid(data.sholat);
+  renderSholatMiniList(data.sholat);
   renderHabitRosul(data.habits);
   renderSunnahMiniList(data.habits);
-  renderBrainDumpMini();
+  renderDontListMini();
   renderTodayFocus();
 }
 
@@ -638,19 +639,19 @@ function renderHabitRosul(habits) {
 // ============================================
 // HOME MINI COMPONENTS
 // ============================================
-function renderSholatMiniGrid(sholatData) {
-  const container = document.getElementById('sholatMiniGrid');
+function renderSholatMiniList(sholatData) {
+  const container = document.getElementById('sholatMiniList');
   const badge = document.getElementById('sholatBadge');
   if (!container) return;
   
   const sholatList = [
-    { id: 'TAHAJUD', name: 'Tahajud', icon: '🌙' },
     { id: 'SUBUH', name: 'Subuh', icon: '🌅' },
-    { id: 'DHUHA', name: 'Dhuha', icon: '☀️' },
     { id: 'DZUHUR', name: 'Dzuhur', icon: '🌞' },
     { id: 'ASHAR', name: 'Ashar', icon: '🌇' },
     { id: 'MAGHRIB', name: 'Maghrib', icon: '🌆' },
     { id: 'ISYA', name: 'Isya', icon: '🌃' },
+    { id: 'TAHAJUD', name: 'Tahajud', icon: '🌙' },
+    { id: 'DHUHA', name: 'Dhuha', icon: '☀️' },
     { id: 'WITIR', name: 'Witir', icon: '⭐' }
   ];
   
@@ -666,13 +667,63 @@ function renderSholatMiniGrid(sholatData) {
   container.innerHTML = sholatList.map(s => {
     const data = sholatMap[s.id] || { done: false };
     if (data.done) completedCount++;
-    return `<div class="sholat-mini-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')">
-      <span class="icon">${s.icon}</span>
-      <span class="name">${s.name}</span>
+    return `<div class="sholat-row-item ${data.done ? 'done' : ''}" onclick="toggleSholat('${s.id}', ${data.done})">
+      <span class="check">${data.done ? '✓' : ''}</span>
+      <span class="sholat-icon">${s.icon}</span>
+      <span class="sholat-name">${s.name}</span>
     </div>`;
   }).join('');
   
   if (badge) badge.textContent = `${completedCount}/8`;
+}
+
+// Toggle Sholat - langsung toggle tanpa modal
+function toggleSholat(waktu, isDone) {
+  // INSTANT UI UPDATE
+  const clickedItem = event?.currentTarget;
+  if (clickedItem) {
+    if (isDone) {
+      clickedItem.classList.remove('done');
+      const checkbox = clickedItem.querySelector('.check');
+      if (checkbox) checkbox.textContent = '';
+    } else {
+      clickedItem.classList.add('done');
+      const checkbox = clickedItem.querySelector('.check');
+      if (checkbox) checkbox.textContent = '✓';
+    }
+  }
+  
+  // Update badge
+  const badge = document.getElementById('sholatBadge');
+  if (badge) {
+    const current = parseInt(badge.textContent.split('/')[0]) || 0;
+    badge.textContent = `${isDone ? current - 1 : current + 1}/8`;
+  }
+  
+  // Update local state
+  if (state.dailySync?.sholat) {
+    if (Array.isArray(state.dailySync.sholat)) {
+      const existing = state.dailySync.sholat.find(s => s.waktu === waktu);
+      if (existing) {
+        existing.status = isDone ? false : 'done';
+      } else if (!isDone) {
+        state.dailySync.sholat.push({ waktu, status: 'done' });
+      }
+    }
+  }
+  
+  // ADD TO QUEUE
+  const today = new Date().toISOString().split('T')[0];
+  addToQueue('logSholat', {
+    data: {
+      tanggal: today,
+      waktu: waktu,
+      status: isDone ? 'pending' : 'done',
+      lokasi: 'rumah'
+    }
+  });
+  
+  showToast(isDone ? 'Dibatalkan' : 'Alhamdulillah! ✓', isDone ? 'info' : 'success');
 }
 
 function renderSunnahMiniList(habits) {
@@ -693,6 +744,29 @@ function renderSunnahMiniList(habits) {
   
   container.innerHTML = html || '<div style="padding: 8px; color: var(--gray-400); font-size: 11px;">Tidak ada sunnah</div>';
   if (badge) badge.textContent = `${completedCount}/${habitsList.length}`;
+}
+
+// Render Don't List Mini untuk Beranda
+function renderDontListMini() {
+  const container = document.getElementById('dontListMini');
+  if (!container) return;
+  
+  const items = state.dontList || [];
+  
+  if (items.length === 0) {
+    container.innerHTML = `<div style="padding: 12px; text-align: center;">
+      <p style="font-size: 12px; color: var(--gray-400);">Hal yang perlu dihindari</p>
+      <button class="btn-submit btn-secondary" style="width: auto; margin-top: 8px; font-size: 11px;" onclick="showPage('dontlist')">+ Tambah</button>
+    </div>`;
+    return;
+  }
+  
+  container.innerHTML = items.slice(0, 4).map(item => `
+    <div class="dont-mini-item">
+      <span class="icon">🚫</span>
+      <span>${escapeHtml(item.item || item.content)}</span>
+    </div>
+  `).join('');
 }
 
 function renderBrainDumpMini() {
@@ -1219,7 +1293,7 @@ function startPomodoroTimer(type, task) {
   };
   
   // Add to queue - log start
-  addToQueue('startPomodoro', {
+  addToQueue('logPomodoro', {
     options: { type, planned_task: task }
   });
   
@@ -1276,7 +1350,7 @@ function completePomodoro() {
   showToast(`${typeInfo.label} selesai! 🎉`, 'success');
   
   // Add to queue - log completion
-  addToQueue('completePomodoro', {
+  addToQueue('logPomodoro', {
     type: state.pomodoro.type,
     task: state.pomodoro.task,
     duration_minutes: Math.floor(typeInfo.duration / 60)
@@ -2036,7 +2110,7 @@ function submitBrainDump() {
   };
   state.brainDumps = [newDump, ...(state.brainDumps || [])];
   
-  addToQueue('addBrainDump', { content: content });
+  addToQueue('saveBrainDump', { content: content });
   
   input.value = '';
   updateCharCount();
@@ -2487,7 +2561,7 @@ function submitQuickBrainDump() {
   };
   state.brainDumps = [newDump, ...(state.brainDumps || [])];
   
-  addToQueue('addBrainDump', { content: content });
+  addToQueue('saveBrainDump', { content: content });
   
   closeModal('quick-braindump');
   showToast('Brain dump tersimpan! 🧠', 'success');
