@@ -1288,7 +1288,7 @@ function renderStats() {
 // POMODORO TIMER - NEW FEATURE
 // ============================================
 function renderPomodoroPage() {
-  const container = document.getElementById('pomodoroContent');
+  const container = document.getElementById('pomodoroContainer');
   if (!container) return;
   
   if (state.pomodoro.active) {
@@ -1299,7 +1299,7 @@ function renderPomodoroPage() {
 }
 
 function renderPomodoroStart() {
-  const container = document.getElementById('pomodoroContent');
+  const container = document.getElementById('pomodoroContainer');
   const topGoals = (state.goals || []).filter(g => g.priority_rank && g.priority_rank <= 3).slice(0, 3);
   
   container.innerHTML = `
@@ -1333,7 +1333,9 @@ function renderPomodoroStart() {
 }
 
 function renderActivePomodoro() {
-  const container = document.getElementById('pomodoroContent');
+  const container = document.getElementById('pomodoroContainer');
+  if (!container) return;
+  
   const p = state.pomodoro;
   const typeInfo = POMODORO_TYPES[p.type] || POMODORO_TYPES.POMODORO_25;
   const progress = ((p.duration - p.remaining) / p.duration) * 100;
@@ -1431,7 +1433,7 @@ function updatePomodoroTimer() {
     completePomodoro();
   } else {
     // Update display
-    const container = document.getElementById('pomodoroContent');
+    const container = document.getElementById('pomodoroContainer');
     if (container && state.pomodoro.active) {
       renderActivePomodoro();
     }
