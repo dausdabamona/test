@@ -4,7 +4,7 @@
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbxNuxFB-sCRcuLe6YzOR6kW21AIEo2ne9NQdGv5SV-ac8XALyHU_b_lFbtdiTqH2FXmkw/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyB7zq7hPHEmOpiwIy8IM-byn7eNa0ZT8lNtOaX34scoY5Fxo9fEAVEFaUMq0wLtJpOPA/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -212,19 +212,21 @@ async function syncPendingQueue() {
   state.isSyncing = true;
   const itemsToSync = [...state.pendingQueue];
   
-  console.log(`[Sync] Syncing ${itemsToSync.length} pending items...`);
+  console.log(`[Sync] Syncing ${itemsToSync.length} pending items...`, itemsToSync);
   
   let successCount = 0;
   let failedItems = [];
   
   for (const item of itemsToSync) {
     try {
-      await apiPost(item.action, item.data);
+      console.log(`[Sync] Sending: ${item.action}`, item.data);
+      const result = await apiPost(item.action, item.data);
+      console.log(`[Sync] Success: ${item.action}`, result);
       successCount++;
       // Remove from queue after success
       state.pendingQueue = state.pendingQueue.filter(q => q.id !== item.id);
     } catch (err) {
-      console.error(`[Sync] Failed: ${item.action}`, err);
+      console.error(`[Sync] Failed: ${item.action}`, err.message, item.data);
       failedItems.push(item);
     }
   }
@@ -2230,7 +2232,10 @@ function submitTask() {
   // 2. Update goalTasks state jika task punya goal
   if (goalId) {
     if (!state.goalTasks) state.goalTasks = [];
-    state.goalTasks.unshift(newTask);
+    // Cek apakah sudah ada task dengan ID yang sama (hindari duplikat)
+    if (!state.goalTasks.find(t => t.task_id === newTask.task_id)) {
+      state.goalTasks.unshift(newTask);
+    }
   }
   
   // === RENDER UI LANGSUNG (sebelum sync ke server) ===
@@ -2238,10 +2243,15 @@ function submitTask() {
   // Close modal first
   closeModal('task');
   
-  // Render goal detail IMMEDIATELY jika di halaman goal-detail
-  if (goalId && state.selectedGoalId === goalId) {
+  // Render goal detail IMMEDIATELY jika task punya goal
+  // Cek apakah halaman goal-detail sedang aktif
+  const goalDetailPage = document.getElementById('page-goal-detail');
+  const isGoalDetailActive = goalDetailPage && goalDetailPage.classList.contains('active');
+  
+  if (goalId && isGoalDetailActive) {
     const goal = state.goals?.find(g => g.goal_id === goalId);
     if (goal) {
+      console.log('[UI] Rendering goal detail with new task:', newTask.title);
       renderGoalDetail(goal, state.goalTasks);
     }
   }
