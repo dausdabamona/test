@@ -1,10 +1,10 @@
 // ============================================
-// SYNC PLANNER v2.1 - OPTIMIZED VERSION
+// SYNC PLANNER v3.0 - OPTIMIZED VERSION
 // ============================================
 
 // CONFIG
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbyUDbXWx5Is7ieQA6hnn1GH5RtB05OcLiW5EUhvKmDwKNbtw-K11ClgQobhkYijtj7kRA/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwh1RvMAoke6pc77zCE-trjLNdCiehDAPgYwrkz0XbJXs_0HifdwtBMWlvCcSCfa213qw/exec',
   USER_ID: 'ea551f35-5726-4df8-88f8-03b3adb69e72',
   CACHE_DURATION: 5 * 60 * 1000, // 5 menit cache
   API_TIMEOUT: 15000 // 15 detik timeout
@@ -286,6 +286,11 @@ function showPage(pageName, navEl) {
       break;
     case 'habits':
       renderHabitsFull();
+      if (!state.habitLogHistory) {
+        loadHabitLogHistory(7);
+      } else {
+        renderHabitLogHistory();
+      }
       state.pageLoaded.habits = true;
       break;
     case 'pairwise':
@@ -531,6 +536,8 @@ async function loadStats(period) {
     state.cache.stats = Date.now();
     state.pageLoaded.stats = true;
     renderStats();
+    // Also load history
+    loadPomodoroHistory();
   } catch (err) {
     document.getElementById('statsContainer').innerHTML = `
       <div class="empty-state">
@@ -540,6 +547,102 @@ async function loadStats(period) {
   } finally {
     state.loading.stats = false;
   }
+}
+
+async function loadPomodoroHistory(limit = 20) {
+  try {
+    const history = await apiGet('getPomodoroHistory', { limit });
+    state.pomodoroHistory = history || [];
+    renderPomodoroHistory();
+  } catch (err) {
+    console.error('Failed to load pomodoro history:', err);
+  }
+}
+
+function renderPomodoroHistory() {
+  const container = document.getElementById('pomodoroHistoryList');
+  if (!container) return;
+  
+  const history = state.pomodoroHistory || [];
+  
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <span class="icon">🍅</span>
+        <p style="color: var(--gray-500); font-size: 13px;">Belum ada riwayat sesi</p>
+      </div>`;
+    return;
+  }
+  
+  // Group by date
+  const grouped = {};
+  history.forEach(s => {
+    const date = s.date || 'Unknown';
+    if (!grouped[date]) grouped[date] = [];
+    grouped[date].push(s);
+  });
+  
+  let html = '';
+  Object.entries(grouped).forEach(([date, sessions]) => {
+    html += `<div class="history-date-header">${formatDate(date)}</div>`;
+    sessions.forEach(s => {
+      const typeLabel = POMODORO_TYPES[s.type]?.label || '🍅';
+      const duration = s.duration_minutes || s.duration || 25;
+      html += `
+        <div class="history-item">
+          <div class="history-item-icon">${typeLabel.split(' ')[0]}</div>
+          <div class="history-item-content">
+            <div class="history-item-task">${escapeHtml(s.actual_task || s.notes || s.planned_task || 'Sesi Fokus')}</div>
+            <div class="history-item-meta">
+              <span>${s.start_time || ''} - ${s.end_time || ''}</span>
+              <span>${duration} menit</span>
+            </div>
+          </div>
+        </div>`;
+    });
+  });
+  
+  container.innerHTML = html;
+}
+
+async function loadHabitLogHistory(days = 7) {
+  try {
+    const history = await apiGet('getHabitLogHistory', { days });
+    state.habitLogHistory = history || [];
+    renderHabitLogHistory();
+  } catch (err) {
+    console.error('Failed to load habit log history:', err);
+  }
+}
+
+function renderHabitLogHistory() {
+  const container = document.getElementById('habitLogHistoryList');
+  if (!container) return;
+  
+  const history = state.habitLogHistory || [];
+  
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p style="color: var(--gray-500); font-size: 13px;">Belum ada riwayat</p>
+      </div>`;
+    return;
+  }
+  
+  container.innerHTML = history.map(day => `
+    <div class="habit-history-day">
+      <div class="habit-history-date">
+        <span class="day-name">${day.day}</span>
+        <span class="date">${formatDate(day.date)}</span>
+        <span class="count">${day.habits_completed} habit</span>
+      </div>
+      <div class="habit-history-items">
+        ${day.habits.map(h => `
+          <span class="habit-chip">✓ ${escapeHtml(h.name)}</span>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderOfflineState() {
@@ -715,14 +818,15 @@ function toggleSholat(waktu, isDone) {
     }
   }
   
-  // ADD TO QUEUE
-  const today = new Date().toISOString().split('T')[0];
+  // ADD TO QUEUE - format untuk backend v3
   addToQueue('logSholat', {
     data: {
-      tanggal: today,
       waktu: waktu,
+      tanggal: new Date().toISOString().split('T')[0],
       status: isDone ? 'pending' : 'done',
-      lokasi: 'rumah'
+      lokasi: 'rumah',
+      berjamaah: false,
+      catatan: ''
     }
   });
   
@@ -1483,17 +1587,17 @@ function completePomodoro() {
   // Show completion
   showToast(`${typeInfo.label} selesai! 🎉`, 'success');
   
-  // Add to queue - log completion with correct format for backend
-  const today = new Date().toISOString().split('T')[0];
+  // Add to queue - gunakan logPomodoro untuk backend v3
   addToQueue('logPomodoro', {
     data: {
       type: state.pomodoro.type,
       duration: durationMinutes,
       task_id: state.currentFocusTask?.task_id || '',
-      notes: state.pomodoro.task,
+      goal_id: state.currentFocusTask?.goal_id || '',
       started_at: new Date(state.pomodoro.startTime).toISOString(),
       completed_at: new Date().toISOString(),
-      status: 'completed'
+      status: 'completed',
+      notes: state.pomodoro.task
     }
   });
   
@@ -1759,7 +1863,7 @@ function toggleHabitRosul(habitId, isCompleted) {
     }
   }
   
-  // ADD TO QUEUE - gunakan toggleHabit yang ada di backend
+  // ADD TO QUEUE - gunakan toggleHabit yang ada di backend v3
   addToQueue('toggleHabit', { 
     habit_id: habitId,
     tanggal: new Date().toISOString().split('T')[0]

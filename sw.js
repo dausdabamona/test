@@ -3,11 +3,20 @@
  * Offline support & caching
  */
 
-const CACHE_NAME = 'sync-planner-v2.0';
+const CACHE_NAME = 'sync-planner-v2.1';
 const ASSETS = [
   '/',
   '/index.html',
+  '/app.js',
   '/manifest.json',
+  '/icon-72.png',
+  '/icon-96.png',
+  '/icon-128.png',
+  '/icon-144.png',
+  '/icon-152.png',
+  '/icon-192.png',
+  '/icon-384.png',
+  '/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 

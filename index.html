@@ -613,6 +613,88 @@
       box-shadow: none;
     }
     
+    /* History List Styles */
+    .history-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .history-date-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+      padding: 12px 0 8px;
+      border-bottom: 1px solid var(--gray-100);
+      margin-bottom: 8px;
+    }
+    .history-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-50);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      font-size: 20px;
+    }
+    .history-item-content { flex: 1; }
+    .history-item-task {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+    }
+    .history-item-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    
+    /* Habit History Styles */
+    .habit-history-day {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .habit-history-date {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .habit-history-date .day-name {
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .habit-history-date .date {
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+    .habit-history-date .count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .habit-history-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .habit-chip {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--success-light);
+      color: var(--success);
+      border-radius: var(--radius-full);
+    }
+    
     /* Toast */
     .toast {
       position: fixed;
@@ -2155,6 +2237,17 @@
       <div id="habitFullList">
         <div class="loading"><div class="spinner"></div></div>
       </div>
+      
+      <!-- Habit History Section -->
+      <div class="section-title" style="margin-top: 24px;">📊 Riwayat 7 Hari Terakhir</div>
+      <div class="card">
+        <div id="habitLogHistoryList">
+          <div class="empty-state" style="padding: 20px;">
+            <p style="color: var(--gray-400); font-size: 13px;">Memuat riwayat...</p>
+          </div>
+        </div>
+        <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="loadHabitLogHistory(14)">📅 Lihat 14 Hari</button>
+      </div>
     </div>
     
     <!-- ==================== PAGE: VISION ==================== -->
@@ -2544,6 +2637,17 @@
             <div class="label">🔥 Streak</div>
           </div>
         </div>
+      </div>
+      
+      <!-- Pomodoro History -->
+      <div class="section-title" style="margin-top: 24px;">📋 Riwayat Sesi</div>
+      <div class="card">
+        <div id="pomodoroHistoryList" class="history-list">
+          <div class="empty-state" style="padding: 20px;">
+            <p style="color: var(--gray-400); font-size: 13px;">Memuat riwayat...</p>
+          </div>
+        </div>
+        <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="loadPomodoroHistory()">🔄 Muat Lebih Banyak</button>
       </div>
     </div>
     
