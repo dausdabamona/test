@@ -1495,36 +1495,57 @@ function submitSholat() {
 }
 
 function toggleHabitRosul(habitId, isCompleted) {
-  if (isCompleted) { 
-    showToast('Sudah selesai ✓', 'info'); 
-    return; 
+  if (!habitId || habitId === 'undefined') {
+    showToast('Habit belum tersinkron', 'info');
+    return;
   }
   
   // INSTANT UI UPDATE
   const clickedItem = event?.currentTarget;
   if (clickedItem) {
-    clickedItem.classList.add('done');
-    const checkbox = clickedItem.querySelector('.habit-rosul-checkbox');
-    if (checkbox) checkbox.textContent = '✓';
+    if (isCompleted) {
+      clickedItem.classList.remove('done');
+      const checkbox = clickedItem.querySelector('.habit-rosul-checkbox, .check');
+      if (checkbox) checkbox.textContent = '';
+    } else {
+      clickedItem.classList.add('done');
+      const checkbox = clickedItem.querySelector('.habit-rosul-checkbox, .check');
+      if (checkbox) checkbox.textContent = '✓';
+    }
   }
   
   // Update local state langsung
   if (state.dailySync?.habits) {
     const habit = state.dailySync.habits.find(h => h.habit_id === habitId);
-    if (habit) habit.completed = true;
-    
-    // Update stats di header
-    if (state.dailySync.stats) {
-      state.dailySync.stats.habits_completed++;
-      document.getElementById('habitCount').textContent = 
-        state.dailySync.stats.habits_completed + '/' + state.dailySync.stats.habits_total;
+    if (habit) {
+      habit.completed = !isCompleted;
+      
+      // Update stats di header
+      if (state.dailySync.stats) {
+        if (isCompleted) {
+          state.dailySync.stats.habits_completed--;
+        } else {
+          state.dailySync.stats.habits_completed++;
+        }
+        const habitCountEl = document.getElementById('habitCount');
+        const sunnahBadge = document.getElementById('sunnahBadge');
+        if (habitCountEl) {
+          habitCountEl.textContent = state.dailySync.stats.habits_completed + '/' + state.dailySync.stats.habits_total;
+        }
+        if (sunnahBadge) {
+          sunnahBadge.textContent = state.dailySync.stats.habits_completed + '/' + state.dailySync.stats.habits_total;
+        }
+      }
     }
   }
   
-  // ADD TO QUEUE - akan sync saat pindah halaman
-  addToQueue('checkHabit', { habit_id: habitId });
+  // ADD TO QUEUE - gunakan toggleHabit yang ada di backend
+  addToQueue('toggleHabit', { 
+    habit_id: habitId,
+    tanggal: new Date().toISOString().split('T')[0]
+  });
   
-  showToast('Alhamdulillah! ✓', 'success');
+  showToast(isCompleted ? 'Dibatalkan' : 'Alhamdulillah! ✓', isCompleted ? 'info' : 'success');
 }
 
 function submitGoal() {
@@ -2200,40 +2221,47 @@ function editJournal(type) {
 
 function submitJournal(type) {
   let content = {};
+  const today = new Date().toISOString().split('T')[0];
   
   if (type === 'morning') {
     content = {
-      type: 'morning',
       gratitude: document.getElementById('journalGratitude')?.value.trim() || '',
       focus: document.getElementById('journalFocus')?.value.trim() || '',
       affirmation: document.getElementById('journalAffirmation')?.value.trim() || ''
     };
   } else {
     content = {
-      type: 'evening',
       wins: document.getElementById('journalWins')?.value.trim() || '',
       improve: document.getElementById('journalImprove')?.value.trim() || '',
       lesson: document.getElementById('journalLesson')?.value.trim() || ''
     };
   }
   
-  const hasContent = Object.values(content).some(v => v && v !== 'morning' && v !== 'evening');
+  const hasContent = Object.values(content).some(v => v);
   if (!hasContent) {
     showToast('Isi minimal satu field', 'error');
     return;
   }
   
+  // Update local state
+  state.journals = state.journals || {};
   state.journals[type] = {
-    parsed: content,
-    time: type
+    content: JSON.stringify(content),
+    tanggal: today,
+    type: type === 'morning' ? 'MORNING_JOURNAL' : 'EVENING_JOURNAL'
   };
   
-  addToQueue('addJournal', { 
-    content: JSON.stringify(content),
-    time: type
+  // ADD TO QUEUE - gunakan saveJournal yang ada di backend
+  addToQueue('saveJournal', { 
+    data: {
+      tanggal: today,
+      type: type === 'morning' ? 'MORNING_JOURNAL' : 'EVENING_JOURNAL',
+      content: JSON.stringify(content)
+    }
   });
   
   renderJournal();
+  renderHomeJournals();
   showToast('Jurnal tersimpan! ✓', 'success');
 }
 
