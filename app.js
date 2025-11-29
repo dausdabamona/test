@@ -882,16 +882,21 @@ function renderDontListMini() {
   // Get today's violations from state
   const todayViolations = state.dontViolations || {};
   
-  container.innerHTML = items.slice(0, 4).map(item => {
+  // Show up to 6 items instead of 4
+  const displayItems = items.slice(0, 6);
+  
+  container.innerHTML = displayItems.map(item => {
     const itemId = item.dont_id || item.id;
     const isViolated = todayViolations[itemId] === true;
     const isObeyed = todayViolations[itemId] === false;
+    // Support both 'title' (from backend) and 'item' (legacy)
+    const itemText = item.title || item.item || item.content || '';
     
     return `
     <div class="dont-mini-item ${isViolated ? 'violated' : ''} ${isObeyed ? 'obeyed' : ''}">
       <div class="dont-item-text">
         <span class="icon">${isViolated ? '❌' : isObeyed ? '✅' : '🚫'}</span>
-        <span>${escapeHtml(item.item || item.content)}</span>
+        <span>${escapeHtml(itemText)}</span>
       </div>
       <div class="dont-item-actions">
         <button class="dont-btn obey ${isObeyed ? 'active' : ''}" onclick="event.stopPropagation();markDontItem('${itemId}', false)" title="Dipatuhi">✓</button>
@@ -899,7 +904,8 @@ function renderDontListMini() {
       </div>
     </div>`;
   }).join('') + 
-  `<button class="btn-link" style="font-size: 11px; padding: 4px 0; margin-top: 4px;" onclick="showPage('dontlist')">Lihat Semua →</button>`;
+  (items.length > 6 ? `<div style="font-size: 11px; color: var(--gray-400); text-align: center; padding: 4px;">+${items.length - 6} lainnya</div>` : '') +
+  `<button class="btn-link" style="font-size: 11px; padding: 4px 0; margin-top: 4px;" onclick="showPage('dontlist')">Lihat Semua (${items.length}) →</button>`;
 }
 
 // Mark don't list item as obeyed or violated
@@ -3533,13 +3539,16 @@ function renderDontList() {
     'FOKUS': { icon: '🎯', title: 'Fokus', items: [] },
     'WAKTU': { icon: '⏰', title: 'Waktu', items: [] },
     'ENERGI': { icon: '⚡', title: 'Energi', items: [] },
-    'KEBIASAAN': { icon: '🔄', title: 'Kebiasaan', items: [] }
+    'KEBIASAAN': { icon: '🔄', title: 'Kebiasaan', items: [] },
+    'OTHER': { icon: '📋', title: 'Lainnya', items: [] }
   };
   
   items.forEach(item => {
-    const cat = item.category || 'FOKUS';
+    const cat = item.category || 'OTHER';
     if (categories[cat]) {
       categories[cat].items.push(item);
+    } else {
+      categories['OTHER'].items.push(item);
     }
   });
   
@@ -3553,22 +3562,28 @@ function renderDontList() {
           ${cat.icon} ${cat.title} (${cat.items.length})
         </div>
         <div class="dont-category-items">
-          ${cat.items.map(item => `
+          ${cat.items.map(item => {
+            // Support both 'title' (from backend) and 'item' (legacy)
+            const itemText = item.title || item.item || item.content || '';
+            return `
             <div class="dont-item" data-id="${item.dont_id}">
               <span class="icon">🚫</span>
               <div class="content">
-                <div class="item-text">${escapeHtml(item.item)}</div>
+                <div class="item-text">${escapeHtml(itemText)}</div>
                 ${item.reason ? `<div class="item-reason">${escapeHtml(item.reason)}</div>` : ''}
               </div>
               <div class="actions">
                 <button onclick="deleteDontItem('${item.dont_id}')" title="Hapus">🗑️</button>
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       </div>
     `;
   });
+  
+  // Show total count
+  html = `<div style="margin-bottom: 12px; font-size: 12px; color: var(--gray-500);">Total: ${items.length} item</div>` + html;
   
   container.innerHTML = html;
 }
@@ -3587,7 +3602,8 @@ function submitDontItem() {
   
   const newItem = {
     dont_id: tempId,
-    item: item,
+    title: item,  // Use 'title' for backend compatibility
+    item: item,   // Keep 'item' for frontend compatibility
     reason: reason,
     category: category,
     active: true
@@ -3595,14 +3611,16 @@ function submitDontItem() {
   state.dontList = [newItem, ...(state.dontList || [])];
   
   addToQueue('addDontItem', { 
-    data: { item, reason, category }
+    data: { title: item, reason, category }  // Send 'title' to backend
   });
+  syncPendingQueue();
   
   document.getElementById('dontItemText').value = '';
   document.getElementById('dontItemReason').value = '';
   closeModal('dont-add');
   
   renderDontList();
+  renderDontListMini();
   showToast('Don\'t item ditambahkan! ✓', 'success');
 }
 
