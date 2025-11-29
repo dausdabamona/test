@@ -2227,12 +2227,15 @@ function submitTask() {
     state.kanban[status].unshift(newTask);
   }
   
-  // Add to queue with milestone_id
-  addToQueue('createTask', { 
-    goal_id: goalId, 
-    milestone_id: milestoneId,
-    data: taskData 
+  // Add to queue with goal_id and milestone_id INSIDE data
+  addToQueue('addTask', { 
+    data: {
+      ...taskData,
+      goal_id: goalId,
+      milestone_id: milestoneId
+    }
   });
+  syncPendingQueue(); // Sync immediately
   
   // Clear form & close modal
   document.getElementById('taskTitle').value = '';
