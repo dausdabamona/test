@@ -3183,6 +3183,60 @@
       .wisdom-stats { gap: 20px; }
       .wisdom-stat-number { font-size: 24px; }
     }
+    
+    /* Wisdom of the Day - Home Card */
+    .wisdom-home-card {
+      background: linear-gradient(135deg, #fefbf6 0%, #fff9f0 100%) !important;
+      border: 1px solid rgba(212, 168, 83, 0.3) !important;
+      transition: all 0.3s ease;
+    }
+    .wisdom-home-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212, 168, 83, 0.2);
+    }
+    .wisdom-of-day {
+      text-align: center;
+      padding: 8px 0;
+    }
+    .wisdom-home-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .wisdom-home-principle {
+      font-family: var(--font-arabic);
+      font-size: 16px;
+      color: #b8923f;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .wisdom-home-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+    }
+    .wisdom-home-desc {
+      font-size: 11px;
+      color: var(--gray-500);
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .wisdom-home-frameworks {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .wisdom-home-frameworks span {
+      width: 24px;
+      height: 24px;
+      background: rgba(212, 168, 83, 0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -3210,7 +3264,7 @@
       </div>
       <div class="quick-icons">
         <button class="quick-icon-btn" onclick="openQuickBrainDump()" title="Brain Dump">🧠</button>
-        <button class="quick-icon-btn" onclick="showPage('dontlist')" title="Don't List">🚫</button>
+        <button class="quick-icon-btn" onclick="showPage('wisdom')" title="Wisdom Stoik" style="background: linear-gradient(135deg, #d4a853, #b8923f);">🏛️</button>
       </div>
     </div>
   </header>
@@ -3270,15 +3324,21 @@
           </div>
         </div>
         
-        <!-- Right: Don't List -->
+        <!-- Right: Wisdom of the Day -->
         <div class="home-right-col">
-          <div class="card" style="height: 100%;">
+          <div class="card wisdom-home-card" style="height: 100%; cursor: pointer;" onclick="showPage('wisdom')">
             <div class="card-header">
-              <span class="card-title">🚫 Don't List</span>
-              <button class="btn-icon" onclick="openModal('braindump')" title="Brain Dump">💭</button>
+              <span class="card-title">🏛️ Wisdom Hari Ini</span>
+              <button class="btn-icon" onclick="event.stopPropagation(); refreshWisdomOfDay()" title="Wisdom Lain">🔄</button>
             </div>
-            <div class="dont-list-mini" id="dontListMini">
-              <!-- Rendered by JS -->
+            <div class="wisdom-of-day" id="wisdomOfDay">
+              <div class="wisdom-home-icon">💡</div>
+              <div class="wisdom-home-principle">"Empathy Over Logic"</div>
+              <div class="wisdom-home-title">Istri Menangis Tanpa Alasan</div>
+              <div class="wisdom-home-desc">Istri butuh didengar dan dirasakan kehadiranmu, bukan solusi.</div>
+              <div class="wisdom-home-frameworks">
+                <span>🏛️</span><span>🧠</span><span>💨</span><span>⚛️</span><span>🤝</span><span>☪️</span>
+              </div>
             </div>
           </div>
         </div>
@@ -5371,11 +5431,34 @@
       openModal('wisdom');
     }
 
+    // Refresh Wisdom of the Day
+    function refreshWisdomOfDay() {
+      const randomIndex = Math.floor(Math.random() * WISDOM_SITUATIONS.length);
+      const s = WISDOM_SITUATIONS[randomIndex];
+      
+      const icons = ['💡', '🌟', '✨', '🔥', '💪', '🎯', '🧭', '📿'];
+      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+      
+      document.getElementById('wisdomOfDay').innerHTML = `
+        <div class="wisdom-home-icon">${s.icon}</div>
+        <div class="wisdom-home-principle">"${s.principle}"</div>
+        <div class="wisdom-home-title">${s.title}</div>
+        <div class="wisdom-home-desc">${s.principleDesc}</div>
+        <div class="wisdom-home-frameworks">
+          <span>🏛️</span><span>🧠</span><span>💨</span><span>⚛️</span><span>🤝</span><span>☪️</span>
+        </div>
+      `;
+    }
+
     // Initialize Wisdom on page load
     document.addEventListener('DOMContentLoaded', function() {
       // Render wisdom cards when page loads
       if (document.getElementById('wisdomGrid')) {
         renderWisdomCards();
+      }
+      // Initialize wisdom of the day on home
+      if (document.getElementById('wisdomOfDay')) {
+        refreshWisdomOfDay();
       }
     });
 
