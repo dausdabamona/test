@@ -353,29 +353,11 @@ function showPage(pageName, navEl) {
       }
       state.pageLoaded.journal = true;
       break;
-    case 'wisdom':
-      if (!state.pageLoaded.wisdom) {
-        loadWisdomPage();
+    case 'dontlist':
+      if (!state.pageLoaded.dontlist) {
+        loadDontList();
       }
-      state.pageLoaded.wisdom = true;
-      break;
-    case 'dashboard':
-      if (!state.pageLoaded.dashboard) {
-        loadDashboardPage();
-      }
-      state.pageLoaded.dashboard = true;
-      break;
-    case 'mood':
-      if (!state.pageLoaded.mood) {
-        loadMoodPage();
-      }
-      state.pageLoaded.mood = true;
-      break;
-    case 'family':
-      if (!state.pageLoaded.family) {
-        loadFamilyPage();
-      }
-      state.pageLoaded.family = true;
+      state.pageLoaded.dontlist = true;
       break;
     case 'review':
       if (!state.pageLoaded.review) {
@@ -409,6 +391,12 @@ function showPage(pageName, navEl) {
     case 'refleksi':
       renderRefleksiPage();
       state.pageLoaded.refleksi = true;
+      break;
+    case 'wisdom':
+      if (typeof renderWisdomCards === 'function') {
+        renderWisdomCards();
+      }
+      state.pageLoaded.wisdom = true;
       break;
     case 'settings':
       loadSettingsPage();
@@ -493,11 +481,11 @@ async function loadAllData() {
     // Load secondary data in background (non-blocking) - parallel
     Promise.all([
       loadGoals(true),
-      loadKanban(false)
+      loadKanban(false),
+      loadDontList()
     ]).then(() => {
       // After data loaded, render home components
       renderTodayFocus();
-      renderWisdomStoikMini(); // Render wisdom di beranda
     }).catch(() => {});
     
     // Load less critical in background
@@ -798,32 +786,18 @@ function renderSholatGrid(sholatData) {
       // Status bisa 'done', true, atau 'TRUE'
       const isDone = s.status === 'done' || s.status === true || s.status === 'TRUE' || s.status === 'true';
       sholatMap[s.waktu] = { done: isDone, ...s };
-      console.log('[Sholat] Mapped:', s.waktu, '-> done:', isDone, 'berjamaah:', s.berjamaah, 'lokasi:', s.lokasi);
+      console.log('[Sholat] Mapped:', s.waktu, '-> done:', isDone, 'status:', s.status);
     });
   } else if (sholatData) {
     Object.assign(sholatMap, sholatData);
   }
   
-  const lokasiLabel = {
-    'masjid': 'Masjid',
-    'musholla': 'Musholla',
-    'rumah': 'Rumah',
-    'kantor': 'Kantor',
-    'perjalanan': 'Perjalanan',
-    'lainnya': 'Lainnya'
-  };
-  
   container.innerHTML = sholatList.map(s => {
     const data = sholatMap[s.id] || { done: false };
-    const isJamaah = data.berjamaah === true || data.berjamaah === 'true' || data.berjamaah === 'TRUE';
-    const lokasiText = lokasiLabel[data.lokasi] || data.lokasi || '';
-    const tooltipText = lokasiText ? `${isJamaah ? 'Berjamaah' : 'Munfarid'} di ${lokasiText}` : '';
-    
-    return `<div class="sholat-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')" title="${tooltipText}">
+    return `<div class="sholat-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')">
       <span class="icon">${s.icon}</span>
       <span class="name">${s.name}</span>
       ${data.jam_pelaksanaan ? `<span class="time">${data.jam_pelaksanaan}</span>` : ''}
-      ${data.done && isJamaah ? `<span class="jamaah-badge" title="Berjamaah">👥</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -973,6 +947,74 @@ function renderSunnahMiniList(habits) {
   
   container.innerHTML = html || '<div style="padding: 8px; color: var(--gray-400); font-size: 11px;">Tidak ada sunnah</div>';
   if (badge) badge.textContent = `${completedCount}/${habitsList.length}`;
+}
+
+// Render Don't List Mini untuk Beranda dengan checklist
+function renderDontListMini() {
+  const container = document.getElementById('dontListMini');
+  if (!container) return;
+  
+  const items = state.dontList || [];
+  const today = todayString();
+  
+  if (items.length === 0) {
+    container.innerHTML = `<div style="padding: 12px; text-align: center;">
+      <p style="font-size: 12px; color: var(--gray-400);">Hal yang perlu dihindari</p>
+      <button class="btn-submit btn-secondary" style="width: auto; margin-top: 8px; font-size: 11px;" onclick="showPage('dontlist')">+ Tambah</button>
+    </div>`;
+    return;
+  }
+  
+  // Get today's violations from state
+  const todayViolations = state.dontViolations || {};
+  
+  // Show up to 6 items instead of 4
+  const displayItems = items.slice(0, 6);
+  
+  container.innerHTML = displayItems.map(item => {
+    const itemId = item.dont_id || item.id;
+    const isViolated = todayViolations[itemId] === true;
+    const isObeyed = todayViolations[itemId] === false;
+    // Support both 'title' (from backend) and 'item' (legacy)
+    const itemText = item.title || item.item || item.content || '';
+    
+    return `
+    <div class="dont-mini-item ${isViolated ? 'violated' : ''} ${isObeyed ? 'obeyed' : ''}">
+      <div class="dont-item-text">
+        <span class="icon">${isViolated ? '❌' : isObeyed ? '✅' : '🚫'}</span>
+        <span>${escapeHtml(itemText)}</span>
+      </div>
+      <div class="dont-item-actions">
+        <button class="dont-btn obey ${isObeyed ? 'active' : ''}" onclick="event.stopPropagation();markDontItem('${itemId}', false)" title="Dipatuhi">✓</button>
+        <button class="dont-btn violate ${isViolated ? 'active' : ''}" onclick="event.stopPropagation();markDontItem('${itemId}', true)" title="Dilanggar">✗</button>
+      </div>
+    </div>`;
+  }).join('') + 
+  (items.length > 6 ? `<div style="font-size: 11px; color: var(--gray-400); text-align: center; padding: 4px;">+${items.length - 6} lainnya</div>` : '') +
+  `<button class="btn-link" style="font-size: 11px; padding: 4px 0; margin-top: 4px;" onclick="showPage('dontlist')">Lihat Semua (${items.length}) →</button>`;
+}
+
+// Mark don't list item as obeyed or violated
+function markDontItem(dontId, isViolated) {
+  if (!state.dontViolations) state.dontViolations = {};
+  
+  // Toggle if same value
+  if (state.dontViolations[dontId] === isViolated) {
+    delete state.dontViolations[dontId];
+  } else {
+    state.dontViolations[dontId] = isViolated;
+  }
+  
+  // Save to queue
+  const today = todayString();
+  addToQueue('logDontViolation', {
+    dont_id: dontId,
+    tanggal: today,
+    violated: isViolated
+  });
+  
+  renderDontListMini();
+  showToast(isViolated ? 'Tercatat dilanggar' : 'Alhamdulillah dipatuhi! ✓', isViolated ? 'warning' : 'success');
 }
 
 function renderBrainDumpMini() {
@@ -1844,24 +1886,8 @@ function openSholatModal(waktu) {
   }
   
   state.selectedSholat = waktu;
-  document.getElementById('sholatModalTitle').textContent = '🕌 Sholat ' + waktu;
+  document.getElementById('sholatModalTitle').textContent = '🕌 ' + waktu;
   document.getElementById('sholatJam').value = new Date().toTimeString().slice(0, 5);
-  
-  // Reset form ke default
-  document.getElementById('sholatLokasi').value = 'masjid';
-  document.getElementById('sholatJamaahYa').checked = true;
-  document.getElementById('sholatJamaahTidak').checked = false;
-  document.getElementById('sholatCatatan').value = '';
-  
-  // Set default berdasarkan waktu sholat
-  const wajibJamaah = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
-  if (wajibJamaah.includes(waktu)) {
-    document.getElementById('sholatJamaahYa').checked = true;
-  } else {
-    // Tahajud, Dhuha, Witir biasanya sendiri
-    document.getElementById('sholatJamaahTidak').checked = true;
-  }
-  
   openModal('sholat');
 }
 
@@ -1869,8 +1895,7 @@ function submitSholat() {
   const waktu = state.selectedSholat;
   const jam = document.getElementById('sholatJam').value;
   const lokasi = document.getElementById('sholatLokasi').value;
-  const berjamaah = document.getElementById('sholatJamaahYa').checked;
-  const catatan = document.getElementById('sholatCatatan').value || '';
+  const berjamaah = document.getElementById('sholatBerjamaah').checked;
   
   // INSTANT UI UPDATE - Update grid langsung
   const sholatItems = document.querySelectorAll('.sholat-item');
@@ -1886,18 +1911,6 @@ function submitSholat() {
         item.appendChild(timeEl);
       }
       timeEl.textContent = jam;
-      
-      // Tambah badge berjamaah jika berjamaah
-      let badgeEl = item.querySelector('.jamaah-badge');
-      if (berjamaah && !badgeEl) {
-        badgeEl = document.createElement('span');
-        badgeEl.className = 'jamaah-badge';
-        badgeEl.textContent = '👥';
-        badgeEl.title = 'Berjamaah di ' + lokasi;
-        item.appendChild(badgeEl);
-      } else if (!berjamaah && badgeEl) {
-        badgeEl.remove();
-      }
     }
   });
   
@@ -1912,16 +1925,13 @@ function submitSholat() {
       existing.status = 'done';
       existing.lokasi = lokasi;
       existing.berjamaah = berjamaah;
-      existing.jam_pelaksanaan = jam;
-      existing.catatan = catatan;
     } else {
       state.dailySync.sholat.push({ 
         waktu, 
         status: 'done', 
         lokasi, 
         berjamaah,
-        jam_pelaksanaan: jam,
-        catatan: catatan
+        jam_pelaksanaan: jam 
       });
     }
     
@@ -1948,8 +1958,7 @@ function submitSholat() {
       status: 'done',
       lokasi: lokasi,
       berjamaah: berjamaah,
-      jam_pelaksanaan: jam,
-      catatan: catatan
+      catatan: 'Jam: ' + jam
     }
   });
   
@@ -1957,18 +1966,7 @@ function submitSholat() {
   syncPendingQueue();
   
   closeModal('sholat');
-  
-  // Toast message dengan info lokasi dan jamaah
-  const lokasiLabel = {
-    'masjid': 'Masjid',
-    'musholla': 'Musholla',
-    'rumah': 'Rumah',
-    'kantor': 'Kantor',
-    'perjalanan': 'Perjalanan',
-    'lainnya': 'Lainnya'
-  };
-  const jamaahText = berjamaah ? ' berjamaah' : '';
-  showToast(`Alhamdulillah! ${waktu}${jamaahText} di ${lokasiLabel[lokasi] || lokasi} ✓`, 'success');
+  showToast('Alhamdulillah! ' + waktu + ' ✓', 'success');
 }
 
 // Direct toggle without modal (for quick toggle)
@@ -2990,7 +2988,7 @@ function refreshAllData() {
   syncPendingQueue();
   
   state.cache = { dailySync: 0, goals: 0, kanban: 0, visions: 0, stats: 0 };
-  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, wisdom: false, dashboard: false, mood: false, family: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
+  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, dontlist: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
 }
@@ -3913,694 +3911,143 @@ function submitJournal(type) {
 }
 
 // ============================================
-// WISDOM STOIK - 50+ Situasi Respons Bijak Suami
+// BATCH 1: DON'T LIST FUNCTIONS
 // ============================================
-
-// Data Wisdom Stoik (27 situasi)
-const WISDOM_STOIK = [
-  {
-    id: "1",
-    title: "ISTRI MENANGIS TANPA ALASAN JELAS",
-    context: "Istri tiba-tiba menangis. Suami tanya kenapa, istri bilang 'tidak tahu' atau 'tidak apa-apa'.",
-    bad_responses: [
-      "\"Ah, nangis lagi. Emang perempuan suka lebay.\"",
-      "\"Udah ah, jangan cengeng.\"",
-      "\"Kalau ga ada masalah, ngapain nangis?\"",
-      "Ignore dan main HP"
-    ],
-    good_responses: [
-      "Duduk di sampingnya, pegang tangannya",
-      "\"Sayang, aku di sini. Kalau kamu mau cerita, aku dengar. Kalau ga mau cerita juga gpp, aku tetap di sini.\"",
-      "Peluk dia, biarkan dia nangis",
-      "Setelah tenang: \"Kamu butuh apa sekarang? Air? Tisu? Atau cuma dipeluk?\""
-    ],
-    principle: "Empathy over Logic - Kadang emosi tidak perlu penjelasan logis. Presence over Solution - Yang dia butuh adalah kehadiran, bukan solusi.",
-    category: "emosional"
-  },
-  {
-    id: "2",
-    title: "ISTRI MARAH KARENA HAL SEPELE",
-    context: "Suami lupa tutup pasta gigi, atau lupa taruh piring di wastafel. Istri marah berlebihan.",
-    bad_responses: [
-      "\"Cuma pasta gigi doang kok marah-marah!\"",
-      "\"Kamu sensitif banget sih!\"",
-      "Balas marah: \"Terus aku harus gimana?!\"",
-      "Defensive: \"Kan aku lagi capek kerja!\""
-    ],
-    good_responses: [
-      "PAUSE (jangan langsung reaktif)",
-      "\"Sorry, aku memang lupa. Aku akan lebih perhatian.\"",
-      "Langsung action: tutup pasta gigi",
-      "Observe calmly: \"Sayang, sepertinya ada yang mengganggu kamu hari ini. Cuma soal pasta gigi, atau ada hal lain?\""
-    ],
-    principle: "Epictetus: \"It's not what happens to you, but how you react to it that matters.\" Don't take it personally - Kemarahan berlebihan often bukan tentang pasta gigi.",
-    category: "emosional"
-  },
-  {
-    id: "3",
-    title: "ISTRI OVERTHINKING & CEMAS",
-    context: "Istri cemas tentang masa depan, kesehatan anak, keuangan, dll. Dia overthink sampai ga bisa tidur.",
-    bad_responses: [
-      "\"Ah, kamu worry terus. Ga ada yang terjadi kok!\"",
-      "\"Stop overthinking!\"",
-      "\"Kamu kurang iman aja tuh, makanya cemas.\"",
-      "Ignore karena merasa dia 'lebay'"
-    ],
-    good_responses: [
-      "\"Aku lihat kamu khawatir. Cerita dong, apa yang bikin kamu cemas?\"",
-      "Listen tanpa interrupt",
-      "\"Kekhawatiranmu valid. Aku ngerti kenapa kamu worry.\"",
-      "Stoic reframe: \"Yuk kita lihat: Apa yang bisa kita kontrol? Apa yang di luar kontrol kita?\"",
-      "Action plan: \"Untuk yang bisa kita kontrol, kita bikin plan. Untuk yang ga bisa, kita serahkan ke Allah dan kita doa bareng.\""
-    ],
-    principle: "Dichotomy of Control (Epictetus) - Pisahkan yang bisa dikontrol dan yang tidak. Anxiety berkurang ketika fokus pada yang bisa dikontrol.",
-    category: "emosional"
-  },
-  {
-    id: "4",
-    title: "ISTRI PMS (PRE-MENSTRUAL SYNDROME)",
-    context: "Istri sedang PMS - mood swing, sensitive, gampang marah/nangis.",
-    bad_responses: [
-      "\"Kamu lagi PMS ya?\" (dengan nada merendahkan)",
-      "\"Haduh, tiap bulan aja drama!\"",
-      "\"Sabar deh, biasa aja kali\"",
-      "Menghindar/tidak pulang ke rumah"
-    ],
-    good_responses: [
-      "Understand ini adalah kondisi biologis, bukan \"drama\"",
-      "Extra patient & gentle minggu itu",
-      "\"Sayang, ada yang bisa aku bantu? Pijat? Kompres hangat?\"",
-      "Bawakan makanan/minuman kesukaan tanpa diminta",
-      "Reduce expectations - jangan expect dia productive seperti biasa"
-    ],
-    principle: "Marcus Aurelius: \"Begin each day by telling yourself: Today I shall be meeting with interference, ingratitude, insolence...\" - Antisipasi dan prepare.",
-    category: "emosional"
-  },
-  {
-    id: "5",
-    title: "ISTRI MAU BELI BARANG MAHAL",
-    context: "Istri ingin beli tas/sepatu/gadget mahal. Budget sebenarnya tidak terlalu cukup.",
-    bad_responses: [
-      "\"TIDAK! Mahal banget! Kamu boros!\"",
-      "\"Cari yang lebih murah!\"",
-      "Langsung veto tanpa diskusi",
-      "Langsung setuju karena takut konflik (padahal ga mampu)"
-    ],
-    good_responses: [
-      "\"Wah, bagus ya. Kamu suka yang ini?\" - Show interest dulu",
-      "\"Boleh aku tahu kenapa kamu pengen yang ini? Ada yang spesial?\"",
-      "Listen to her reasoning",
-      "\"Aku ngerti kenapa kamu mau. Boleh ga kita lihat budget kita dulu?\"",
-      "Options: \"Kalau beli ini, kita harus sacrifice [X]. Kamu oke?\" / \"Gimana kalau kita nabung 3 bulan dulu?\""
-    ],
-    principle: "Stoic negotiation - Seek to understand before being understood. Respect her desires while maintaining financial wisdom.",
-    category: "keputusan"
-  },
-  {
-    id: "6",
-    title: "ISTRI CURHAT TENTANG MASALAH",
-    context: "Istri curhat tentang masalah di kantor/keluarga. Suami langsung kasih solusi.",
-    bad_responses: [
-      "\"Ya sudah, kamu resign aja!\"",
-      "\"Kan aku udah bilang dari dulu...\"",
-      "\"Solusinya gampang, kamu tinggal...\"",
-      "Tidak fokus mendengar, sambil main HP"
-    ],
-    good_responses: [
-      "Letakkan HP, tatap matanya",
-      "\"Aku dengar. Cerita aja.\"",
-      "Nod dan kasih validasi: \"Wah, itu pasti berat ya.\"",
-      "Tanya: \"Kamu mau aku dengerin aja, atau mau aku bantu cari solusi?\"",
-      "Jika dia mau solusi, tanya dulu: \"Menurut kamu, apa yang bisa dilakukan?\""
-    ],
-    principle: "NLP Presupposition: The meaning of communication is the response you get. Validasi dulu, solusi kemudian (jika diminta).",
-    category: "komunikasi"
-  },
-  {
-    id: "7",
-    title: "ISTRI BANDINGKAN DENGAN SUAMI ORANG",
-    context: "\"Suami si A lebih perhatian...\" atau \"Lihat tuh, suami si B sering ngajak liburan.\"",
-    bad_responses: [
-      "\"Ya udah nikah sama dia aja!\"",
-      "\"Kamu ga pernah bersyukur!\"",
-      "Balas: \"Istri si C itu lebih nurut!\"",
-      "Diam tapi sakit hati, jadi dingin berhari-hari"
-    ],
-    good_responses: [
-      "PAUSE - Jangan langsung defensive",
-      "\"Hmm, sepertinya kamu ingin aku lebih [perhatian/romantis/dll]. Begitu?\"",
-      "\"Aku mau jadi suami terbaik buat kamu. Bisa kasih tahu konkretnya, apa yang kamu harap dariku?\"",
-      "\"Terima kasih sudah jujur. Aku akan berusaha lebih baik.\"",
-      "Action: Lakukan hal kecil yang dia minta dalam 24 jam"
-    ],
-    principle: "Seneca: \"We suffer more in imagination than in reality.\" Jangan besar-besarkan. Fokus pada apa yang bisa diperbaiki.",
-    category: "konflik"
-  },
-  {
-    id: "8",
-    title: "ISTRI LELAH DAN TIDAK MAU MEMASAK",
-    context: "Istri terlalu capek setelah kerja/urus anak. Tidak masak makan malam.",
-    bad_responses: [
-      "\"Terus makan apa dong?!\"",
-      "\"Masak kan tugas istri!\"",
-      "\"Capek kenapa? Di rumah aja kok.\"",
-      "Marah-marah dan keluar cari makan sendiri"
-    ],
-    good_responses: [
-      "\"Kamu pasti capek banget ya. Istirahat aja.\"",
-      "\"Mau aku pesen makanan? Atau aku masak sesuatu yang simple?\"",
-      "Masak indomie/nasi goreng untuk dia",
-      "\"Besok kita hire pembantu part-time ya? Biar kamu ga terlalu capek.\""
-    ],
-    principle: "Marcus Aurelius: \"Adapt yourself to the life you have been given.\" Flexibility dan empathy lebih penting dari ekspektasi.",
-    category: "konflik"
-  },
-  {
-    id: "9",
-    title: "ISTRI TIDAK SETUJU KEPUTUSAN SUAMI",
-    context: "Suami sudah putuskan sesuatu (beli rumah, pindah kerja, dll). Istri menentang keras.",
-    bad_responses: [
-      "\"Aku kepala keluarga, ikut aja!\"",
-      "\"Kamu ga ngerti masalah begini.\"",
-      "Ngotot dan memaksa",
-      "Diam-diam tetap jalankan tanpa diskusi"
-    ],
-    good_responses: [
-      "\"Aku dengar kamu ga setuju. Boleh jelaskan kenapa?\"",
-      "Really listen tanpa defensive",
-      "\"Pertimbanganmu masuk akal. Aku belum lihat dari sudut itu.\"",
-      "\"Yuk kita list pro-cons bareng. Keputusan terbaik itu yang kita ambil berdua.\"",
-      "Jika tetap berbeda: \"Gimana kalau kita istikharah dulu?\""
-    ],
-    principle: "Stoic leadership: True authority comes from wisdom, not power. Musyawarah adalah sunnah Rasulullah.",
-    category: "keputusan"
-  },
-  {
-    id: "10",
-    title: "ISTRI DIAM / COLD TREATMENT",
-    context: "Istri tiba-tiba diam, menjawab singkat, menghindari kontak mata.",
-    bad_responses: [
-      "Ikut-ikutan diam (cold war)",
-      "\"Apa sih? Ngomong aja!\"",
-      "Ignore dan anggap dia childish",
-      "\"Kalau ga mau ngomong ya sudah!\""
-    ],
-    good_responses: [
-      "Approach with gentleness: \"Sayang, kamu kayak lagi ga happy. Aku salah apa?\"",
-      "\"Aku mau dengerin. Kalau belum siap cerita sekarang, aku tunggu.\"",
-      "Gentle touch: pegang tangan atau usap punggung",
-      "Jangan paksa bicara. Kasih waktu tapi tetap present.",
-      "Later: \"Aku sayang kamu. Aku di sini kalau kamu siap ngobrol.\""
-    ],
-    principle: "Sedona Method: Welcome the resistance. Sometimes silence needs space to dissolve.",
-    category: "komunikasi"
-  },
-  {
-    id: "11",
-    title: "ISTRI PROTES KURANG QUALITY TIME",
-    context: "\"Kamu sibuk terus! Kapan sih ada waktu buat aku?\"",
-    bad_responses: [
-      "\"Kan aku kerja buat kita juga!\"",
-      "\"Mau gimana lagi? Aku capek!\"",
-      "\"Kamu yang ga ngerti prioritas.\"",
-      "Janji kosong: \"Nanti ya\" (tapi tidak pernah)"
-    ],
-    good_responses: [
-      "\"Maaf ya, aku memang kurang ngasih waktu.\"",
-      "\"Kamu benar. Aku akan prioritaskan waktu untuk kita.\"",
-      "COMMIT konkret: \"Hari Sabtu ini, kita date ya? Kamu mau ke mana?\"",
-      "Block calendar immediately - jadikan sacred time",
-      "Small but consistent: 15 menit ngobrol setiap malam tanpa HP"
-    ],
-    principle: "Atomic Habits: What gets scheduled gets done. Quality time adalah investment, bukan expense.",
-    category: "komunikasi"
-  },
-  {
-    id: "12",
-    title: "ISTRI INSECURE TENTANG PENAMPILAN",
-    context: "\"Aku gendutan ya?\" atau \"Aku jelek deh sekarang...\"",
-    bad_responses: [
-      "\"Iya sih, diet dong.\" (even if joking)",
-      "\"Ah, biasa aja.\"",
-      "Diam/tidak merespons",
-      "\"Kamu tuh kayak cari-cari pujian!\""
-    ],
-    good_responses: [
-      "\"Kamu cantik kok di mataku.\" - dengan kontak mata",
-      "\"Aku suka kamu apa adanya.\"",
-      "Physical affirmation: peluk dari belakang",
-      "\"Kamu tetap yang paling cantik buat aku.\"",
-      "Jika dia serius mau sehat: \"Yuk olahraga bareng!\""
-    ],
-    principle: "NLP: Words create reality. Your affirmation shapes her self-image.",
-    category: "emosional"
-  },
-  {
-    id: "13",
-    title: "ISTRI MENGKRITIK DI DEPAN ORANG",
-    context: "Saat gathering, istri menyindir atau mengkritik suami di depan teman/keluarga.",
-    bad_responses: [
-      "Balas kritik di depan umum",
-      "Malu dan marah, pergi meninggalkan acara",
-      "Diam tapi pulang langsung marahi",
-      "\"Lihat tuh, istrimu juga lebih parah!\""
-    ],
-    good_responses: [
-      "Stay calm di depan umum - jaga kehormatan berdua",
-      "Senyum saja, alihkan topik dengan halus",
-      "Di rumah, sampaikan dengan gentle: \"Sayang, tadi aku agak uncomfortable...\"",
-      "\"Kalau ada yang mau dibahas tentang aku, aku prefer kita ngobrol berdua ya.\"",
-      "\"Aku ngerti mungkin kamu frustrasi, tapi aku lebih bisa dengar kalau private.\""
-    ],
-    principle: "Stoic dignity: Your calm response teaches others how to treat you.",
-    category: "konflik"
-  },
-  {
-    id: "14",
-    title: "ISTRI KELELAHAN URUS ANAK",
-    context: "Istri sangat lelah urus anak, rumah berantakan, dia terlihat overwhelmed.",
-    bad_responses: [
-      "\"Kok rumah berantakan sih?\"",
-      "\"Kamu ngapain aja seharian?\"",
-      "Langsung istirahat tanpa membantu",
-      "Complain tentang makanan/kondisi rumah"
-    ],
-    good_responses: [
-      "\"Kamu pasti capek banget. Sini aku gantiin urus anak.\"",
-      "\"Istirahat dulu, mandi air hangat. Biar anak sama aku.\"",
-      "Take over tanpa diminta: mandiin anak, suapin, tidurkan",
-      "Weekend: \"Kamu me-time aja. Aku yang urus.\"",
-      "Long term: diskusikan untuk hire helper"
-    ],
-    principle: "Marcus Aurelius: \"What we do now echoes in eternity.\" Momen ini membangun ingatan dia tentang kamu.",
-    category: "konflik"
-  },
-  {
-    id: "15",
-    title: "ISTRI TIDAK SEPENDAPAT SOAL PARENTING",
-    context: "Beda pandangan: apakah anak boleh screen time, cara disiplin, dll.",
-    bad_responses: [
-      "\"Aku ayahnya, ikut caraku!\"",
-      "\"Caramu tuh bikin anak manja!\"",
-      "Undermine keputusan istri di depan anak",
-      "Tidak mau diskusi, langsung jalankan cara sendiri"
-    ],
-    good_responses: [
-      "\"Kita punya cara berbeda. Yuk duduk bahas.\"",
-      "\"Apa concern utamamu tentang ini?\"",
-      "\"Gimana kalau kita coba [compromise] dan evaluasi sebulan?\"",
-      "United front: \"Apapun keputusannya, kita presentkan sebagai keputusan bersama ke anak.\"",
-      "Baca buku parenting bareng, diskusikan"
-    ],
-    principle: "Children feel secure when parents are united. Perbedaan boleh, tapi selesaikan di belakang.",
-    category: "keputusan"
-  },
-  {
-    id: "16",
-    title: "ISTRI MENGELUH TENTANG MERTUA",
-    context: "Istri curhat masalah dengan ibu/keluarga suami.",
-    bad_responses: [
-      "\"Kamu jangan gitu sama mama!\"",
-      "\"Mama ga mungkin salah!\"",
-      "Langsung bela keluarga tanpa mendengar",
-      "\"Ya sabar aja, namanya juga mertua.\""
-    ],
-    good_responses: [
-      "Listen dulu sampai selesai tanpa membela siapapun",
-      "\"Aku ngerti perasaanmu. Pasti ga nyaman.\"",
-      "\"Terima kasih sudah cerita. Ini pasti berat.\"",
-      "\"Aku akan bicara dengan mama dengan cara yang baik.\"",
-      "Jadi jembatan, bukan hakim - mediasi dengan bijak"
-    ],
-    principle: "Your wife left her family to build life with you. Honor that sacrifice by being her advocate.",
-    category: "konflik"
-  },
-  {
-    id: "17",
-    title: "ISTRI LUPA ATAU MELAKUKAN KESALAHAN",
-    context: "Istri lupa bayar tagihan, masak gosong, atau buat kesalahan lain.",
-    bad_responses: [
-      "\"Gimana sih? Gitu aja lupa!\"",
-      "\"Makanya fokus dong!\"",
-      "Sigh dan eye roll",
-      "\"Ini bukan pertama kalinya!\""
-    ],
-    good_responses: [
-      "\"Gapapa, bisa dibenerin kok.\" - dengan nada tenang",
-      "\"Namanya juga manusia, wajar lupa.\"",
-      "Help fix the problem together",
-      "\"Next time mau aku ingetin?\"",
-      "Jangan ungkit-ungkit kesalahan masa lalu"
-    ],
-    principle: "Seneca: \"We are more often frightened than hurt; and we suffer more from imagination than from reality.\"",
-    category: "komunikasi"
-  },
-  {
-    id: "18",
-    title: "ISTRI MINTA BANTUAN SAAT SUAMI CAPEK",
-    context: "Suami baru pulang kerja, istri minta bantuan sesuatu.",
-    bad_responses: [
-      "\"Ntar aja, aku capek!\" (dengan nada kesal)",
-      "\"Kamu ga lihat aku baru pulang?!\"",
-      "Ignore requestnya",
-      "Lakukan dengan marah-marah"
-    ],
-    good_responses: [
-      "\"Oke, kasih aku 10 menit ganti baju dulu ya.\"",
-      "Kalau benar-benar capek: \"Boleh aku istirahat 30 menit dulu? Habis itu aku bantu.\"",
-      "\"Apa yang bisa aku prioritaskan dulu?\"",
-      "Remember: dia juga mungkin capek seharian"
-    ],
-    principle: "The Stoic evening review: \"What did I do well? What could I improve?\" - Include how you responded to requests.",
-    category: "komunikasi"
-  },
-  {
-    id: "19",
-    title: "ISTRI TIDAK MEMAAFKAN KESALAHAN LAMA",
-    context: "Istri masih menyimpan sakit hati dari kesalahan suami di masa lalu, sering diungkit.",
-    bad_responses: [
-      "\"Kapan sih mau move on?!\"",
-      "\"Kan udah aku minta maaf!\"",
-      "\"Kamu dendam banget ya.\"",
-      "Balas ungkit kesalahannya"
-    ],
-    good_responses: [
-      "Acknowledge: \"Aku tahu kesalahanku waktu itu sangat menyakitimu.\"",
-      "\"Maaf aku kalau masih butuh waktu untuk pulih. Aku di sini.\"",
-      "\"Apa yang bisa aku lakukan untuk membantumu move on?\"",
-      "Konsisten tunjukkan perubahan, bukan cuma kata-kata",
-      "Sabar - healing takes time"
-    ],
-    principle: "Sedona Method: Allow her to release at her own pace. Your patience accelerates her healing.",
-    category: "konflik"
-  },
-  {
-    id: "20",
-    title: "ISTRI CEMBURU DENGAN REKAN KERJA",
-    context: "Istri tidak nyaman dengan kedekatan suami dengan rekan kerja wanita.",
-    bad_responses: [
-      "\"Kamu jealous ga jelas!\"",
-      "\"Dia cuma teman, ga lebih!\"",
-      "Dismiss perasaannya",
-      "Malah semakin rahasia-rahasiaan"
-    ],
-    good_responses: [
-      "\"Aku ngerti kenapa kamu merasa begitu.\"",
-      "\"Terima kasih udah jujur. Aku appreciate itu.\"",
-      "Transparent: \"Ini chat aku sama dia, mau lihat?\"",
-      "Set boundaries: batasi interaksi yang tidak perlu",
-      "\"Yang paling penting buat aku itu kamu. Aku mau kamu nyaman.\""
-    ],
-    principle: "Trust is built through transparency. Her jealousy is often a signal to increase connection.",
-    category: "konflik"
-  },
-  {
-    id: "21",
-    title: "ISTRI TIDAK MOOD INTIMASI",
-    context: "Suami ingin intimate, istri menolak.",
-    bad_responses: [
-      "\"Kenapa sih selalu nolak?!\"",
-      "\"Kewajiban istri itu!\"",
-      "Ngambek atau guilt-trip",
-      "Memaksa atau coercion"
-    ],
-    good_responses: [
-      "\"Gapapa, aku ngerti.\" - tanpa passive aggressive",
-      "\"Ada yang mengganggu kamu?\"",
-      "Cuddle aja tanpa ekspektasi lebih",
-      "Build intimacy lain: quality time, words of affirmation",
-      "Refleksi: Apakah emotional connectionnya cukup?"
-    ],
-    principle: "Intimacy is the result of connection, not the cause. Invest in emotional intimacy first.",
-    category: "emosional"
-  },
-  {
-    id: "22",
-    title: "ISTRI MAU RESIGN/JADI IRT",
-    context: "Istri ingin berhenti kerja untuk fokus urus anak.",
-    bad_responses: [
-      "\"TIDAK! Kita butuh uangnya!\"",
-      "\"Kamu mau jadi beban?\"",
-      "Langsung setuju tanpa pikir matang",
-      "\"Nanti bosan loh di rumah.\""
-    ],
-    good_responses: [
-      "\"Boleh cerita kenapa kamu ingin ini?\"",
-      "\"Apa yang membuat kamu merasa ini yang terbaik?\"",
-      "Hitung bareng financial impact",
-      "\"Kalau kita adjust lifestyle [X], kita bisa manage.\"",
-      "Support her decision setelah diskusi matang"
-    ],
-    principle: "Her contribution as a mother is not less valuable than financial contribution.",
-    category: "keputusan"
-  },
-  {
-    id: "23",
-    title: "ISTRI STRESS KERJA",
-    context: "Istri sangat stress dengan pekerjaan, sering bad mood di rumah.",
-    bad_responses: [
-      "\"Ya resign aja!\"",
-      "\"Kerjamu emang ga cocok.\"",
-      "\"Bawa pulang stress kerja terus!\"",
-      "Tidak mau mendengar curhatnya"
-    ],
-    good_responses: [
-      "\"Cerita dong, apa yang bikin kamu stress?\"",
-      "Listen tanpa langsung kasih solusi",
-      "\"Wah, itu berat banget. Kamu hebat masih bisa handle.\"",
-      "\"Ada yang bisa aku bantu? Atau kamu cuma mau didengar?\"",
-      "Bantu dengan hal praktis: urus anak, beres rumah"
-    ],
-    principle: "Be her safe space. Home should be where she recharges, not where she's judged.",
-    category: "emosional"
-  },
-  {
-    id: "24",
-    title: "ISTRI MEMBUAT KEPUTUSAN BESAR SENDIRI",
-    context: "Istri memutuskan sesuatu yang signifikan tanpa diskusi dulu.",
-    bad_responses: [
-      "\"Kenapa ga bilang dulu?!\"",
-      "\"Kamu anggap aku apa?!\"",
-      "Balas dengan keputusan sepihak juga",
-      "Langsung veto keputusannya"
-    ],
-    good_responses: [
-      "PAUSE - jangan langsung reaktif",
-      "\"Aku agak surprised. Boleh cerita apa pertimbanganmu?\"",
-      "\"Aku appreciate kamu decisive. Tapi next time, aku pengen kita diskusi dulu.\"",
-      "\"Gimana kalau kita bikin kesepakatan: keputusan besar, kita musyawarah?\"",
-      "Focus on system improvement, bukan blame"
-    ],
-    principle: "The goal is better partnership, not winning the argument.",
-    category: "keputusan"
-  },
-  {
-    id: "25",
-    title: "ISTRI MENANGIS KARENA PERKATAAN SUAMI",
-    context: "Suami bilang sesuatu (tidak sengaja atau sengaja) yang menyakiti istri.",
-    bad_responses: [
-      "\"Maksudku bukan gitu!\" (defensive)",
-      "\"Kamu terlalu sensitif!\"",
-      "Diam saja dan menunggu reda",
-      "\"Kan cuma bercanda!\""
-    ],
-    good_responses: [
-      "\"Maaf ya. Aku ga bermaksud menyakitimu.\"",
-      "\"Perkataanku tadi memang keterlaluan.\"",
-      "Hug her, let her cry",
-      "\"Aku akan lebih hati-hati dengan kata-kataku.\"",
-      "Jangan minimize perasaannya dengan 'cuma bercanda'"
-    ],
-    principle: "Impact > Intent. Regardless of your intention, her pain is real.",
-    category: "konflik"
-  },
-  {
-    id: "26",
-    title: "ISTRI INGIN SUAMI LEBIH ROMANTIS",
-    context: "Istri mengeluh suami tidak romantis lagi seperti dulu.",
-    bad_responses: [
-      "\"Ya udah nikah, beda lah!\"",
-      "\"Emang aku bukan tipe romantis.\"",
-      "\"Yang penting kan aku setia.\"",
-      "Ignore dan tidak ada perubahan"
-    ],
-    good_responses: [
-      "\"Kamu benar. Aku kurang effort belakangan ini.\"",
-      "\"Bisa kasih tahu hal romantis apa yang kamu suka?\"",
-      "Start small: kirim pesan manis pagi hari",
-      "Plan surprise date",
-      "Konsisten dalam hal-hal kecil: buka pintu, pegang tangan, puji dia"
-    ],
-    principle: "Romance is a skill that can be learned. Love is a verb - it requires action.",
-    category: "komunikasi"
-  },
-  {
-    id: "27",
-    title: "ISTRI SAKIT ATAU TIDAK ENAK BADAN",
-    context: "Istri sedang sakit atau tidak sehat.",
-    bad_responses: [
-      "\"Minum obat aja.\"",
-      "\"Terus makan apa nih?\"",
-      "Sibuk dengan kegiatan sendiri",
-      "Tidak ada empati atau perhatian ekstra"
-    ],
-    good_responses: [
-      "\"Sayang, istirahat aja. Biar aku urus semua.\"",
-      "Bawakan air, obat, selimut tanpa diminta",
-      "Periksa suhu, kompres jika demam",
-      "Take over semua urusan rumah dan anak",
-      "\"Ada yang kamu butuhkan? Mau aku masakin apa?\""
-    ],
-    principle: "This is when your true character shows. How you treat her when sick is how she'll remember you forever.",
-    category: "emosional"
-  }
-];
-
-// State for wisdom
-state.wisdomStoik = state.wisdomStoik || { todayIndex: 0 };
-
-// Get today's wisdom based on date
-function getTodayWisdom() {
-  const today = new Date();
-  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  const index = dayOfYear % WISDOM_STOIK.length;
-  return WISDOM_STOIK[index];
-}
-
-// Render wisdom mini card on home page
-function renderWisdomStoikMini() {
-  const container = document.getElementById('wisdomStoikMini');
-  if (!container) return;
-  
-  const wisdom = getTodayWisdom();
-  
-  const badResponse = wisdom.bad_responses[0] || '';
-  const goodResponse = wisdom.good_responses[0] || '';
-  
-  container.innerHTML = `
-    <div class="wisdom-card-mini">
-      <div class="wisdom-situation">Situasi ${wisdom.id}: ${wisdom.title}</div>
-      <div class="wisdom-response-bad">${escapeHtml(badResponse)}</div>
-      <div class="wisdom-response-good">${escapeHtml(goodResponse)}</div>
-      <div class="wisdom-principle">💡 ${escapeHtml(wisdom.principle.substring(0, 100))}...</div>
-    </div>
-    <button class="btn-link" style="font-size: 11px; width: 100%; text-align: center; padding: 8px 0;" onclick="showPage('wisdom')">
-      Lihat Semua (27 Situasi) →
-    </button>
-  `;
-}
-
-// Refresh wisdom (get random)
-function refreshWisdomStoik() {
-  const randomIndex = Math.floor(Math.random() * WISDOM_STOIK.length);
-  state.wisdomStoik.currentIndex = randomIndex;
-  
-  renderWisdomStoikMini();
-  renderWisdomHighlight();
-  renderWisdomList();
-  
-  showToast('Wisdom baru! 📖', 'success');
-}
-
-// Render wisdom highlight card
-function renderWisdomHighlight() {
-  const container = document.getElementById('wisdomHighlight');
-  if (!container) return;
-  
-  const index = state.wisdomStoik.currentIndex ?? (getTodayWisdom().id - 1);
-  const wisdom = WISDOM_STOIK[index] || getTodayWisdom();
-  
-  container.innerHTML = `
-    <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">
-      Situasi ${wisdom.id}: ${wisdom.title}
-    </div>
-    <div style="font-size: 12px; opacity: 0.9; margin-bottom: 12px;">
-      ${escapeHtml(wisdom.context)}
-    </div>
-    <div style="background: rgba(255,255,255,0.15); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
-      <div style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">✅ Respons Stoik:</div>
-      <div style="font-size: 12px;">${escapeHtml(wisdom.good_responses[0] || '')}</div>
-    </div>
-    <div style="font-size: 11px; opacity: 0.85; font-style: italic;">
-      💡 ${escapeHtml(wisdom.principle)}
-    </div>
-  `;
-}
-
-// Render full wisdom list
-function renderWisdomList(filter = 'all') {
-  const container = document.getElementById('wisdomListContainer');
-  if (!container) return;
-  
-  let filtered = WISDOM_STOIK;
-  if (filter !== 'all') {
-    filtered = WISDOM_STOIK.filter(w => w.category === filter);
+async function loadDontList() {
+  // Skip if already loaded and cache valid
+  if (state.dontList?.length > 0 && isCacheValid('dontList')) {
+    renderDontList();
+    renderDontListMini();
+    return;
   }
   
-  if (filtered.length === 0) {
+  try {
+    const data = await apiGet('getDontList');
+    state.dontList = data || [];
+    state.cache.dontList = Date.now();
+    renderDontList();
+    renderDontListMini();
+  } catch (err) {
+    state.dontList = [];
+    renderDontList();
+    renderDontListMini();
+  }
+}
+
+function renderDontList() {
+  const container = document.getElementById('dontListContainer');
+  if (!container) return;
+  
+  const items = state.dontList || [];
+  
+  if (items.length === 0) {
     container.innerHTML = `
-      <div class="empty-state" style="padding: 24px;">
-        <p>Tidak ada wisdom untuk kategori ini</p>
+      <div class="empty-state">
+        <div class="icon">🚫</div>
+        <p>Belum ada Don't List<br>Tambahkan hal-hal yang harus dihindari</p>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = filtered.map(wisdom => `
-    <div class="wisdom-item" id="wisdom-${wisdom.id}">
-      <div class="wisdom-item-header" onclick="toggleWisdomItem('${wisdom.id}')">
-        <div class="wisdom-item-title">${escapeHtml(wisdom.title)}</div>
-        <div class="wisdom-item-number">#${wisdom.id}</div>
-      </div>
-      <div class="wisdom-item-body">
-        <div class="wisdom-context">
-          <strong>📌 Konteks:</strong> ${escapeHtml(wisdom.context)}
-        </div>
-        <div class="wisdom-responses">
-          <div class="wisdom-response-section bad">
-            <h4>❌ Hindari Respons Ini:</h4>
-            <ul class="wisdom-response-list">
-              ${wisdom.bad_responses.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
-            </ul>
-          </div>
-          <div class="wisdom-response-section good">
-            <h4>✅ Respons Stoik:</h4>
-            <ul class="wisdom-response-list">
-              ${wisdom.good_responses.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-        <div class="wisdom-principle-box">
-          <h4>💡 Prinsip Stoik</h4>
-          <p>${escapeHtml(wisdom.principle)}</p>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// Toggle wisdom item expand/collapse
-function toggleWisdomItem(id) {
-  const item = document.getElementById('wisdom-' + id);
-  if (item) {
-    item.classList.toggle('expanded');
-  }
-}
-
-// Filter wisdom by category
-function filterWisdom(category) {
-  // Update tabs
-  document.querySelectorAll('[data-filter]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.filter === category);
+  const categories = {
+    'FOKUS': { icon: '🎯', title: 'Fokus', items: [] },
+    'WAKTU': { icon: '⏰', title: 'Waktu', items: [] },
+    'ENERGI': { icon: '⚡', title: 'Energi', items: [] },
+    'KEBIASAAN': { icon: '🔄', title: 'Kebiasaan', items: [] },
+    'OTHER': { icon: '📋', title: 'Lainnya', items: [] }
+  };
+  
+  items.forEach(item => {
+    const cat = item.category || 'OTHER';
+    if (categories[cat]) {
+      categories[cat].items.push(item);
+    } else {
+      categories['OTHER'].items.push(item);
+    }
   });
   
-  renderWisdomList(category);
+  let html = '';
+  Object.entries(categories).forEach(([key, cat]) => {
+    if (cat.items.length === 0) return;
+    
+    html += `
+      <div class="dont-category ${key.toLowerCase()}">
+        <div class="dont-category-header">
+          ${cat.icon} ${cat.title} (${cat.items.length})
+        </div>
+        <div class="dont-category-items">
+          ${cat.items.map(item => {
+            // Support both 'title' (from backend) and 'item' (legacy)
+            const itemText = item.title || item.item || item.content || '';
+            return `
+            <div class="dont-item" data-id="${item.dont_id}">
+              <span class="icon">🚫</span>
+              <div class="content">
+                <div class="item-text">${escapeHtml(itemText)}</div>
+                ${item.reason ? `<div class="item-reason">${escapeHtml(item.reason)}</div>` : ''}
+              </div>
+              <div class="actions">
+                <button onclick="deleteDontItem('${item.dont_id}')" title="Hapus">🗑️</button>
+              </div>
+            </div>
+          `}).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  // Show total count
+  html = `<div style="margin-bottom: 12px; font-size: 12px; color: var(--gray-500);">Total: ${items.length} item</div>` + html;
+  
+  container.innerHTML = html;
 }
 
-// Load wisdom page
-function loadWisdomPage() {
-  renderWisdomHighlight();
-  renderWisdomList();
+function submitDontItem() {
+  const item = document.getElementById('dontItemText')?.value.trim();
+  const reason = document.getElementById('dontItemReason')?.value.trim();
+  const category = document.getElementById('dontItemCategory')?.value || 'FOKUS';
+  
+  if (!item) {
+    showToast('Isi hal yang harus dihindari', 'error');
+    return;
+  }
+  
+  const tempId = 'temp_' + Date.now();
+  
+  const newItem = {
+    dont_id: tempId,
+    title: item,  // Use 'title' for backend compatibility
+    item: item,   // Keep 'item' for frontend compatibility
+    reason: reason,
+    category: category,
+    active: true
+  };
+  state.dontList = [newItem, ...(state.dontList || [])];
+  
+  addToQueue('addDontItem', { 
+    data: { title: item, reason, category }  // Send 'title' to backend
+  });
+  syncPendingQueue();
+  
+  document.getElementById('dontItemText').value = '';
+  document.getElementById('dontItemReason').value = '';
+  closeModal('dont-add');
+  
+  renderDontList();
+  renderDontListMini();
+  showToast('Don\'t item ditambahkan! ✓', 'success');
+}
+
+function deleteDontItem(dontId) {
+  if (!confirm('Hapus item ini?')) return;
+  
+  state.dontList = state.dontList.filter(d => d.dont_id !== dontId);
+  renderDontList();
+  
+  addToQueue('deleteDontItem', { dont_id: dontId });
+  
+  showToast('Dihapus', 'success');
 }
 
 // ============================================
@@ -4902,23 +4349,14 @@ async function loadBestWeek() {
   try {
     const data = await apiGet('getBestWeek');
     state.bestWeek = {};
-    console.log('[BestWeek] Loaded data:', data);
-    
     if (data && data.length > 0) {
       data.forEach(t => {
-        // Handle both 'data' and 'content' field names for compatibility
-        const rawData = t.data || t.content || '';
-        const parsed = parseJSON(rawData) || {};
-        
-        console.log('[BestWeek] Item:', t.name, 'raw:', rawData?.substring?.(0, 50), 'parsed hari:', parsed.hari);
-        
+        const parsed = parseJSON(t.data) || {};
         if (parsed.hari) {
           state.bestWeek[parsed.hari] = parsed.jadwal || [];
         }
       });
     }
-    
-    console.log('[BestWeek] Final state:', Object.keys(state.bestWeek));
   } catch (err) {
     console.error('Failed to load best week:', err);
   }
@@ -5687,881 +5125,3 @@ setInterval(() => {
     syncPendingQueue();
   }
 }, 30000);
-
-// ============================================
-// DASHBOARD STATISTIK
-// ============================================
-state.dashboardPeriod = 'week';
-
-function loadDashboardPage() {
-  renderDashboardSummary();
-  renderSholatChart();
-  renderMoodChart();
-  renderPomodoroChart();
-  generateDashboardInsights();
-}
-
-function changeDashboardPeriod(period) {
-  state.dashboardPeriod = period;
-  
-  // Update tab active state
-  document.querySelectorAll('#dashboardPeriodTabs .tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-  
-  loadDashboardPage();
-}
-
-function renderDashboardSummary() {
-  // Calculate stats from available data
-  const sholat = state.dailySync?.sholat || [];
-  const habits = state.dailySync?.habits || [];
-  const stats = state.dailySync?.stats || {};
-  const tasks = state.kanban || {};
-  
-  // Sholat
-  const wajibList = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
-  const sholatDone = sholat.filter(s => wajibList.includes(s.waktu) && (s.status === 'done' || s.status === true)).length;
-  const sholatPercent = Math.round((sholatDone / 5) * 100);
-  
-  document.getElementById('dashSholatPercent').textContent = sholatPercent + '%';
-  document.getElementById('dashSholatDetail').textContent = `${sholatDone}/5 wajib hari ini`;
-  
-  // Habits
-  const habitsDone = habits.filter(h => h.completed).length;
-  const habitsPercent = habits.length ? Math.round((habitsDone / habits.length) * 100) : 0;
-  
-  document.getElementById('dashHabitPercent').textContent = habitsPercent + '%';
-  document.getElementById('dashHabitDetail').textContent = `${habitsDone}/${habits.length} habit`;
-  
-  // Pomodoro
-  const pomodoroCount = stats.pomodoro_count || 0;
-  const pomodoroMinutes = stats.pomodoro_minutes || 0;
-  
-  document.getElementById('dashPomodoroCount').textContent = pomodoroCount;
-  document.getElementById('dashPomodoroDetail').textContent = `${pomodoroMinutes} menit fokus`;
-  
-  // Tasks
-  const doneTasks = (tasks.done || []).length;
-  const pendingTasks = (tasks.todo || []).length + (tasks.doing || []).length;
-  
-  document.getElementById('dashTaskCount').textContent = doneTasks;
-  document.getElementById('dashTaskDetail').textContent = `${pendingTasks} pending`;
-}
-
-function renderSholatChart() {
-  const container = document.getElementById('sholatChart');
-  if (!container) return;
-  
-  // Generate dummy data for 7 days (will be replaced with real data from API)
-  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-  const today = new Date().getDay();
-  const values = [4, 5, 3, 5, 5, 4, 0]; // dummy
-  
-  // Today's actual data
-  const sholat = state.dailySync?.sholat || [];
-  const wajibList = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
-  const todayCount = sholat.filter(s => wajibList.includes(s.waktu) && (s.status === 'done' || s.status === true)).length;
-  values[today === 0 ? 6 : today - 1] = todayCount;
-  
-  container.innerHTML = `
-    <div class="bar-chart">
-      ${days.map((day, i) => {
-        const height = (values[i] / 5) * 80;
-        const isToday = (today === 0 && i === 6) || (today === i + 1);
-        return `
-          <div class="bar-item">
-            <div class="bar-value">${values[i]}/5</div>
-            <div class="bar" style="height: ${height}px; ${isToday ? 'background: var(--success);' : ''}"></div>
-            <div class="bar-label" style="${isToday ? 'font-weight: 700;' : ''}">${day}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-function renderMoodChart() {
-  const container = document.getElementById('moodChart');
-  if (!container) return;
-  
-  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-  const moodData = state.moodHistory || [];
-  
-  // Default values
-  const moods = [3, 4, 3, 4, 5, 4, 3];
-  const energies = [6, 7, 5, 8, 7, 6, 5];
-  
-  container.innerHTML = `
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-      <span style="font-size: 11px; color: var(--gray-500);">😊 Mood</span>
-      <span style="font-size: 11px; color: var(--gray-500);">⚡ Energi</span>
-    </div>
-    <div class="line-chart">
-      ${days.map((day, i) => `
-        <div class="line-point">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-            <span style="font-size: 14px;">${getMoodEmoji(moods[i])}</span>
-            <span style="font-size: 10px; color: var(--gray-500);">⚡${energies[i]}</span>
-          </div>
-          <div class="bar-label">${day}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderPomodoroChart() {
-  const container = document.getElementById('pomodoroChart');
-  if (!container) return;
-  
-  // Simple weekly pomodoro display
-  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-  const values = [4, 6, 3, 8, 5, 2, 0]; // dummy data
-  
-  const maxVal = Math.max(...values, 1);
-  
-  container.innerHTML = `
-    <div class="bar-chart">
-      ${days.map((day, i) => {
-        const height = (values[i] / maxVal) * 80;
-        return `
-          <div class="bar-item">
-            <div class="bar-value">${values[i]}</div>
-            <div class="bar" style="height: ${Math.max(height, 4)}px; background: #d32f2f;"></div>
-            <div class="bar-label">${day}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-    <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--gray-500);">
-      Total: ${values.reduce((a, b) => a + b, 0)} pomodoro minggu ini
-    </div>
-  `;
-}
-
-function generateDashboardInsights() {
-  const container = document.getElementById('dashboardInsights');
-  if (!container) return;
-  
-  const insights = [];
-  
-  // Sholat insight
-  const sholat = state.dailySync?.sholat || [];
-  const wajibDone = sholat.filter(s => ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'].includes(s.waktu) && s.status === 'done').length;
-  
-  if (wajibDone === 5) {
-    insights.push({ type: 'positive', icon: '🌟', text: 'Alhamdulillah! Sholat 5 waktu sudah lengkap hari ini.' });
-  } else if (wajibDone >= 3) {
-    insights.push({ type: 'neutral', icon: '💪', text: `${wajibDone}/5 sholat wajib sudah terlaksana. Semangat untuk melengkapi!` });
-  } else {
-    insights.push({ type: 'negative', icon: '⏰', text: 'Jangan lupa untuk menjaga sholat 5 waktu ya.' });
-  }
-  
-  // Habit insight
-  const habits = state.dailySync?.habits || [];
-  const habitsDone = habits.filter(h => h.completed).length;
-  if (habitsDone > 0) {
-    insights.push({ type: 'positive', icon: '📿', text: `${habitsDone} habit sunnah sudah terlaksana hari ini.` });
-  }
-  
-  // Pomodoro insight
-  const pomodoroCount = state.dailySync?.stats?.pomodoro_count || 0;
-  if (pomodoroCount >= 4) {
-    insights.push({ type: 'positive', icon: '🍅', text: `Produktif! ${pomodoroCount} sesi pomodoro sudah selesai.` });
-  }
-  
-  // Default insight
-  if (insights.length === 0) {
-    insights.push({ type: 'neutral', icon: '💡', text: 'Mulai hari dengan bismillah dan tetapkan niat yang baik.' });
-  }
-  
-  container.innerHTML = insights.map(i => `
-    <div class="insight-item ${i.type}">
-      <span class="insight-icon">${i.icon}</span>
-      <span class="insight-text">${i.text}</span>
-    </div>
-  `).join('');
-}
-
-function getMoodEmoji(mood) {
-  const moods = { 1: '😫', 2: '😢', 3: '😐', 4: '🙂', 5: '😊' };
-  return moods[mood] || '😐';
-}
-
-// ============================================
-// MOOD TRACKER
-// ============================================
-state.moodHistory = state.moodHistory || [];
-state.todayMoods = state.todayMoods || [];
-
-function loadMoodPage() {
-  updateMoodCheckinTime();
-  renderTodayMoodTimeline();
-  renderMoodWeekChart();
-  renderMoodPatterns();
-  renderMoodHistory();
-}
-
-function updateMoodCheckinTime() {
-  const el = document.getElementById('moodCheckinTime');
-  if (el) {
-    el.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  }
-}
-
-function quickMoodCheckin(mood) {
-  // Update selected state
-  document.querySelectorAll('#quickMoodButtons .mood-btn-large').forEach(btn => {
-    btn.classList.remove('selected');
-  });
-  event.currentTarget.classList.add('selected');
-  
-  const energy = document.getElementById('quickEnergySlider')?.value || 5;
-  const note = document.getElementById('quickMoodNote')?.value?.trim() || '';
-  
-  const entry = {
-    id: 'mood_' + Date.now(),
-    timestamp: new Date().toISOString(),
-    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-    mood: mood,
-    energy: parseInt(energy),
-    note: note,
-    date: todayString()
-  };
-  
-  // Add to today's moods
-  state.todayMoods.push(entry);
-  
-  // Save to localStorage
-  saveMoodToStorage(entry);
-  
-  // Add to queue for backend sync
-  addToQueue('saveMoodCheckin', { data: entry });
-  
-  // Reset form
-  document.getElementById('quickMoodNote').value = '';
-  document.querySelectorAll('#quickMoodButtons .mood-btn-large').forEach(btn => btn.classList.remove('selected'));
-  
-  // Update displays
-  renderTodayMoodTimeline();
-  renderMoodWeekChart();
-  
-  showToast(`Mood tercatat: ${getMoodEmoji(mood)} ⚡${energy}`, 'success');
-}
-
-function saveMoodToStorage(entry) {
-  try {
-    let moodData = JSON.parse(localStorage.getItem('syncplanner_moods') || '[]');
-    moodData.push(entry);
-    // Keep only last 100 entries
-    if (moodData.length > 100) moodData = moodData.slice(-100);
-    localStorage.setItem('syncplanner_moods', JSON.stringify(moodData));
-  } catch (e) {
-    console.error('Failed to save mood:', e);
-  }
-}
-
-function loadMoodFromStorage() {
-  try {
-    const data = JSON.parse(localStorage.getItem('syncplanner_moods') || '[]');
-    state.moodHistory = data;
-    state.todayMoods = data.filter(m => m.date === todayString());
-  } catch (e) {
-    state.moodHistory = [];
-    state.todayMoods = [];
-  }
-}
-
-function renderTodayMoodTimeline() {
-  const container = document.getElementById('todayMoodTimeline');
-  const badge = document.getElementById('todayMoodCount');
-  if (!container) return;
-  
-  loadMoodFromStorage();
-  const moods = state.todayMoods || [];
-  
-  if (badge) badge.textContent = moods.length;
-  
-  if (moods.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding: 16px;">
-        <p style="font-size: 12px;">Belum ada check-in hari ini</p>
-      </div>
-    `;
-    return;
-  }
-  
-  container.innerHTML = moods.slice().reverse().map(m => `
-    <div class="mood-entry">
-      <div class="mood-entry-time">${m.time}</div>
-      <div class="mood-entry-emoji">${getMoodEmoji(m.mood)}</div>
-      <div class="mood-entry-details">
-        <div class="mood-entry-energy">⚡ Energi: ${m.energy}/10</div>
-        ${m.note ? `<div class="mood-entry-note">"${escapeHtml(m.note)}"</div>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderMoodWeekChart() {
-  const container = document.getElementById('moodWeekChart');
-  if (!container) return;
-  
-  loadMoodFromStorage();
-  
-  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-  const today = new Date();
-  
-  // Get last 7 days
-  const weekData = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    const dayMoods = state.moodHistory.filter(m => m.date === dateStr);
-    
-    let avgMood = 3;
-    let avgEnergy = 5;
-    if (dayMoods.length > 0) {
-      avgMood = Math.round(dayMoods.reduce((s, m) => s + m.mood, 0) / dayMoods.length);
-      avgEnergy = Math.round(dayMoods.reduce((s, m) => s + m.energy, 0) / dayMoods.length);
-    }
-    
-    weekData.push({
-      day: days[date.getDay()],
-      mood: avgMood,
-      energy: avgEnergy,
-      isToday: i === 0,
-      hasData: dayMoods.length > 0
-    });
-  }
-  
-  container.innerHTML = weekData.map(d => `
-    <div class="mood-day" style="${d.isToday ? 'background: var(--primary-light); border-radius: 8px; padding: 8px;' : ''}">
-      <div class="mood-day-label" style="${d.isToday ? 'color: var(--primary); font-weight: 700;' : ''}">${d.day}</div>
-      <div class="mood-day-emoji" style="${!d.hasData ? 'opacity: 0.3;' : ''}">${getMoodEmoji(d.mood)}</div>
-      <div class="mood-day-energy">⚡${d.energy}</div>
-    </div>
-  `).join('');
-}
-
-function renderMoodPatterns() {
-  const container = document.getElementById('moodPatterns');
-  if (!container) return;
-  
-  loadMoodFromStorage();
-  
-  const patterns = [];
-  
-  // Analyze patterns
-  if (state.moodHistory.length >= 7) {
-    const avgMood = state.moodHistory.slice(-7).reduce((s, m) => s + m.mood, 0) / Math.min(7, state.moodHistory.length);
-    
-    if (avgMood >= 4) {
-      patterns.push({ icon: '😊', text: 'Mood rata-rata minggu ini: Baik! Pertahankan.' });
-    } else if (avgMood >= 3) {
-      patterns.push({ icon: '😐', text: 'Mood rata-rata: Netral. Coba tingkatkan dengan aktivitas positif.' });
-    } else {
-      patterns.push({ icon: '💪', text: 'Mood cenderung rendah. Coba berbicara dengan orang terdekat atau istirahat.' });
-    }
-  }
-  
-  // Check for morning/evening patterns
-  const morningMoods = state.todayMoods.filter(m => {
-    const hour = parseInt(m.time.split(':')[0]);
-    return hour >= 5 && hour < 12;
-  });
-  
-  const eveningMoods = state.todayMoods.filter(m => {
-    const hour = parseInt(m.time.split(':')[0]);
-    return hour >= 17 && hour < 22;
-  });
-  
-  if (morningMoods.length > 0 && eveningMoods.length > 0) {
-    const morningAvg = morningMoods.reduce((s, m) => s + m.mood, 0) / morningMoods.length;
-    const eveningAvg = eveningMoods.reduce((s, m) => s + m.mood, 0) / eveningMoods.length;
-    
-    if (eveningAvg > morningAvg) {
-      patterns.push({ icon: '🌙', text: 'Mood meningkat di sore hari. Night owl?' });
-    } else if (morningAvg > eveningAvg) {
-      patterns.push({ icon: '☀️', text: 'Mood lebih baik di pagi hari. Morning person!' });
-    }
-  }
-  
-  if (patterns.length === 0) {
-    patterns.push({ icon: '📊', text: 'Check-in secara rutin untuk melihat pola mood Anda.' });
-  }
-  
-  container.innerHTML = patterns.map(p => `
-    <div class="pattern-item">
-      <span class="pattern-icon">${p.icon}</span>
-      <span class="pattern-text">${p.text}</span>
-    </div>
-  `).join('');
-}
-
-function renderMoodHistory() {
-  const container = document.getElementById('moodHistoryList');
-  if (!container) return;
-  
-  loadMoodFromStorage();
-  
-  const history = state.moodHistory.slice().reverse().slice(0, 20);
-  
-  if (history.length === 0) {
-    container.innerHTML = `
-      <div class="card">
-        <div class="empty-state" style="padding: 20px;">
-          <p style="font-size: 12px;">Belum ada riwayat check-in</p>
-        </div>
-      </div>
-    `;
-    return;
-  }
-  
-  // Group by date
-  const grouped = {};
-  history.forEach(m => {
-    if (!grouped[m.date]) grouped[m.date] = [];
-    grouped[m.date].push(m);
-  });
-  
-  container.innerHTML = Object.entries(grouped).map(([date, moods]) => `
-    <div class="card" style="margin-bottom: 8px;">
-      <div class="card-header">
-        <span class="card-title">${formatDateIndo(date)}</span>
-        <span class="badge info">${moods.length} check-in</span>
-      </div>
-      ${moods.map(m => `
-        <div class="mood-entry">
-          <div class="mood-entry-time">${m.time}</div>
-          <div class="mood-entry-emoji">${getMoodEmoji(m.mood)}</div>
-          <div class="mood-entry-details">
-            <div class="mood-entry-energy">⚡ ${m.energy}/10</div>
-            ${m.note ? `<div class="mood-entry-note">"${escapeHtml(m.note)}"</div>` : ''}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-function formatDateIndo(dateStr) {
-  const date = new Date(dateStr);
-  const options = { weekday: 'long', day: 'numeric', month: 'long' };
-  return date.toLocaleDateString('id-ID', options);
-}
-
-// ============================================
-// FAMILY DASHBOARD
-// ============================================
-state.familyMembers = state.familyMembers || [];
-state.selectedFamilyMember = null;
-
-function loadFamilyPage() {
-  loadFamilyFromStorage();
-  renderFamilyMembers();
-  renderFamilyTodayProgress();
-  renderFamilySholatBoard();
-  renderFamilyHabitBoard();
-  renderFamilyWeeklyStats();
-  renderFamilyAchievements();
-  
-  // Set date badge
-  const badge = document.getElementById('familyDateBadge');
-  if (badge) {
-    badge.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
-  }
-}
-
-function loadFamilyFromStorage() {
-  try {
-    state.familyMembers = JSON.parse(localStorage.getItem('syncplanner_family') || '[]');
-    state.familyProgress = JSON.parse(localStorage.getItem('syncplanner_family_progress') || '{}');
-  } catch (e) {
-    state.familyMembers = [];
-    state.familyProgress = {};
-  }
-  
-  // Add self if not exists
-  if (state.familyMembers.length === 0) {
-    state.familyMembers = [
-      { id: 'self', name: 'Saya', role: 'ayah', color: '#0d47a1', isSelf: true }
-    ];
-    saveFamilyToStorage();
-  }
-}
-
-function saveFamilyToStorage() {
-  try {
-    localStorage.setItem('syncplanner_family', JSON.stringify(state.familyMembers));
-    localStorage.setItem('syncplanner_family_progress', JSON.stringify(state.familyProgress || {}));
-  } catch (e) {
-    console.error('Failed to save family:', e);
-  }
-}
-
-function renderFamilyMembers() {
-  const container = document.getElementById('familyMembersList');
-  if (!container) return;
-  
-  const roleIcons = {
-    'ayah': '👨',
-    'istri': '👩',
-    'anak_laki': '👦',
-    'anak_perempuan': '👧',
-    'lainnya': '👤'
-  };
-  
-  container.innerHTML = state.familyMembers.map(m => {
-    const progress = calculateFamilyMemberProgress(m.id);
-    return `
-      <div class="family-member-card ${state.selectedFamilyMember === m.id ? 'selected' : ''}" 
-           onclick="selectFamilyMember('${m.id}')">
-        <div class="family-avatar" style="background: ${m.color};">
-          ${roleIcons[m.role] || '👤'}
-        </div>
-        <div class="family-name">${escapeHtml(m.name)}</div>
-        <div class="family-role">${m.isSelf ? 'Saya' : (m.age ? m.age + ' thn' : '')}</div>
-        ${progress > 0 ? `<div class="family-score">${progress}%</div>` : ''}
-      </div>
-    `;
-  }).join('') + `
-    <div class="family-member-card" onclick="openModal('add-family')" style="border: 2px dashed var(--gray-300);">
-      <div class="family-avatar" style="background: var(--gray-200);">➕</div>
-      <div class="family-name">Tambah</div>
-    </div>
-  `;
-}
-
-function selectFamilyMember(id) {
-  state.selectedFamilyMember = state.selectedFamilyMember === id ? null : id;
-  renderFamilyMembers();
-}
-
-function addFamilyMember() {
-  const name = document.getElementById('familyMemberName')?.value.trim();
-  const role = document.getElementById('familyMemberRole')?.value;
-  const age = document.getElementById('familyMemberAge')?.value;
-  const color = document.getElementById('familyMemberColor')?.value || '#607d8b';
-  
-  if (!name) {
-    showToast('Nama harus diisi', 'error');
-    return;
-  }
-  
-  const member = {
-    id: 'family_' + Date.now(),
-    name: name,
-    role: role,
-    age: age ? parseInt(age) : null,
-    color: color
-  };
-  
-  state.familyMembers.push(member);
-  saveFamilyToStorage();
-  
-  // Reset form
-  document.getElementById('familyMemberName').value = '';
-  document.getElementById('familyMemberAge').value = '';
-  closeModal('add-family');
-  
-  renderFamilyMembers();
-  renderFamilySholatBoard();
-  
-  showToast(`${name} ditambahkan ke keluarga! 👨‍👩‍👧‍👦`, 'success');
-}
-
-function selectFamilyColor(color) {
-  document.querySelectorAll('#familyColorOptions .color-btn').forEach(btn => {
-    btn.classList.remove('selected');
-  });
-  event.currentTarget.classList.add('selected');
-  document.getElementById('familyMemberColor').value = color;
-}
-
-function calculateFamilyMemberProgress(memberId) {
-  const today = todayString();
-  const progress = state.familyProgress?.[today]?.[memberId] || {};
-  
-  // Count completed sholat
-  const sholatDone = Object.values(progress.sholat || {}).filter(v => v).length;
-  return Math.round((sholatDone / 5) * 100);
-}
-
-function renderFamilyTodayProgress() {
-  const container = document.getElementById('familyTodayProgress');
-  if (!container) return;
-  
-  const members = state.familyMembers;
-  
-  if (members.length <= 1) {
-    container.innerHTML = `
-      <div style="padding: 16px; text-align: center;">
-        <p style="font-size: 12px; color: var(--gray-500);">Tambahkan anggota keluarga untuk melihat progress</p>
-      </div>
-    `;
-    return;
-  }
-  
-  container.innerHTML = members.map(m => {
-    const progress = calculateFamilyMemberProgress(m.id);
-    return `
-      <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px; margin-bottom: 8px;">
-        <div class="family-avatar" style="background: ${m.color}; width: 36px; height: 36px; font-size: 16px;">
-          ${m.role === 'istri' ? '👩' : m.role === 'anak_laki' ? '👦' : m.role === 'anak_perempuan' ? '👧' : '👨'}
-        </div>
-        <div style="flex: 1;">
-          <div style="font-size: 13px; font-weight: 600;">${escapeHtml(m.name)}</div>
-          <div style="font-size: 11px; color: var(--gray-500);">Progress: ${progress}%</div>
-        </div>
-        <div style="width: 60px; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
-          <div style="width: ${progress}%; height: 100%; background: var(--success);"></div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderFamilySholatBoard() {
-  const container = document.getElementById('familySholatBoard');
-  if (!container) return;
-  
-  const members = state.familyMembers;
-  const sholatList = ['Subuh', 'Dhuha', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya', 'Tahajud', 'Witir'];
-  const today = todayString();
-  
-  let html = `<div class="family-sholat-grid">`;
-  
-  // Header row
-  html += `<div class="family-sholat-cell header">Nama</div>`;
-  sholatList.forEach(s => {
-    html += `<div class="family-sholat-cell header">${s.substring(0, 3)}</div>`;
-  });
-  
-  // Member rows
-  members.forEach(m => {
-    const progress = state.familyProgress?.[today]?.[m.id]?.sholat || {};
-    html += `<div class="family-sholat-cell name">${escapeHtml(m.name.substring(0, 8))}</div>`;
-    
-    sholatList.forEach(s => {
-      const isDone = progress[s.toUpperCase()];
-      if (m.isSelf) {
-        // For self, check from dailySync
-        const selfSholat = state.dailySync?.sholat || [];
-        const selfDone = selfSholat.find(sh => sh.waktu === s.toUpperCase() && sh.status === 'done');
-        html += `<div class="family-sholat-cell ${selfDone ? 'done' : 'pending'}">${selfDone ? '✓' : '·'}</div>`;
-      } else {
-        html += `<div class="family-sholat-cell ${isDone ? 'done' : 'pending'}" 
-                     onclick="toggleFamilySholat('${m.id}', '${s.toUpperCase()}')"
-                     style="cursor: pointer;">
-                  ${isDone ? '✓' : '·'}
-                </div>`;
-      }
-    });
-  });
-  
-  html += `</div>`;
-  container.innerHTML = html;
-}
-
-function toggleFamilySholat(memberId, waktu) {
-  const today = todayString();
-  
-  if (!state.familyProgress[today]) state.familyProgress[today] = {};
-  if (!state.familyProgress[today][memberId]) state.familyProgress[today][memberId] = { sholat: {} };
-  if (!state.familyProgress[today][memberId].sholat) state.familyProgress[today][memberId].sholat = {};
-  
-  // Toggle
-  state.familyProgress[today][memberId].sholat[waktu] = !state.familyProgress[today][memberId].sholat[waktu];
-  
-  saveFamilyToStorage();
-  renderFamilySholatBoard();
-  renderFamilyTodayProgress();
-  renderFamilyMembers();
-  
-  const member = state.familyMembers.find(m => m.id === memberId);
-  const isDone = state.familyProgress[today][memberId].sholat[waktu];
-  showToast(`${member?.name}: ${waktu} ${isDone ? '✓' : 'dibatalkan'}`, isDone ? 'success' : 'warning');
-}
-
-function renderFamilyHabitBoard() {
-  const container = document.getElementById('familyHabitBoard');
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div style="padding: 16px; text-align: center; color: var(--gray-400);">
-      <p style="font-size: 12px;">Fitur habit keluarga coming soon</p>
-    </div>
-  `;
-}
-
-function renderFamilyWeeklyStats() {
-  const container = document.getElementById('familyWeeklyStats');
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div style="padding: 16px; text-align: center; color: var(--gray-400);">
-      <p style="font-size: 12px;">Statistik mingguan akan muncul setelah data terkumpul</p>
-    </div>
-  `;
-}
-
-function renderFamilyAchievements() {
-  const container = document.getElementById('familyAchievements');
-  if (!container) return;
-  
-  const achievements = [
-    { icon: '🕌', name: 'Sholat Berjamaah', earned: false },
-    { icon: '📿', name: 'Dzikir Bersama', earned: false },
-    { icon: '📖', name: 'Tilawah Keluarga', earned: false },
-    { icon: '🌙', name: 'Tahajud Berjamaah', earned: false },
-    { icon: '🏆', name: '7 Hari Streak', earned: false },
-    { icon: '⭐', name: 'Sholat 5 Waktu', earned: true },
-    { icon: '💪', name: 'Konsisten', earned: false },
-    { icon: '❤️', name: 'Keluarga Sakinah', earned: false }
-  ];
-  
-  container.innerHTML = achievements.map(a => `
-    <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}">
-      <div class="achievement-icon">${a.icon}</div>
-      <div class="achievement-name">${a.name}</div>
-    </div>
-  `).join('');
-}
-
-// ============================================
-// REMINDER / NOTIFICATION
-// ============================================
-function requestNotificationPermission() {
-  if (!('Notification' in window)) {
-    showToast('Browser tidak mendukung notifikasi', 'error');
-    return;
-  }
-  
-  Notification.requestPermission().then(permission => {
-    if (permission === 'granted') {
-      showToast('Notifikasi diaktifkan! 🔔', 'success');
-      updateReminderStatus();
-      scheduleReminders();
-    } else {
-      showToast('Izin notifikasi ditolak', 'error');
-    }
-  });
-}
-
-function updateReminderStatus() {
-  const statusContainer = document.getElementById('reminderStatus');
-  const optionsContainer = document.getElementById('reminderOptions');
-  
-  if (!statusContainer || !optionsContainer) return;
-  
-  if (Notification.permission === 'granted') {
-    statusContainer.innerHTML = `
-      <div class="status-icon">🔔</div>
-      <div class="status-text" style="color: var(--success);">Notifikasi aktif!</div>
-    `;
-    optionsContainer.style.display = 'block';
-    loadReminderSettings();
-  } else {
-    optionsContainer.style.display = 'none';
-  }
-}
-
-function loadReminderSettings() {
-  try {
-    const settings = JSON.parse(localStorage.getItem('syncplanner_reminders') || '{}');
-    document.getElementById('reminderSholat').checked = settings.sholat !== false;
-    document.getElementById('reminderHabit').checked = settings.habit !== false;
-    document.getElementById('reminderJournal').checked = settings.journal === true;
-    document.getElementById('reminderBestWeek').checked = settings.bestWeek === true;
-  } catch (e) {}
-}
-
-function saveReminderSettings() {
-  const settings = {
-    sholat: document.getElementById('reminderSholat')?.checked,
-    habit: document.getElementById('reminderHabit')?.checked,
-    journal: document.getElementById('reminderJournal')?.checked,
-    bestWeek: document.getElementById('reminderBestWeek')?.checked
-  };
-  
-  localStorage.setItem('syncplanner_reminders', JSON.stringify(settings));
-  scheduleReminders();
-  
-  closeModal('reminder');
-  showToast('Pengaturan reminder tersimpan! ✓', 'success');
-}
-
-function scheduleReminders() {
-  // Clear existing
-  if (window.reminderIntervals) {
-    window.reminderIntervals.forEach(id => clearInterval(id));
-  }
-  window.reminderIntervals = [];
-  
-  // Check every minute for scheduled reminders
-  const checkInterval = setInterval(() => {
-    checkAndSendReminders();
-  }, 60000);
-  
-  window.reminderIntervals.push(checkInterval);
-}
-
-function checkAndSendReminders() {
-  if (Notification.permission !== 'granted') return;
-  
-  const settings = JSON.parse(localStorage.getItem('syncplanner_reminders') || '{}');
-  const now = new Date();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  
-  // Sholat reminders (simplified - real implementation would use prayer time API)
-  if (settings.sholat && minute === 0) {
-    const sholatTimes = { 4: 'Subuh', 12: 'Dzuhur', 15: 'Ashar', 18: 'Maghrib', 19: 'Isya' };
-    if (sholatTimes[hour]) {
-      sendNotification('🕌 Waktu Sholat', `Sudah masuk waktu ${sholatTimes[hour]}. Ayo sholat!`);
-    }
-  }
-  
-  // Habit reminder (pagi & sore)
-  if (settings.habit) {
-    if (hour === 5 && minute === 30) {
-      sendNotification('📿 Dzikir Pagi', 'Sudah waktunya dzikir pagi. Bismillah!');
-    }
-    if (hour === 17 && minute === 0) {
-      sendNotification('📿 Dzikir Sore', 'Sudah waktunya dzikir sore. Allahu Akbar!');
-    }
-  }
-  
-  // Journal reminder
-  if (settings.journal && hour === 21 && minute === 0) {
-    sendNotification('📔 Jurnal Malam', 'Sudah waktunya refleksi dan menulis jurnal malam.');
-  }
-}
-
-function sendNotification(title, body) {
-  if (Notification.permission !== 'granted') return;
-  
-  const notification = new Notification(title, {
-    body: body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
-    vibrate: [200, 100, 200]
-  });
-  
-  notification.onclick = () => {
-    window.focus();
-    notification.close();
-  };
-}
-
-// Initialize reminders on load
-if ('Notification' in window && Notification.permission === 'granted') {
-  scheduleReminders();
-}
-
-// Load mood data on startup
-loadMoodFromStorage();
