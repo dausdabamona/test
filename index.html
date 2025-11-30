@@ -3237,6 +3237,90 @@
       justify-content: center;
       font-size: 12px;
     }
+    
+    /* Wisdom Quote Popup */
+    .wisdom-quote-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 80px;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .wisdom-quote-popup.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .wisdom-quote-content {
+      background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
+      border: 1px solid rgba(212, 168, 83, 0.3);
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 340px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-20px) scale(0.95);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(212, 168, 83, 0.1);
+    }
+    .wisdom-quote-popup.show .wisdom-quote-content {
+      transform: translateY(0) scale(1);
+    }
+    .wisdom-quote-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+    .wisdom-quote-text {
+      font-family: var(--font-arabic);
+      font-size: 16px;
+      line-height: 1.6;
+      color: #f0f0f0;
+      margin-bottom: 12px;
+    }
+    .wisdom-quote-source {
+      font-size: 12px;
+      color: #d4a853;
+      margin-bottom: 20px;
+    }
+    .wisdom-quote-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .wisdom-quote-actions button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wisdom-quote-actions button:first-child {
+      background: rgba(212, 168, 83, 0.2);
+      color: #d4a853;
+      border: 1px solid rgba(212, 168, 83, 0.3);
+    }
+    .wisdom-quote-actions button:first-child:hover {
+      background: rgba(212, 168, 83, 0.3);
+    }
+    .wisdom-quote-actions button:last-child {
+      background: linear-gradient(135deg, #d4a853, #b8923f);
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    .wisdom-quote-actions button:last-child:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -3264,10 +3348,23 @@
       </div>
       <div class="quick-icons">
         <button class="quick-icon-btn" onclick="openQuickBrainDump()" title="Brain Dump">🧠</button>
-        <button class="quick-icon-btn" onclick="showPage('wisdom')" title="Wisdom Stoik" style="background: linear-gradient(135deg, #d4a853, #b8923f);">🏛️</button>
+        <button class="quick-icon-btn wisdom-quote-btn" onclick="showWisdomQuote()" title="Wisdom Quote" style="background: linear-gradient(135deg, #d4a853, #b8923f);">🏛️</button>
       </div>
     </div>
   </header>
+  
+  <!-- Wisdom Quote Popup -->
+  <div class="wisdom-quote-popup" id="wisdomQuotePopup" onclick="this.classList.remove('show')">
+    <div class="wisdom-quote-content" onclick="event.stopPropagation()">
+      <div class="wisdom-quote-icon" id="wisdomQuoteIcon">💡</div>
+      <div class="wisdom-quote-text" id="wisdomQuoteText">"Loading..."</div>
+      <div class="wisdom-quote-source" id="wisdomQuoteSource">— Source</div>
+      <div class="wisdom-quote-actions">
+        <button onclick="getNewWisdomQuote()">🔄 Quote Lain</button>
+        <button onclick="document.getElementById('wisdomQuotePopup').classList.remove('show'); showPage('wisdom')">📖 Lihat Semua →</button>
+      </div>
+    </div>
+  </div>
   
   <!-- Main Content -->
   <main class="main">
@@ -3670,7 +3767,7 @@
               <span class="icon">🏛️</span>
               <div class="info">
                 <div class="title">Wisdom Stoik</div>
-                <div class="subtitle">20 Situasi + 6 Framework Kebijaksanaan</div>
+                <div class="subtitle">80 Situasi + 6 Framework Kebijaksanaan</div>
               </div>
             </div>
             <div class="right">
@@ -4163,7 +4260,7 @@
       <!-- Wisdom Stats -->
       <div class="wisdom-stats">
         <div class="wisdom-stat-item">
-          <span class="wisdom-stat-number">20</span>
+          <span class="wisdom-stat-number">80</span>
           <span class="wisdom-stat-label">Situasi</span>
         </div>
         <div class="wisdom-stat-item">
@@ -5256,7 +5353,7 @@
 
   <!-- Wisdom Stoik Data & Functions -->
   <script>
-    // WISDOM DATA - 20 Situasi
+    // WISDOM DATA - 80 Situasi (20 Detail + 60 Ringkas)
     const WISDOM_SITUATIONS = [
       { id: "D01", title: "Istri Menangis Tanpa Alasan", area: "istri", category: "emosional", icon: "😢", principle: "Empathy Over Logic", principleDesc: "Istri butuh didengar dan dirasakan kehadiranmu, bukan solusi.", bad: ["Kenapa nangis?", "Malu dilihat anak", "Sensitif banget", "[Lihat HP]", "Ya sudah", "[Pergi]"], good: ["Duduk dalam diam", "Genggam tangan", "\"Aku di sini\"", "Siapkan tisu", "Tunggu sabar", "Peluk"], quick: [{emoji:"💨",text:"Release 'want to fix'"},{emoji:"🤝",text:"Be a good listener"},{emoji:"🧠",text:"Matching posture"}], timeline: [{time:"0-10 detik",emoji:"💨",action:"Sedona release"},{time:"10-30 detik",emoji:"🧠",action:"Dekati, matching"},{time:"30s-5m",emoji:"🤝",action:"Hadir tanpa kata"}], mistakes: ["Langsung tanya 'Kenapa?'","Tawarkan solusi","'Aku juga capek'","Mengecilkan"] },
       { id: "D02", title: "Istri Marah Hal Sepele", area: "istri", category: "konflik", icon: "😤", principle: "Presenting ≠ Real Problem", principleDesc: "Kemarahan tentang handuk seringkali tentang merasa tidak dihargai.", bad: ["Cuma gitu aja?", "Sorry puas?!", "PMS ya?", "[Balas marah]", "[Banting pintu]"], good: ["Diam. Napas.", "\"Aku dengar kamu kesal\"", "\"Ada yang lebih?\"", "Akui perasaan DULU", "Curious bukan furious"], quick: [{emoji:"💨",text:"Release 'want to be right'"},{emoji:"🤝",text:"Avoid argument"},{emoji:"🧠",text:"Second position"}], timeline: [{time:"Detik 1",emoji:"💨",action:"STOP. Jangan reaktif"},{time:"5-10 detik",emoji:"🏛️",action:"Napas. Pause"},{time:"10-30 detik",emoji:"🤝",action:"Akui, minta maaf"}], mistakes: ["Balas marah","'Cuma gitu aja'","Bela diri"] },
@@ -5277,7 +5374,111 @@
       { id: "D17", title: "Self-Talk Negatif", area: "diri", category: "komunikasi", icon: "🗣️", principle: "You Are Not Your Thoughts", principleDesc: "Kamu adalah yang mengamati thoughts, bukan thoughts itu.", bad: ["Aku memang bodoh", "Selalu gagal", "Tidak layak"], good: ["'Ini cuma thoughts'", "Challenge dengan fakta", "Self-compassion"], quick: [{emoji:"💨",text:"Release identification"},{emoji:"🧠",text:"Reframe"},{emoji:"🤝",text:"Self-compassion"}], timeline: [{time:"Saat muncul",emoji:"💨",action:"'Ini thoughts, bukan fakta'"},{time:"30-60 detik",emoji:"🧠",action:"Challenge"},{time:"1-2 menit",emoji:"🤝",action:"Reframe"}], mistakes: ["Percaya 100%","Tidak challenge","Tidak ada compassion"] },
       { id: "D18", title: "Anak Kecanduan Gadget", area: "anak", category: "emosional", icon: "📱", principle: "Replace, Not Remove", principleDesc: "Mengambil gadget tanpa alternatif tidak berhasil jangka panjang.", bad: ["Ayah buang HP!", "[Ambil paksa]", "Rusak otakmu!"], good: ["Aturan BERSAMA", "Warning sebelum stop", "Alternatif menarik", "Model: kurangi HP sendiri"], quick: [{emoji:"💨",text:"Release frustration"},{emoji:"🤝",text:"Offer alternatives"},{emoji:"⚛️",text:"Environment design"}], timeline: [{time:"Setting rules",emoji:"🤝",action:"Buat BERSAMA"},{time:"Daily",emoji:"⚛️",action:"Warning system"},{time:"Tantrum",emoji:"💨",action:"Stay calm. Konsisten"}], mistakes: ["Ambil paksa","Tidak ada alternatif","Ortu main HP terus"] },
       { id: "D19", title: "Menyampaikan Kritik ke Istri", area: "istri", category: "komunikasi", icon: "💬", principle: "Sandwich with Sincerity", principleDesc: "Positif → Kritik → Positif. Tapi harus tulus.", bad: ["'Kamu selalu!'", "[Saat emosi]", "[Depan orang]"], good: ["Waktu tepat", "Mulai positif", "'Aku merasa' bukan 'Kamu selalu'", "Tawarkan solusi"], quick: [{emoji:"💨",text:"Release anger dulu"},{emoji:"🤝",text:"Begin with praise"},{emoji:"🧠",text:"I-statement"}], timeline: [{time:"Sebelum",emoji:"💨",action:"Release. Cek niat"},{time:"Mulai",emoji:"🤝",action:"Positif genuine"},{time:"Kritik",emoji:"🧠",action:"I-statement. Spesifik"}], mistakes: ["Saat emosi","'Selalu/tidak pernah'","Tanpa solusi"] },
-      { id: "D20", title: "Kebiasaan Buruk", area: "diri", category: "konflik", icon: "🔁", principle: "Systems, Not Willpower", principleDesc: "Willpower adalah finite. Desain environment dan sistem.", bad: ["Aku memang lemah", "Besok mulai (berulang)", "[Self-hate]"], good: ["Understand habit loop", "Replace dengan lebih sehat", "Design environment", "Track progress"], quick: [{emoji:"💨",text:"Release shame"},{emoji:"⚛️",text:"Habit loop"},{emoji:"🧠",text:"Replace"}], timeline: [{time:"Awareness",emoji:"🧠",action:"Track kapan terjadi"},{time:"Design",emoji:"⚛️",action:"Environment + Substitution"},{time:"Slip",emoji:"💨",action:"Release shame. Mulai lagi"}], mistakes: ["Rely on willpower","All or nothing","Self-hate saat gagal"] }
+      { id: "D20", title: "Kebiasaan Buruk", area: "diri", category: "konflik", icon: "🔁", principle: "Systems, Not Willpower", principleDesc: "Willpower adalah finite. Desain environment dan sistem.", bad: ["Aku memang lemah", "Besok mulai (berulang)", "[Self-hate]"], good: ["Understand habit loop", "Replace dengan lebih sehat", "Design environment", "Track progress"], quick: [{emoji:"💨",text:"Release shame"},{emoji:"⚛️",text:"Habit loop"},{emoji:"🧠",text:"Replace"}], timeline: [{time:"Awareness",emoji:"🧠",action:"Track kapan terjadi"},{time:"Design",emoji:"⚛️",action:"Environment + Substitution"},{time:"Slip",emoji:"💨",action:"Release shame. Mulai lagi"}], mistakes: ["Rely on willpower","All or nothing","Self-hate saat gagal"] },
+      // === 60 SITUASI RINGKAS (S21-S80) ===
+      // ISTRI - Emosional (S21-S28)
+      { id: "S21", title: "Istri Kelelahan", area: "istri", category: "emosional", icon: "😩", principle: "Actions Speak Louder", principleDesc: "Jangan tanya 'ada yang bisa dibantu?', langsung kerjakan.", simple: true },
+      { id: "S22", title: "Istri Cemburu", area: "istri", category: "emosional", icon: "😒", principle: "Validate, Don't Defend", principleDesc: "Akui perasaannya sebelum jelaskan fakta.", simple: true },
+      { id: "S23", title: "Istri Insecure", area: "istri", category: "emosional", icon: "🥺", principle: "Consistent Reassurance", principleDesc: "Satu kali bilang 'cantik' tidak cukup. Ulangi setiap hari.", simple: true },
+      { id: "S24", title: "Istri PMS", area: "istri", category: "emosional", icon: "🌙", principle: "Extra Patience Mode", principleDesc: "Ini biologis. Bukan personal attack. Sabar extra.", simple: true },
+      { id: "S25", title: "Istri Rindu Quality Time", area: "istri", category: "emosional", icon: "💑", principle: "Presence Over Presents", principleDesc: "Waktu berdua tanpa HP lebih berharga dari hadiah mahal.", simple: true },
+      { id: "S26", title: "Istri Butuh Me-Time", area: "istri", category: "emosional", icon: "🧘", principle: "Support Her Space", principleDesc: "Jaga anak tanpa diminta. Beri ia waktu untuk dirinya.", simple: true },
+      { id: "S27", title: "Istri Homesick", area: "istri", category: "emosional", icon: "🏠", principle: "Honor Her Roots", principleDesc: "Keluarganya adalah bagian dari dirinya. Fasilitasi.", simple: true },
+      { id: "S28", title: "Istri Overwhelmed Rumah Tangga", area: "istri", category: "emosional", icon: "🏃‍♀️", principle: "Share The Load", principleDesc: "Bukan 'membantu' tapi 'berbagi tanggung jawab'.", simple: true },
+      // ISTRI - Konflik (S29-S35)
+      { id: "S29", title: "Istri Beda Pendapat Keuangan", area: "istri", category: "konflik", icon: "💰", principle: "Same Team, Same Goal", principleDesc: "Bukan uangmu vs uangku. Ini uang keluarga kita.", simple: true },
+      { id: "S30", title: "Istri Komplain Mertua", area: "istri", category: "konflik", icon: "👵", principle: "Her Corner First", principleDesc: "Dengar dan validasi dulu. Jangan langsung bela ibumu.", simple: true },
+      { id: "S31", title: "Istri Merasa Diabaikan", area: "istri", category: "konflik", icon: "👻", principle: "Attention is Love", principleDesc: "Hadir fisik tapi pikiran di HP = tidak hadir.", simple: true },
+      { id: "S32", title: "Istri Bandingkan dengan Suami Lain", area: "istri", category: "konflik", icon: "⚖️", principle: "Hear The Need", principleDesc: "Di balik perbandingan ada kebutuhan yang belum terpenuhi.", simple: true },
+      { id: "S33", title: "Istri Protes Kerja Lembur", area: "istri", category: "konflik", icon: "⏰", principle: "Balance is Intentional", principleDesc: "Karir penting, tapi keluarga adalah 'kenapa' di balik karir.", simple: true },
+      { id: "S34", title: "Istri Ingin Pindah Rumah", area: "istri", category: "konflik", icon: "🏡", principle: "Explore Together", principleDesc: "Jangan langsung tolak. Pahami alasan di baliknya.", simple: true },
+      { id: "S35", title: "Istri Tidak Suka Temanmu", area: "istri", category: "konflik", icon: "👥", principle: "Prioritize Wisely", principleDesc: "Teman datang dan pergi. Istri adalah partner selamanya.", simple: true },
+      // ISTRI - Komunikasi (S36-S40)
+      { id: "S36", title: "Istri Minta Pendapat", area: "istri", category: "komunikasi", icon: "🤔", principle: "Ask Before Advise", principleDesc: "'Mau pendapat jujur atau dukungan?' Tanya dulu.", simple: true },
+      { id: "S37", title: "Istri Cerita Masalah Kerja", area: "istri", category: "komunikasi", icon: "💼", principle: "Empathize First", principleDesc: "Jangan langsung kasih solusi. Rasakan dulu frustrasinya.", simple: true },
+      { id: "S38", title: "Membicarakan Masa Depan", area: "istri", category: "komunikasi", icon: "🔮", principle: "Dream Together", principleDesc: "Visi bersama adalah lem yang merekatkan.", simple: true },
+      { id: "S39", title: "Istri Diam Setelah Bertengkar", area: "istri", category: "komunikasi", icon: "🤐", principle: "Take Initiative", principleDesc: "Yang lebih dewasa yang memulai rekonsiliasi.", simple: true },
+      { id: "S40", title: "Istri Bicara saat Kamu Capek", area: "istri", category: "komunikasi", icon: "😪", principle: "Honest & Kind", principleDesc: "'Aku ingin dengar, tapi butuh 10 menit istirahat dulu.'", simple: true },
+      // ANAK - Emosional (S41-S48)
+      { id: "S41", title: "Anak Takut Gelap", area: "anak", category: "emosional", icon: "🌑", principle: "Validate, Don't Mock", principleDesc: "Takutnya nyata baginya. Temani, jangan ejek.", simple: true },
+      { id: "S42", title: "Anak Mimpi Buruk", area: "anak", category: "emosional", icon: "😰", principle: "Safe Haven", principleDesc: "Peluk, tenangkan, bacakan doa. Ayah adalah keamanan.", simple: true },
+      { id: "S43", title: "Anak Cemburu Adik", area: "anak", category: "emosional", icon: "👶", principle: "Special Time", principleDesc: "Beri waktu one-on-one khusus untuk kakak.", simple: true },
+      { id: "S44", title: "Anak Minder", area: "anak", category: "emosional", icon: "😔", principle: "Celebrate Uniqueness", principleDesc: "Setiap anak punya kelebihan berbeda. Temukan miliknya.", simple: true },
+      { id: "S45", title: "Anak Sedih Ditinggal Teman", area: "anak", category: "emosional", icon: "💔", principle: "Be His Friend", principleDesc: "Ayah bisa jadi teman terbaik saat dunia terasa sepi.", simple: true },
+      { id: "S46", title: "Anak Gagal Ujian", area: "anak", category: "emosional", icon: "📝", principle: "Effort Over Result", principleDesc: "Apresiasi usaha. Nilai bukan segalanya.", simple: true },
+      { id: "S47", title: "Anak Tidak Percaya Diri", area: "anak", category: "emosional", icon: "🙈", principle: "Build With Small Wins", principleDesc: "Berikan tanggung jawab kecil yang bisa ia sukses.", simple: true },
+      { id: "S48", title: "Anak Marah Tidak Dapat Mainan", area: "anak", category: "emosional", icon: "🧸", principle: "Teach Delayed Gratification", principleDesc: "Tidak semua keinginan harus segera dipenuhi.", simple: true },
+      // ANAK - Konflik (S49-S56)
+      { id: "S49", title: "Anak Berbohong", area: "anak", category: "konflik", icon: "🤥", principle: "Safety to Tell Truth", principleDesc: "Anak bohong karena takut. Buat jujur terasa aman.", simple: true },
+      { id: "S50", title: "Anak Bertengkar dengan Saudara", area: "anak", category: "konflik", icon: "👊", principle: "Mediator, Not Judge", principleDesc: "Jangan langsung vonis. Dengar kedua sisi.", simple: true },
+      { id: "S51", title: "Anak Tidak Mau Berbagi", area: "anak", category: "konflik", icon: "🚫", principle: "Model Sharing", principleDesc: "Berbagi adalah skill. Ajarkan dengan contoh.", simple: true },
+      { id: "S52", title: "Anak Melawan Aturan", area: "anak", category: "konflik", icon: "⛔", principle: "Explain The Why", principleDesc: "Aturan tanpa alasan = pemberontakan.", simple: true },
+      { id: "S53", title: "Anak Mau Menang Sendiri", area: "anak", category: "konflik", icon: "🏆", principle: "Teach Fair Play", principleDesc: "Kalah adalah bagian dari hidup. Ajarkan sportivitas.", simple: true },
+      { id: "S54", title: "Anak Memukul Teman", area: "anak", category: "konflik", icon: "👋", principle: "Emotion Coaching", principleDesc: "Marah boleh. Memukul tidak. Ajarkan alternatif.", simple: true },
+      { id: "S55", title: "Anak Tidak Mau Makan", area: "anak", category: "konflik", icon: "🍽️", principle: "No Power Struggle", principleDesc: "Jangan jadikan makanan medan perang.", simple: true },
+      { id: "S56", title: "Anak Mogok Sekolah", area: "anak", category: "konflik", icon: "🏫", principle: "Find The Root", principleDesc: "Ada alasan di balik penolakan. Gali dengan sabar.", simple: true },
+      // ANAK - Komunikasi (S57-S62)
+      { id: "S57", title: "Anak Bertanya tentang Kematian", area: "anak", category: "komunikasi", icon: "🕊️", principle: "Age-Appropriate Honesty", principleDesc: "Jujur sesuai usia. Jangan berbohong tentang hal besar.", simple: true },
+      { id: "S58", title: "Anak Tanya 'Dari Mana Bayi?'", area: "anak", category: "komunikasi", icon: "👼", principle: "Simple Truth", principleDesc: "Jawab sederhana, jujur, sesuai usia.", simple: true },
+      { id: "S59", title: "Anak Curhat Masalah Teman", area: "anak", category: "komunikasi", icon: "💭", principle: "Listen More", principleDesc: "Tahan nasihat. Biarkan ia cerita sampai selesai.", simple: true },
+      { id: "S60", title: "Anak Bilang 'Benci Ayah'", area: "anak", category: "komunikasi", icon: "💢", principle: "Hear The Feeling", principleDesc: "Ia tidak benci. Ia sedang marah atau kecewa.", simple: true },
+      { id: "S61", title: "Anak Tidak Mau Cerita", area: "anak", category: "komunikasi", icon: "🙊", principle: "Open Door Policy", principleDesc: "Jangan paksa. Tunjukkan kamu selalu tersedia.", simple: true },
+      { id: "S62", title: "Memuji Anak dengan Benar", area: "anak", category: "komunikasi", icon: "⭐", principle: "Praise The Process", principleDesc: "'Kamu kerja keras' lebih baik dari 'Kamu pintar'.", simple: true },
+      // DIRI - Emosional (S63-S70)
+      { id: "S63", title: "Merasa Tidak Cukup", area: "diri", category: "emosional", icon: "📉", principle: "Progress, Not Perfection", principleDesc: "Bandingkan dengan dirimu kemarin, bukan orang lain.", simple: true },
+      { id: "S64", title: "Burnout", area: "diri", category: "emosional", icon: "🔥", principle: "Rest is Productive", principleDesc: "Istirahat bukan kemalasan. Itu maintenance.", simple: true },
+      { id: "S65", title: "Kesepian di Tengah Keluarga", area: "diri", category: "emosional", icon: "🏝️", principle: "Express Your Needs", principleDesc: "Keluarga bukan pembaca pikiran. Komunikasikan.", simple: true },
+      { id: "S66", title: "Rasa Bersalah Terus Menerus", area: "diri", category: "emosional", icon: "😞", principle: "Guilt is a Teacher", principleDesc: "Pelajari, minta maaf, perbaiki, lalu lepaskan.", simple: true },
+      { id: "S67", title: "Takut Gagal", area: "diri", category: "emosional", icon: "😨", principle: "Failure is Data", principleDesc: "Gagal = feedback untuk iterasi berikutnya.", simple: true },
+      { id: "S68", title: "Iri dengan Pencapaian Orang Lain", area: "diri", category: "emosional", icon: "👀", principle: "Their Win ≠ Your Loss", principleDesc: "Rezeki sudah diatur. Fokus pada lane-mu.", simple: true },
+      { id: "S69", title: "Merasa Tidak Bersyukur", area: "diri", category: "emosional", icon: "🙏", principle: "Gratitude is Practice", principleDesc: "Syukur bukan feeling. Itu muscle yang dilatih.", simple: true },
+      { id: "S70", title: "Anxiety tentang Masa Depan", area: "diri", category: "emosional", icon: "🌪️", principle: "Control The Controllables", principleDesc: "Fokus pada aksi hari ini, bukan hasil besok.", simple: true },
+      // DIRI - Konflik (S71-S76)
+      { id: "S71", title: "Tidak Konsisten Ibadah", area: "diri", category: "konflik", icon: "🕋", principle: "Start Small, Stay Steady", principleDesc: "1 rakaat konsisten > 11 rakaat sekali lalu berhenti.", simple: true },
+      { id: "S72", title: "Kebiasaan Scroll Media Sosial", area: "diri", category: "konflik", icon: "📲", principle: "Friction is Freedom", principleDesc: "Logout, hapus app, taruh HP jauh.", simple: true },
+      { id: "S73", title: "Sering Terlambat", area: "diri", category: "konflik", icon: "⏱️", principle: "Respect Time", principleDesc: "Terlambat = mengatakan 'waktuku lebih penting'.", simple: true },
+      { id: "S74", title: "Makan Berlebihan", area: "diri", category: "konflik", icon: "🍔", principle: "Eat to Live", principleDesc: "Makan saat lapar, berhenti sebelum kenyang.", simple: true },
+      { id: "S75", title: "Sulit Bangun Subuh", area: "diri", category: "konflik", icon: "🌙", principle: "Night Determines Morning", principleDesc: "Tidur awal. Taruh alarm jauh. Niat sebelum tidur.", simple: true },
+      { id: "S76", title: "Mudah Marah", area: "diri", category: "konflik", icon: "😡", principle: "Pause is Power", principleDesc: "Antara stimulus dan respons ada ruang. Gunakan.", simple: true },
+      // DIRI - Komunikasi/Keputusan (S77-S80)
+      { id: "S77", title: "Sulit Mengatakan Tidak", area: "diri", category: "komunikasi", icon: "🚦", principle: "No is a Complete Sentence", principleDesc: "'Tidak' yang jujur lebih baik dari 'Ya' yang terpaksa.", simple: true },
+      { id: "S78", title: "Overthinking Keputusan", area: "diri", category: "keputusan", icon: "🤯", principle: "Good Enough is Good", principleDesc: "70% yakin + action > 100% yakin tanpa action.", simple: true },
+      { id: "S79", title: "Menyesal Keputusan Lalu", area: "diri", category: "keputusan", icon: "↩️", principle: "Learn and Release", principleDesc: "Kamu memutuskan dengan info saat itu. Move on.", simple: true },
+      { id: "S80", title: "Konflik dengan Rekan Kerja", area: "diri", category: "konflik", icon: "🤝", principle: "Separate Person from Problem", principleDesc: "Serang masalahnya, bukan orangnya.", simple: true }
+    ];
+
+    // WISDOM QUOTES - Untuk shortcut di header (kombinasi pelajaran)
+    const WISDOM_QUOTES = [
+      { text: "Antara stimulus dan respons, ada ruang. Di ruang itu ada kekuatan untuk memilih.", source: "Viktor Frankl + Stoic", icon: "🏛️" },
+      { text: "Kamu tidak bisa mengontrol angin, tapi bisa mengatur layar.", source: "Stoicism", icon: "⛵" },
+      { text: "Bisakah aku melepaskan ini? Maukah aku melepaskan ini? Kapan?", source: "Sedona Method", icon: "💨" },
+      { text: "Emosi hanyalah tamu. Biarkan datang, sapa, lalu lepaskan pergi.", source: "Sedona + Mindfulness", icon: "🚪" },
+      { text: "Perubahan kecil yang konsisten menciptakan hasil luar biasa.", source: "Atomic Habits", icon: "⚛️" },
+      { text: "Kamu tidak naik ke level tujuanmu, kamu turun ke level sistemmu.", source: "James Clear", icon: "📊" },
+      { text: "Peta bukanlah wilayah. Persepsimu bukan realita.", source: "NLP", icon: "🗺️" },
+      { text: "Makna komunikasi adalah respon yang kamu dapat.", source: "NLP", icon: "💬" },
+      { text: "Jadilah orang yang kamu inginkan anakmu menjadi.", source: "Parenting Wisdom", icon: "👨‍👧" },
+      { text: "Istri tidak butuh solusi. Ia butuh kamu hadir dan mendengar.", source: "Marriage Wisdom", icon: "💑" },
+      { text: "Anak tidak dengar nasihatmu. Mereka melihat contohmu.", source: "Parenting", icon: "👀" },
+      { text: "Mulailah dengan pujian dan apresiasi yang tulus.", source: "Dale Carnegie", icon: "🤝" },
+      { text: "Satu-satunya cara menang argumen adalah menghindarinya.", source: "Dale Carnegie", icon: "🏳️" },
+      { text: "Bicara dengan orang tentang diri mereka, mereka akan dengar berjam-jam.", source: "Carnegie", icon: "👂" },
+      { text: "Jika salah, akui dengan cepat dan tegas.", source: "Dale Carnegie", icon: "✋" },
+      { text: "Buat orang lain merasa penting—dan lakukan dengan tulus.", source: "Carnegie", icon: "⭐" },
+      { text: "اللهم إني أعوذ بك من الهم والحزن - Lindungi aku dari kesedihan dan kekhawatiran.", source: "Doa Nabi ﷺ", icon: "☪️" },
+      { text: "Sebaik-baik kalian adalah yang paling baik terhadap keluarganya.", source: "Hadits", icon: "🏠" },
+      { text: "Anger comes from fear. Release the fear, anger dissolves.", source: "Sedona", icon: "😤" },
+      { text: "Tindakan menciptakan motivasi, bukan sebaliknya.", source: "Behavioral Psychology", icon: "🚀" },
+      { text: "Environment design > Willpower.", source: "Atomic Habits", icon: "🏗️" },
+      { text: "Connection before correction.", source: "Parenting Wisdom", icon: "❤️" },
+      { text: "Empathy over logic dalam situasi emosional.", source: "EQ Wisdom", icon: "🧠" },
+      { text: "What you resist, persists. What you accept, transforms.", source: "Sedona + Jung", icon: "🔄" },
+      { text: "Habit = Cue + Craving + Response + Reward.", source: "Atomic Habits", icon: "🔁" },
+      { text: "Sabarlah. Sesungguhnya Allah bersama orang-orang yang sabar.", source: "QS. Al-Anfal: 46", icon: "📖" },
+      { text: "The obstacle is the way.", source: "Stoicism", icon: "🪨" },
+      { text: "Kamu adalah pengamat pikiran, bukan pikiran itu sendiri.", source: "Mindfulness + NLP", icon: "👁️" },
+      { text: "1% better every day = 37x better in a year.", source: "Atomic Habits", icon: "📈" },
+      { text: "Menegur perilaku, bukan karakter anak.", source: "Parenting", icon: "🗣️" }
     ];
 
     // Wisdom State
@@ -5305,11 +5506,11 @@
       const catLabels = { emosional: '😢 Emosional', konflik: '⚡ Konflik', komunikasi: '💬 Komunikasi', keputusan: '🤔 Keputusan' };
 
       grid.innerHTML = filtered.map(s => `
-        <div class="wisdom-card area-${s.area}" onclick="openWisdomDetail('${s.id}')">
+        <div class="wisdom-card area-${s.area} ${s.simple ? 'simple' : ''}" onclick="openWisdomDetail('${s.id}')">
           <div class="wisdom-card-header">
             <span class="wisdom-card-icon">${s.icon}</span>
             <div class="wisdom-card-title-area">
-              <div class="wisdom-card-id">${s.id}</div>
+              <div class="wisdom-card-id">${s.id} ${s.simple ? '<span style="font-size:8px;background:#e0e0e0;padding:1px 4px;border-radius:4px;margin-left:4px;">RINGKAS</span>' : ''}</div>
               <div class="wisdom-card-title">${s.title}</div>
             </div>
           </div>
@@ -5318,14 +5519,14 @@
             <span class="wisdom-tag">${catLabels[s.category]}</span>
           </div>
           <p class="wisdom-card-principle">${s.principle}</p>
-          <div class="wisdom-card-frameworks">
+          ${!s.simple ? `<div class="wisdom-card-frameworks">
             <span class="wisdom-fw-dot" title="Stoic">🏛️</span>
             <span class="wisdom-fw-dot" title="NLP">🧠</span>
             <span class="wisdom-fw-dot" title="Sedona">💨</span>
             <span class="wisdom-fw-dot" title="Atomic">⚛️</span>
             <span class="wisdom-fw-dot" title="Carnegie">🤝</span>
             <span class="wisdom-fw-dot" title="Islamic">☪️</span>
-          </div>
+          </div>` : ''}
         </div>
       `).join('');
     }
@@ -5362,74 +5563,120 @@
       const areaLabels = { istri: '👩 Istri', anak: '👧 Anak', diri: '🧔 Diri' };
       const catLabels = { emosional: '😢 Emosional', konflik: '⚡ Konflik', komunikasi: '💬 Komunikasi', keputusan: '🤔 Keputusan' };
 
-      document.getElementById('wisdomModalBody').innerHTML = `
-        <div class="wisdom-modal-header">
-          <div class="wisdom-modal-icon">${s.icon}</div>
-          <h2 class="wisdom-modal-title">${s.title}</h2>
-          <p class="wisdom-modal-subtitle">${s.id} • ${areaLabels[s.area]} • ${catLabels[s.category]}</p>
-        </div>
-
-        <div class="wisdom-section">
-          <div class="wisdom-section-title">Prinsip Utama</div>
-          <div class="wisdom-principle-box">
-            <div class="wisdom-principle-text">${s.principle}</div>
-            <div class="wisdom-principle-desc">${s.principleDesc}</div>
+      // Check if simple situation
+      if (s.simple) {
+        document.getElementById('wisdomModalBody').innerHTML = `
+          <div class="wisdom-modal-header">
+            <div class="wisdom-modal-icon">${s.icon}</div>
+            <h2 class="wisdom-modal-title">${s.title}</h2>
+            <p class="wisdom-modal-subtitle">${s.id} • ${areaLabels[s.area]} • ${catLabels[s.category]}</p>
           </div>
-        </div>
 
-        <div class="wisdom-section">
-          <div class="wisdom-section-title">Quick Practice</div>
-          <div class="wisdom-quick-grid">
-            ${s.quick.map(q => `
-              <div class="wisdom-quick-item">
-                <div class="wisdom-quick-emoji">${q.emoji}</div>
-                <div class="wisdom-quick-text">${q.text}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="wisdom-section">
-          <div class="wisdom-section-title">Respons</div>
-          <div class="wisdom-response-grid">
-            <div class="wisdom-response-col bad">
-              <h4>❌ Hindari</h4>
-              <ul class="wisdom-response-list">
-                ${s.bad.map(b => `<li>${b}</li>`).join('')}
-              </ul>
-            </div>
-            <div class="wisdom-response-col good">
-              <h4>✅ Lakukan</h4>
-              <ul class="wisdom-response-list">
-                ${s.good.map(g => `<li>${g}</li>`).join('')}
-              </ul>
+          <div class="wisdom-section">
+            <div class="wisdom-principle-box" style="padding: 24px;">
+              <div class="wisdom-principle-text" style="font-size: 20px;">"${s.principle}"</div>
+              <div class="wisdom-principle-desc" style="font-size: 14px; margin-top: 12px;">${s.principleDesc}</div>
             </div>
           </div>
-        </div>
 
-        <div class="wisdom-section">
-          <div class="wisdom-section-title">Timeline</div>
-          <div class="wisdom-timeline">
-            ${s.timeline.map(t => `
-              <div class="wisdom-timeline-item">
-                <div class="wisdom-timeline-dot">${t.emoji}</div>
-                <div class="wisdom-timeline-time">${t.time}</div>
-                <div class="wisdom-timeline-action">${t.action}</div>
+          <div class="wisdom-section" style="text-align: center; padding: 16px; background: var(--gray-50); border-radius: var(--radius-md);">
+            <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">💡 Ini adalah situasi ringkas</p>
+            <p style="font-size: 11px; color: var(--gray-400);">Untuk panduan lebih detail dengan Quick Practice, Timeline, dan Respons lengkap, lihat situasi dengan prefix D01-D20</p>
+          </div>
+        `;
+      } else {
+        document.getElementById('wisdomModalBody').innerHTML = `
+          <div class="wisdom-modal-header">
+            <div class="wisdom-modal-icon">${s.icon}</div>
+            <h2 class="wisdom-modal-title">${s.title}</h2>
+            <p class="wisdom-modal-subtitle">${s.id} • ${areaLabels[s.area]} • ${catLabels[s.category]}</p>
+          </div>
+
+          <div class="wisdom-section">
+            <div class="wisdom-section-title">Prinsip Utama</div>
+            <div class="wisdom-principle-box">
+              <div class="wisdom-principle-text">${s.principle}</div>
+              <div class="wisdom-principle-desc">${s.principleDesc}</div>
+            </div>
+          </div>
+
+          <div class="wisdom-section">
+            <div class="wisdom-section-title">Quick Practice</div>
+            <div class="wisdom-quick-grid">
+              ${s.quick.map(q => `
+                <div class="wisdom-quick-item">
+                  <div class="wisdom-quick-emoji">${q.emoji}</div>
+                  <div class="wisdom-quick-text">${q.text}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="wisdom-section">
+            <div class="wisdom-section-title">Respons</div>
+            <div class="wisdom-response-grid">
+              <div class="wisdom-response-col bad">
+                <h4>❌ Hindari</h4>
+                <ul class="wisdom-response-list">
+                  ${s.bad.map(b => `<li>${b}</li>`).join('')}
+                </ul>
               </div>
-            `).join('')}
+              <div class="wisdom-response-col good">
+                <h4>✅ Lakukan</h4>
+                <ul class="wisdom-response-list">
+                  ${s.good.map(g => `<li>${g}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="wisdom-section">
-          <div class="wisdom-section-title">Kesalahan Umum</div>
-          <div class="wisdom-mistakes">
-            ${s.mistakes.map(m => `<span class="wisdom-mistake-tag">${m}</span>`).join('')}
+          <div class="wisdom-section">
+            <div class="wisdom-section-title">Timeline</div>
+            <div class="wisdom-timeline">
+              ${s.timeline.map(t => `
+                <div class="wisdom-timeline-item">
+                  <div class="wisdom-timeline-dot">${t.emoji}</div>
+                  <div class="wisdom-timeline-time">${t.time}</div>
+                  <div class="wisdom-timeline-action">${t.action}</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
-      `;
+
+          <div class="wisdom-section">
+            <div class="wisdom-section-title">Kesalahan Umum</div>
+            <div class="wisdom-mistakes">
+              ${s.mistakes.map(m => `<span class="wisdom-mistake-tag">${m}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }
 
       openModal('wisdom');
     }
+
+    // Show Wisdom Quote Popup
+    function showWisdomQuote() {
+      getNewWisdomQuote();
+      document.getElementById('wisdomQuotePopup').classList.add('show');
+    }
+
+    // Get New Random Wisdom Quote
+    function getNewWisdomQuote() {
+      const randomIndex = Math.floor(Math.random() * WISDOM_QUOTES.length);
+      const q = WISDOM_QUOTES[randomIndex];
+      
+      document.getElementById('wisdomQuoteIcon').textContent = q.icon;
+      document.getElementById('wisdomQuoteText').textContent = `"${q.text}"`;
+      document.getElementById('wisdomQuoteSource').textContent = `— ${q.source}`;
+    }
+
+    // Close wisdom quote popup on ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('wisdomQuotePopup').classList.remove('show');
+      }
+    });
 
     // Refresh Wisdom of the Day
     function refreshWisdomOfDay() {
