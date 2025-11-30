@@ -2308,71 +2308,168 @@
     .sholat-row-item .sholat-icon { font-size: 14px; }
     .sholat-row-item .sholat-name { flex: 1; }
     
-    /* Don't List Mini */
-    .dont-list-mini {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 180px;
-      overflow-y: auto;
-      padding: 4px 0;
+    /* Wisdom Stoik Mini */
+    .wisdom-stoik-mini {
+      padding: 8px 0;
     }
-    .dont-mini-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px;
-      background: #fff5f5;
-      border-left: 3px solid #e53e3e;
-      border-radius: var(--radius-sm);
+    .wisdom-card-mini {
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8f0fe 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .wisdom-situation {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .wisdom-response-bad {
       font-size: 12px;
-    }
-    .dont-mini-item.obeyed {
-      background: var(--success-light);
-      border-left-color: var(--success);
-    }
-    .dont-mini-item.violated {
+      color: #dc2626;
+      margin-bottom: 8px;
+      padding: 8px;
       background: #fee2e2;
-      border-left-color: #dc2626;
+      border-radius: var(--radius-sm);
     }
-    .dont-item-text {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex: 1;
-      min-width: 0;
+    .wisdom-response-bad::before {
+      content: '❌ Hindari: ';
+      font-weight: 600;
     }
-    .dont-item-text span:last-child {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .wisdom-response-good {
+      font-size: 12px;
+      color: #059669;
+      padding: 8px;
+      background: #d1fae5;
+      border-radius: var(--radius-sm);
     }
-    .dont-item-actions {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
+    .wisdom-response-good::before {
+      content: '✅ Lakukan: ';
+      font-weight: 600;
     }
-    .dont-btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 1px solid var(--gray-300);
+    .wisdom-principle {
+      font-size: 11px;
+      color: var(--gray-600);
+      font-style: italic;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--gray-200);
+    }
+    
+    /* Wisdom List Full Page */
+    .wisdom-item {
       background: white;
-      cursor: pointer;
-      font-size: 10px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-100);
+    }
+    .wisdom-item-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
+      padding: 12px 14px;
+      background: var(--gray-50);
+      cursor: pointer;
     }
-    .dont-btn.obey:hover, .dont-btn.obey.active {
-      background: var(--success);
-      color: white;
-      border-color: var(--success);
+    .wisdom-item-header:hover {
+      background: var(--gray-100);
     }
-    .dont-btn.violate:hover, .dont-btn.violate.active {
-      background: #dc2626;
-      color: white;
-      border-color: #dc2626;
+    .wisdom-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .wisdom-item-number {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 700;
+      background: rgba(13, 71, 161, 0.1);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .wisdom-item-body {
+      display: none;
+      padding: 14px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .wisdom-item.expanded .wisdom-item-body {
+      display: block;
+    }
+    .wisdom-context {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-bottom: 12px;
+      padding: 10px;
+      background: #fffbeb;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid #f59e0b;
+    }
+    .wisdom-responses {
+      display: grid;
+      gap: 12px;
+    }
+    .wisdom-response-section {
+      padding: 10px;
+      border-radius: var(--radius-sm);
+    }
+    .wisdom-response-section.bad {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .wisdom-response-section.good {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .wisdom-response-section h4 {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .wisdom-response-section.bad h4 { color: #dc2626; }
+    .wisdom-response-section.good h4 { color: #059669; }
+    .wisdom-response-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .wisdom-response-list li {
+      font-size: 12px;
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .wisdom-response-section.bad .wisdom-response-list li::before {
+      content: '❌';
+      position: absolute;
+      left: 0;
+      font-size: 10px;
+    }
+    .wisdom-response-section.good .wisdom-response-list li::before {
+      content: '✅';
+      position: absolute;
+      left: 0;
+      font-size: 10px;
+    }
+    .wisdom-principle-box {
+      margin-top: 12px;
+      padding: 10px;
+      background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid #9333ea;
+    }
+    .wisdom-principle-box h4 {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9333ea;
+      margin-bottom: 4px;
+    }
+    .wisdom-principle-box p {
+      font-size: 12px;
+      color: var(--gray-700);
+      line-height: 1.5;
     }
     
     /* Journal Display */
@@ -2897,7 +2994,7 @@
       </div>
       <div class="quick-icons">
         <button class="quick-icon-btn" onclick="openQuickBrainDump()" title="Brain Dump">🧠</button>
-        <button class="quick-icon-btn" onclick="showPage('dontlist')" title="Don't List">🚫</button>
+        <button class="quick-icon-btn" onclick="showPage('wisdom')" title="Wisdom Stoik">📖</button>
       </div>
     </div>
   </header>
@@ -2957,14 +3054,14 @@
           </div>
         </div>
         
-        <!-- Right: Don't List -->
+        <!-- Right: Wisdom Stoik -->
         <div class="home-right-col">
           <div class="card" style="height: 100%;">
             <div class="card-header">
-              <span class="card-title">🚫 Don't List</span>
-              <button class="btn-icon" onclick="openModal('braindump')" title="Brain Dump">💭</button>
+              <span class="card-title">📖 Wisdom Stoik</span>
+              <button class="btn-icon" onclick="refreshWisdomStoik()" title="Refresh">🔄</button>
             </div>
-            <div class="dont-list-mini" id="dontListMini">
+            <div class="wisdom-stoik-mini" id="wisdomStoikMini">
               <!-- Rendered by JS -->
             </div>
           </div>
@@ -3206,16 +3303,16 @@
               <span class="arrow">›</span>
             </div>
           </div>
-          <div class="menu-item" onclick="showPage('dontlist')">
+          <div class="menu-item" onclick="showPage('wisdom')">
             <div class="left">
-              <span class="icon">🚫</span>
+              <span class="icon">📖</span>
               <div class="info">
-                <div class="title">Don't List</div>
-                <div class="subtitle">Hal yang harus dihindari</div>
+                <div class="title">Wisdom Stoik</div>
+                <div class="subtitle">Panduan respons bijak suami</div>
               </div>
             </div>
             <div class="right">
-              <span class="badge info" id="menuDontBadge">0</span>
+              <span class="badge info">27</span>
               <span class="arrow">›</span>
             </div>
           </div>
@@ -3433,19 +3530,37 @@
     </div>
     
     <!-- ==================== PAGE: DON'T LIST ==================== -->
-    <div class="page" id="page-dontlist">
+    <div class="page" id="page-wisdom">
       <div class="page-header">
         <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
-        <h1 class="page-title">🚫 Don't List</h1>
+        <h1 class="page-title">📖 Wisdom Stoik</h1>
       </div>
-      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Hal-hal yang harus dihindari</p>
+      <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Panduan Respons Bijak dalam Rumah Tangga</p>
       
-      <button class="btn-submit btn-secondary" onclick="openModal('dont-add')" style="margin-bottom: 16px;">+ Tambah Item</button>
+      <!-- Filter Kategori -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+        <button class="tab-btn active" onclick="filterWisdom('all')" data-filter="all">Semua</button>
+        <button class="tab-btn" onclick="filterWisdom('emosional')" data-filter="emosional">😢 Emosional</button>
+        <button class="tab-btn" onclick="filterWisdom('keputusan')" data-filter="keputusan">🤔 Keputusan</button>
+        <button class="tab-btn" onclick="filterWisdom('konflik')" data-filter="konflik">⚡ Konflik</button>
+        <button class="tab-btn" onclick="filterWisdom('komunikasi')" data-filter="komunikasi">💬 Komunikasi</button>
+      </div>
       
-      <div id="dontListContainer">
-        <div class="empty-state" style="padding: 24px;">
-          <p>Belum ada don't list</p>
+      <!-- Wisdom Card Harian -->
+      <div class="card wisdom-highlight" style="margin-bottom: 16px; background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); color: white;">
+        <div class="card-header" style="border: none;">
+          <span class="card-title" style="color: white;">💡 Wisdom Hari Ini</span>
+          <button class="btn-icon" onclick="refreshWisdomStoik()" title="Refresh" style="color: white;">🔄</button>
         </div>
+        <div id="wisdomHighlight" style="padding: 8px 0;">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Daftar Semua Wisdom -->
+      <div class="section-title">📚 Semua Situasi (27)</div>
+      <div id="wisdomListContainer">
+        <!-- Rendered by JS -->
       </div>
     </div>
     
@@ -3548,12 +3663,17 @@
         <div id="refleksiPomodoro" class="refleksi-section"></div>
       </div>
       
-      <!-- Don't List -->
+      <!-- Wisdom Stoik Reminder -->
       <div class="card" style="margin-top: 12px;">
         <div class="card-header">
-          <span class="card-title">🚫 Don't List</span>
+          <span class="card-title">📖 Wisdom Stoik</span>
         </div>
-        <div id="refleksiDontList" class="refleksi-section"></div>
+        <div id="refleksiWisdom" class="refleksi-section">
+          <div style="padding: 8px; text-align: center;">
+            <p style="font-size: 12px; color: var(--gray-500);">Renungkan wisdom hari ini</p>
+            <button class="btn-link" onclick="showPage('wisdom')">Lihat Wisdom →</button>
+          </div>
+        </div>
       </div>
       
       <!-- Jurnal Pagi -->
@@ -3613,13 +3733,13 @@
         </div>
       </div>
       
-      <!-- Don't List Status -->
+      <!-- Wisdom Hari Ini -->
       <div class="card" style="margin-top: 16px;">
         <div class="card-header">
-          <span class="card-title">🚫 Don't List</span>
-          <span class="badge" id="refleksiDontBadge">-</span>
+          <span class="card-title">📖 Wisdom Hari Ini</span>
+          <button class="btn-icon" onclick="refreshWisdomStoik()" title="Refresh">🔄</button>
         </div>
-        <div id="refleksiDontList">
+        <div id="refleksiWisdomCard">
           <!-- Rendered by JS -->
         </div>
       </div>
