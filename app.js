@@ -780,18 +780,32 @@ function renderSholatGrid(sholatData) {
       // Status bisa 'done', true, atau 'TRUE'
       const isDone = s.status === 'done' || s.status === true || s.status === 'TRUE' || s.status === 'true';
       sholatMap[s.waktu] = { done: isDone, ...s };
-      console.log('[Sholat] Mapped:', s.waktu, '-> done:', isDone, 'status:', s.status);
+      console.log('[Sholat] Mapped:', s.waktu, '-> done:', isDone, 'berjamaah:', s.berjamaah, 'lokasi:', s.lokasi);
     });
   } else if (sholatData) {
     Object.assign(sholatMap, sholatData);
   }
   
+  const lokasiLabel = {
+    'masjid': 'Masjid',
+    'musholla': 'Musholla',
+    'rumah': 'Rumah',
+    'kantor': 'Kantor',
+    'perjalanan': 'Perjalanan',
+    'lainnya': 'Lainnya'
+  };
+  
   container.innerHTML = sholatList.map(s => {
     const data = sholatMap[s.id] || { done: false };
-    return `<div class="sholat-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')">
+    const isJamaah = data.berjamaah === true || data.berjamaah === 'true' || data.berjamaah === 'TRUE';
+    const lokasiText = lokasiLabel[data.lokasi] || data.lokasi || '';
+    const tooltipText = lokasiText ? `${isJamaah ? 'Berjamaah' : 'Munfarid'} di ${lokasiText}` : '';
+    
+    return `<div class="sholat-item ${data.done ? 'done' : ''}" onclick="openSholatModal('${s.id}')" title="${tooltipText}">
       <span class="icon">${s.icon}</span>
       <span class="name">${s.name}</span>
       ${data.jam_pelaksanaan ? `<span class="time">${data.jam_pelaksanaan}</span>` : ''}
+      ${data.done && isJamaah ? `<span class="jamaah-badge" title="Berjamaah">👥</span>` : ''}
     </div>`;
   }).join('');
 }
@@ -1880,8 +1894,24 @@ function openSholatModal(waktu) {
   }
   
   state.selectedSholat = waktu;
-  document.getElementById('sholatModalTitle').textContent = '🕌 ' + waktu;
+  document.getElementById('sholatModalTitle').textContent = '🕌 Sholat ' + waktu;
   document.getElementById('sholatJam').value = new Date().toTimeString().slice(0, 5);
+  
+  // Reset form ke default
+  document.getElementById('sholatLokasi').value = 'masjid';
+  document.getElementById('sholatJamaahYa').checked = true;
+  document.getElementById('sholatJamaahTidak').checked = false;
+  document.getElementById('sholatCatatan').value = '';
+  
+  // Set default berdasarkan waktu sholat
+  const wajibJamaah = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
+  if (wajibJamaah.includes(waktu)) {
+    document.getElementById('sholatJamaahYa').checked = true;
+  } else {
+    // Tahajud, Dhuha, Witir biasanya sendiri
+    document.getElementById('sholatJamaahTidak').checked = true;
+  }
+  
   openModal('sholat');
 }
 
@@ -1889,7 +1919,8 @@ function submitSholat() {
   const waktu = state.selectedSholat;
   const jam = document.getElementById('sholatJam').value;
   const lokasi = document.getElementById('sholatLokasi').value;
-  const berjamaah = document.getElementById('sholatBerjamaah').checked;
+  const berjamaah = document.getElementById('sholatJamaahYa').checked;
+  const catatan = document.getElementById('sholatCatatan').value || '';
   
   // INSTANT UI UPDATE - Update grid langsung
   const sholatItems = document.querySelectorAll('.sholat-item');
@@ -1905,6 +1936,18 @@ function submitSholat() {
         item.appendChild(timeEl);
       }
       timeEl.textContent = jam;
+      
+      // Tambah badge berjamaah jika berjamaah
+      let badgeEl = item.querySelector('.jamaah-badge');
+      if (berjamaah && !badgeEl) {
+        badgeEl = document.createElement('span');
+        badgeEl.className = 'jamaah-badge';
+        badgeEl.textContent = '👥';
+        badgeEl.title = 'Berjamaah di ' + lokasi;
+        item.appendChild(badgeEl);
+      } else if (!berjamaah && badgeEl) {
+        badgeEl.remove();
+      }
     }
   });
   
@@ -1919,13 +1962,16 @@ function submitSholat() {
       existing.status = 'done';
       existing.lokasi = lokasi;
       existing.berjamaah = berjamaah;
+      existing.jam_pelaksanaan = jam;
+      existing.catatan = catatan;
     } else {
       state.dailySync.sholat.push({ 
         waktu, 
         status: 'done', 
         lokasi, 
         berjamaah,
-        jam_pelaksanaan: jam 
+        jam_pelaksanaan: jam,
+        catatan: catatan
       });
     }
     
@@ -1952,7 +1998,8 @@ function submitSholat() {
       status: 'done',
       lokasi: lokasi,
       berjamaah: berjamaah,
-      catatan: 'Jam: ' + jam
+      jam_pelaksanaan: jam,
+      catatan: catatan
     }
   });
   
@@ -1960,7 +2007,18 @@ function submitSholat() {
   syncPendingQueue();
   
   closeModal('sholat');
-  showToast('Alhamdulillah! ' + waktu + ' ✓', 'success');
+  
+  // Toast message dengan info lokasi dan jamaah
+  const lokasiLabel = {
+    'masjid': 'Masjid',
+    'musholla': 'Musholla',
+    'rumah': 'Rumah',
+    'kantor': 'Kantor',
+    'perjalanan': 'Perjalanan',
+    'lainnya': 'Lainnya'
+  };
+  const jamaahText = berjamaah ? ' berjamaah' : '';
+  showToast(`Alhamdulillah! ${waktu}${jamaahText} di ${lokasiLabel[lokasi] || lokasi} ✓`, 'success');
 }
 
 // Direct toggle without modal (for quick toggle)

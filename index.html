@@ -1471,6 +1471,45 @@
     .form-textarea { min-height: 80px; resize: vertical; }
     .form-select { background: white; cursor: pointer; }
     
+    /* Toggle Group untuk pilihan Ya/Tidak */
+    .toggle-group {
+      display: flex;
+      gap: 12px;
+    }
+    .toggle-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--gray-100);
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-option:hover {
+      border-color: var(--primary-light);
+      background: var(--gray-50);
+    }
+    .toggle-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    .toggle-option input[type="radio"]:checked + .toggle-label {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .toggle-option:has(input:checked) {
+      border-color: var(--primary);
+      background: rgba(13, 71, 161, 0.05);
+    }
+    .toggle-label {
+      font-size: 13px;
+      color: var(--gray-700);
+    }
+    
     .btn-submit {
       width: 100%;
       padding: 14px 24px;
@@ -1773,6 +1812,19 @@
     .sholat-item .icon { font-size: 24px; margin-bottom: 4px; }
     .sholat-item .name { font-size: 11px; font-weight: 600; }
     .sholat-item .time { font-size: 10px; color: var(--success); margin-top: 2px; font-weight: 500; }
+    .sholat-item .jamaah-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      background: var(--success);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     
     /* Habit Item */
     .habit-item {
@@ -4222,23 +4274,39 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Pilih Lokasi</label>
+          <label class="form-label">🕐 Jam Pelaksanaan</label>
+          <input type="time" class="form-input" id="sholatJam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📍 Lokasi</label>
           <select class="form-input form-select" id="sholatLokasi">
             <option value="masjid">🕌 Masjid</option>
-            <option value="musholla">🏢 Musholla</option>
+            <option value="musholla">🏢 Musholla Kantor</option>
             <option value="rumah">🏠 Rumah</option>
-            <option value="kantor">💼 Kantor</option>
+            <option value="kantor">💼 Ruang Kantor</option>
+            <option value="perjalanan">🚗 Dalam Perjalanan</option>
+            <option value="lainnya">📌 Lainnya</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Berjamaah?</label>
-          <select class="form-input form-select" id="sholatJamaah">
-            <option value="ya">✓ Ya, Berjamaah</option>
-            <option value="tidak">✗ Tidak / Sendirian</option>
-          </select>
+          <label class="form-label">👥 Berjamaah?</label>
+          <div class="toggle-group">
+            <label class="toggle-option">
+              <input type="radio" name="sholatJamaah" value="ya" id="sholatJamaahYa">
+              <span class="toggle-label">✓ Ya, Berjamaah</span>
+            </label>
+            <label class="toggle-option">
+              <input type="radio" name="sholatJamaah" value="tidak" id="sholatJamaahTidak" checked>
+              <span class="toggle-label">✗ Munfarid (Sendiri)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📝 Catatan (Opsional)</label>
+          <input type="text" class="form-input" id="sholatCatatan" placeholder="Contoh: Sholat di masjid Al-Ikhlas">
         </div>
         <input type="hidden" id="sholatWaktu">
-        <button class="btn-submit" onclick="submitSholat()">✓ Simpan</button>
+        <button class="btn-submit" onclick="submitSholat()">✓ Catat Sholat</button>
       </div>
     </div>
   </div>
