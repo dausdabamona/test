@@ -359,6 +359,24 @@ function showPage(pageName, navEl) {
       }
       state.pageLoaded.wisdom = true;
       break;
+    case 'dashboard':
+      if (!state.pageLoaded.dashboard) {
+        loadDashboardPage();
+      }
+      state.pageLoaded.dashboard = true;
+      break;
+    case 'mood':
+      if (!state.pageLoaded.mood) {
+        loadMoodPage();
+      }
+      state.pageLoaded.mood = true;
+      break;
+    case 'family':
+      if (!state.pageLoaded.family) {
+        loadFamilyPage();
+      }
+      state.pageLoaded.family = true;
+      break;
     case 'review':
       if (!state.pageLoaded.review) {
         loadReviewPage();
@@ -2972,7 +2990,7 @@ function refreshAllData() {
   syncPendingQueue();
   
   state.cache = { dailySync: 0, goals: 0, kanban: 0, visions: 0, stats: 0 };
-  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, wisdom: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
+  state.pageLoaded = { home: false, kanban: false, goals: false, stats: false, habits: false, vision: false, pairwise: false, pomodoro: false, menu: false, braindump: false, journal: false, wisdom: false, dashboard: false, mood: false, family: false, review: false, ibadah: false, bestweek: false, learning: false, wellbeing: false };
   loadAllData();
   showToast('Memuat ulang data...', 'info');
 }
@@ -5669,3 +5687,881 @@ setInterval(() => {
     syncPendingQueue();
   }
 }, 30000);
+
+// ============================================
+// DASHBOARD STATISTIK
+// ============================================
+state.dashboardPeriod = 'week';
+
+function loadDashboardPage() {
+  renderDashboardSummary();
+  renderSholatChart();
+  renderMoodChart();
+  renderPomodoroChart();
+  generateDashboardInsights();
+}
+
+function changeDashboardPeriod(period) {
+  state.dashboardPeriod = period;
+  
+  // Update tab active state
+  document.querySelectorAll('#dashboardPeriodTabs .tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  
+  loadDashboardPage();
+}
+
+function renderDashboardSummary() {
+  // Calculate stats from available data
+  const sholat = state.dailySync?.sholat || [];
+  const habits = state.dailySync?.habits || [];
+  const stats = state.dailySync?.stats || {};
+  const tasks = state.kanban || {};
+  
+  // Sholat
+  const wajibList = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
+  const sholatDone = sholat.filter(s => wajibList.includes(s.waktu) && (s.status === 'done' || s.status === true)).length;
+  const sholatPercent = Math.round((sholatDone / 5) * 100);
+  
+  document.getElementById('dashSholatPercent').textContent = sholatPercent + '%';
+  document.getElementById('dashSholatDetail').textContent = `${sholatDone}/5 wajib hari ini`;
+  
+  // Habits
+  const habitsDone = habits.filter(h => h.completed).length;
+  const habitsPercent = habits.length ? Math.round((habitsDone / habits.length) * 100) : 0;
+  
+  document.getElementById('dashHabitPercent').textContent = habitsPercent + '%';
+  document.getElementById('dashHabitDetail').textContent = `${habitsDone}/${habits.length} habit`;
+  
+  // Pomodoro
+  const pomodoroCount = stats.pomodoro_count || 0;
+  const pomodoroMinutes = stats.pomodoro_minutes || 0;
+  
+  document.getElementById('dashPomodoroCount').textContent = pomodoroCount;
+  document.getElementById('dashPomodoroDetail').textContent = `${pomodoroMinutes} menit fokus`;
+  
+  // Tasks
+  const doneTasks = (tasks.done || []).length;
+  const pendingTasks = (tasks.todo || []).length + (tasks.doing || []).length;
+  
+  document.getElementById('dashTaskCount').textContent = doneTasks;
+  document.getElementById('dashTaskDetail').textContent = `${pendingTasks} pending`;
+}
+
+function renderSholatChart() {
+  const container = document.getElementById('sholatChart');
+  if (!container) return;
+  
+  // Generate dummy data for 7 days (will be replaced with real data from API)
+  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const today = new Date().getDay();
+  const values = [4, 5, 3, 5, 5, 4, 0]; // dummy
+  
+  // Today's actual data
+  const sholat = state.dailySync?.sholat || [];
+  const wajibList = ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'];
+  const todayCount = sholat.filter(s => wajibList.includes(s.waktu) && (s.status === 'done' || s.status === true)).length;
+  values[today === 0 ? 6 : today - 1] = todayCount;
+  
+  container.innerHTML = `
+    <div class="bar-chart">
+      ${days.map((day, i) => {
+        const height = (values[i] / 5) * 80;
+        const isToday = (today === 0 && i === 6) || (today === i + 1);
+        return `
+          <div class="bar-item">
+            <div class="bar-value">${values[i]}/5</div>
+            <div class="bar" style="height: ${height}px; ${isToday ? 'background: var(--success);' : ''}"></div>
+            <div class="bar-label" style="${isToday ? 'font-weight: 700;' : ''}">${day}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderMoodChart() {
+  const container = document.getElementById('moodChart');
+  if (!container) return;
+  
+  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const moodData = state.moodHistory || [];
+  
+  // Default values
+  const moods = [3, 4, 3, 4, 5, 4, 3];
+  const energies = [6, 7, 5, 8, 7, 6, 5];
+  
+  container.innerHTML = `
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span style="font-size: 11px; color: var(--gray-500);">😊 Mood</span>
+      <span style="font-size: 11px; color: var(--gray-500);">⚡ Energi</span>
+    </div>
+    <div class="line-chart">
+      ${days.map((day, i) => `
+        <div class="line-point">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font-size: 14px;">${getMoodEmoji(moods[i])}</span>
+            <span style="font-size: 10px; color: var(--gray-500);">⚡${energies[i]}</span>
+          </div>
+          <div class="bar-label">${day}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderPomodoroChart() {
+  const container = document.getElementById('pomodoroChart');
+  if (!container) return;
+  
+  // Simple weekly pomodoro display
+  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const values = [4, 6, 3, 8, 5, 2, 0]; // dummy data
+  
+  const maxVal = Math.max(...values, 1);
+  
+  container.innerHTML = `
+    <div class="bar-chart">
+      ${days.map((day, i) => {
+        const height = (values[i] / maxVal) * 80;
+        return `
+          <div class="bar-item">
+            <div class="bar-value">${values[i]}</div>
+            <div class="bar" style="height: ${Math.max(height, 4)}px; background: #d32f2f;"></div>
+            <div class="bar-label">${day}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--gray-500);">
+      Total: ${values.reduce((a, b) => a + b, 0)} pomodoro minggu ini
+    </div>
+  `;
+}
+
+function generateDashboardInsights() {
+  const container = document.getElementById('dashboardInsights');
+  if (!container) return;
+  
+  const insights = [];
+  
+  // Sholat insight
+  const sholat = state.dailySync?.sholat || [];
+  const wajibDone = sholat.filter(s => ['SUBUH', 'DZUHUR', 'ASHAR', 'MAGHRIB', 'ISYA'].includes(s.waktu) && s.status === 'done').length;
+  
+  if (wajibDone === 5) {
+    insights.push({ type: 'positive', icon: '🌟', text: 'Alhamdulillah! Sholat 5 waktu sudah lengkap hari ini.' });
+  } else if (wajibDone >= 3) {
+    insights.push({ type: 'neutral', icon: '💪', text: `${wajibDone}/5 sholat wajib sudah terlaksana. Semangat untuk melengkapi!` });
+  } else {
+    insights.push({ type: 'negative', icon: '⏰', text: 'Jangan lupa untuk menjaga sholat 5 waktu ya.' });
+  }
+  
+  // Habit insight
+  const habits = state.dailySync?.habits || [];
+  const habitsDone = habits.filter(h => h.completed).length;
+  if (habitsDone > 0) {
+    insights.push({ type: 'positive', icon: '📿', text: `${habitsDone} habit sunnah sudah terlaksana hari ini.` });
+  }
+  
+  // Pomodoro insight
+  const pomodoroCount = state.dailySync?.stats?.pomodoro_count || 0;
+  if (pomodoroCount >= 4) {
+    insights.push({ type: 'positive', icon: '🍅', text: `Produktif! ${pomodoroCount} sesi pomodoro sudah selesai.` });
+  }
+  
+  // Default insight
+  if (insights.length === 0) {
+    insights.push({ type: 'neutral', icon: '💡', text: 'Mulai hari dengan bismillah dan tetapkan niat yang baik.' });
+  }
+  
+  container.innerHTML = insights.map(i => `
+    <div class="insight-item ${i.type}">
+      <span class="insight-icon">${i.icon}</span>
+      <span class="insight-text">${i.text}</span>
+    </div>
+  `).join('');
+}
+
+function getMoodEmoji(mood) {
+  const moods = { 1: '😫', 2: '😢', 3: '😐', 4: '🙂', 5: '😊' };
+  return moods[mood] || '😐';
+}
+
+// ============================================
+// MOOD TRACKER
+// ============================================
+state.moodHistory = state.moodHistory || [];
+state.todayMoods = state.todayMoods || [];
+
+function loadMoodPage() {
+  updateMoodCheckinTime();
+  renderTodayMoodTimeline();
+  renderMoodWeekChart();
+  renderMoodPatterns();
+  renderMoodHistory();
+}
+
+function updateMoodCheckinTime() {
+  const el = document.getElementById('moodCheckinTime');
+  if (el) {
+    el.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+function quickMoodCheckin(mood) {
+  // Update selected state
+  document.querySelectorAll('#quickMoodButtons .mood-btn-large').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  event.currentTarget.classList.add('selected');
+  
+  const energy = document.getElementById('quickEnergySlider')?.value || 5;
+  const note = document.getElementById('quickMoodNote')?.value?.trim() || '';
+  
+  const entry = {
+    id: 'mood_' + Date.now(),
+    timestamp: new Date().toISOString(),
+    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+    mood: mood,
+    energy: parseInt(energy),
+    note: note,
+    date: todayString()
+  };
+  
+  // Add to today's moods
+  state.todayMoods.push(entry);
+  
+  // Save to localStorage
+  saveMoodToStorage(entry);
+  
+  // Add to queue for backend sync
+  addToQueue('saveMoodCheckin', { data: entry });
+  
+  // Reset form
+  document.getElementById('quickMoodNote').value = '';
+  document.querySelectorAll('#quickMoodButtons .mood-btn-large').forEach(btn => btn.classList.remove('selected'));
+  
+  // Update displays
+  renderTodayMoodTimeline();
+  renderMoodWeekChart();
+  
+  showToast(`Mood tercatat: ${getMoodEmoji(mood)} ⚡${energy}`, 'success');
+}
+
+function saveMoodToStorage(entry) {
+  try {
+    let moodData = JSON.parse(localStorage.getItem('syncplanner_moods') || '[]');
+    moodData.push(entry);
+    // Keep only last 100 entries
+    if (moodData.length > 100) moodData = moodData.slice(-100);
+    localStorage.setItem('syncplanner_moods', JSON.stringify(moodData));
+  } catch (e) {
+    console.error('Failed to save mood:', e);
+  }
+}
+
+function loadMoodFromStorage() {
+  try {
+    const data = JSON.parse(localStorage.getItem('syncplanner_moods') || '[]');
+    state.moodHistory = data;
+    state.todayMoods = data.filter(m => m.date === todayString());
+  } catch (e) {
+    state.moodHistory = [];
+    state.todayMoods = [];
+  }
+}
+
+function renderTodayMoodTimeline() {
+  const container = document.getElementById('todayMoodTimeline');
+  const badge = document.getElementById('todayMoodCount');
+  if (!container) return;
+  
+  loadMoodFromStorage();
+  const moods = state.todayMoods || [];
+  
+  if (badge) badge.textContent = moods.length;
+  
+  if (moods.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 16px;">
+        <p style="font-size: 12px;">Belum ada check-in hari ini</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = moods.slice().reverse().map(m => `
+    <div class="mood-entry">
+      <div class="mood-entry-time">${m.time}</div>
+      <div class="mood-entry-emoji">${getMoodEmoji(m.mood)}</div>
+      <div class="mood-entry-details">
+        <div class="mood-entry-energy">⚡ Energi: ${m.energy}/10</div>
+        ${m.note ? `<div class="mood-entry-note">"${escapeHtml(m.note)}"</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMoodWeekChart() {
+  const container = document.getElementById('moodWeekChart');
+  if (!container) return;
+  
+  loadMoodFromStorage();
+  
+  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const today = new Date();
+  
+  // Get last 7 days
+  const weekData = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayMoods = state.moodHistory.filter(m => m.date === dateStr);
+    
+    let avgMood = 3;
+    let avgEnergy = 5;
+    if (dayMoods.length > 0) {
+      avgMood = Math.round(dayMoods.reduce((s, m) => s + m.mood, 0) / dayMoods.length);
+      avgEnergy = Math.round(dayMoods.reduce((s, m) => s + m.energy, 0) / dayMoods.length);
+    }
+    
+    weekData.push({
+      day: days[date.getDay()],
+      mood: avgMood,
+      energy: avgEnergy,
+      isToday: i === 0,
+      hasData: dayMoods.length > 0
+    });
+  }
+  
+  container.innerHTML = weekData.map(d => `
+    <div class="mood-day" style="${d.isToday ? 'background: var(--primary-light); border-radius: 8px; padding: 8px;' : ''}">
+      <div class="mood-day-label" style="${d.isToday ? 'color: var(--primary); font-weight: 700;' : ''}">${d.day}</div>
+      <div class="mood-day-emoji" style="${!d.hasData ? 'opacity: 0.3;' : ''}">${getMoodEmoji(d.mood)}</div>
+      <div class="mood-day-energy">⚡${d.energy}</div>
+    </div>
+  `).join('');
+}
+
+function renderMoodPatterns() {
+  const container = document.getElementById('moodPatterns');
+  if (!container) return;
+  
+  loadMoodFromStorage();
+  
+  const patterns = [];
+  
+  // Analyze patterns
+  if (state.moodHistory.length >= 7) {
+    const avgMood = state.moodHistory.slice(-7).reduce((s, m) => s + m.mood, 0) / Math.min(7, state.moodHistory.length);
+    
+    if (avgMood >= 4) {
+      patterns.push({ icon: '😊', text: 'Mood rata-rata minggu ini: Baik! Pertahankan.' });
+    } else if (avgMood >= 3) {
+      patterns.push({ icon: '😐', text: 'Mood rata-rata: Netral. Coba tingkatkan dengan aktivitas positif.' });
+    } else {
+      patterns.push({ icon: '💪', text: 'Mood cenderung rendah. Coba berbicara dengan orang terdekat atau istirahat.' });
+    }
+  }
+  
+  // Check for morning/evening patterns
+  const morningMoods = state.todayMoods.filter(m => {
+    const hour = parseInt(m.time.split(':')[0]);
+    return hour >= 5 && hour < 12;
+  });
+  
+  const eveningMoods = state.todayMoods.filter(m => {
+    const hour = parseInt(m.time.split(':')[0]);
+    return hour >= 17 && hour < 22;
+  });
+  
+  if (morningMoods.length > 0 && eveningMoods.length > 0) {
+    const morningAvg = morningMoods.reduce((s, m) => s + m.mood, 0) / morningMoods.length;
+    const eveningAvg = eveningMoods.reduce((s, m) => s + m.mood, 0) / eveningMoods.length;
+    
+    if (eveningAvg > morningAvg) {
+      patterns.push({ icon: '🌙', text: 'Mood meningkat di sore hari. Night owl?' });
+    } else if (morningAvg > eveningAvg) {
+      patterns.push({ icon: '☀️', text: 'Mood lebih baik di pagi hari. Morning person!' });
+    }
+  }
+  
+  if (patterns.length === 0) {
+    patterns.push({ icon: '📊', text: 'Check-in secara rutin untuk melihat pola mood Anda.' });
+  }
+  
+  container.innerHTML = patterns.map(p => `
+    <div class="pattern-item">
+      <span class="pattern-icon">${p.icon}</span>
+      <span class="pattern-text">${p.text}</span>
+    </div>
+  `).join('');
+}
+
+function renderMoodHistory() {
+  const container = document.getElementById('moodHistoryList');
+  if (!container) return;
+  
+  loadMoodFromStorage();
+  
+  const history = state.moodHistory.slice().reverse().slice(0, 20);
+  
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="empty-state" style="padding: 20px;">
+          <p style="font-size: 12px;">Belum ada riwayat check-in</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  // Group by date
+  const grouped = {};
+  history.forEach(m => {
+    if (!grouped[m.date]) grouped[m.date] = [];
+    grouped[m.date].push(m);
+  });
+  
+  container.innerHTML = Object.entries(grouped).map(([date, moods]) => `
+    <div class="card" style="margin-bottom: 8px;">
+      <div class="card-header">
+        <span class="card-title">${formatDateIndo(date)}</span>
+        <span class="badge info">${moods.length} check-in</span>
+      </div>
+      ${moods.map(m => `
+        <div class="mood-entry">
+          <div class="mood-entry-time">${m.time}</div>
+          <div class="mood-entry-emoji">${getMoodEmoji(m.mood)}</div>
+          <div class="mood-entry-details">
+            <div class="mood-entry-energy">⚡ ${m.energy}/10</div>
+            ${m.note ? `<div class="mood-entry-note">"${escapeHtml(m.note)}"</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function formatDateIndo(dateStr) {
+  const date = new Date(dateStr);
+  const options = { weekday: 'long', day: 'numeric', month: 'long' };
+  return date.toLocaleDateString('id-ID', options);
+}
+
+// ============================================
+// FAMILY DASHBOARD
+// ============================================
+state.familyMembers = state.familyMembers || [];
+state.selectedFamilyMember = null;
+
+function loadFamilyPage() {
+  loadFamilyFromStorage();
+  renderFamilyMembers();
+  renderFamilyTodayProgress();
+  renderFamilySholatBoard();
+  renderFamilyHabitBoard();
+  renderFamilyWeeklyStats();
+  renderFamilyAchievements();
+  
+  // Set date badge
+  const badge = document.getElementById('familyDateBadge');
+  if (badge) {
+    badge.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+}
+
+function loadFamilyFromStorage() {
+  try {
+    state.familyMembers = JSON.parse(localStorage.getItem('syncplanner_family') || '[]');
+    state.familyProgress = JSON.parse(localStorage.getItem('syncplanner_family_progress') || '{}');
+  } catch (e) {
+    state.familyMembers = [];
+    state.familyProgress = {};
+  }
+  
+  // Add self if not exists
+  if (state.familyMembers.length === 0) {
+    state.familyMembers = [
+      { id: 'self', name: 'Saya', role: 'ayah', color: '#0d47a1', isSelf: true }
+    ];
+    saveFamilyToStorage();
+  }
+}
+
+function saveFamilyToStorage() {
+  try {
+    localStorage.setItem('syncplanner_family', JSON.stringify(state.familyMembers));
+    localStorage.setItem('syncplanner_family_progress', JSON.stringify(state.familyProgress || {}));
+  } catch (e) {
+    console.error('Failed to save family:', e);
+  }
+}
+
+function renderFamilyMembers() {
+  const container = document.getElementById('familyMembersList');
+  if (!container) return;
+  
+  const roleIcons = {
+    'ayah': '👨',
+    'istri': '👩',
+    'anak_laki': '👦',
+    'anak_perempuan': '👧',
+    'lainnya': '👤'
+  };
+  
+  container.innerHTML = state.familyMembers.map(m => {
+    const progress = calculateFamilyMemberProgress(m.id);
+    return `
+      <div class="family-member-card ${state.selectedFamilyMember === m.id ? 'selected' : ''}" 
+           onclick="selectFamilyMember('${m.id}')">
+        <div class="family-avatar" style="background: ${m.color};">
+          ${roleIcons[m.role] || '👤'}
+        </div>
+        <div class="family-name">${escapeHtml(m.name)}</div>
+        <div class="family-role">${m.isSelf ? 'Saya' : (m.age ? m.age + ' thn' : '')}</div>
+        ${progress > 0 ? `<div class="family-score">${progress}%</div>` : ''}
+      </div>
+    `;
+  }).join('') + `
+    <div class="family-member-card" onclick="openModal('add-family')" style="border: 2px dashed var(--gray-300);">
+      <div class="family-avatar" style="background: var(--gray-200);">➕</div>
+      <div class="family-name">Tambah</div>
+    </div>
+  `;
+}
+
+function selectFamilyMember(id) {
+  state.selectedFamilyMember = state.selectedFamilyMember === id ? null : id;
+  renderFamilyMembers();
+}
+
+function addFamilyMember() {
+  const name = document.getElementById('familyMemberName')?.value.trim();
+  const role = document.getElementById('familyMemberRole')?.value;
+  const age = document.getElementById('familyMemberAge')?.value;
+  const color = document.getElementById('familyMemberColor')?.value || '#607d8b';
+  
+  if (!name) {
+    showToast('Nama harus diisi', 'error');
+    return;
+  }
+  
+  const member = {
+    id: 'family_' + Date.now(),
+    name: name,
+    role: role,
+    age: age ? parseInt(age) : null,
+    color: color
+  };
+  
+  state.familyMembers.push(member);
+  saveFamilyToStorage();
+  
+  // Reset form
+  document.getElementById('familyMemberName').value = '';
+  document.getElementById('familyMemberAge').value = '';
+  closeModal('add-family');
+  
+  renderFamilyMembers();
+  renderFamilySholatBoard();
+  
+  showToast(`${name} ditambahkan ke keluarga! 👨‍👩‍👧‍👦`, 'success');
+}
+
+function selectFamilyColor(color) {
+  document.querySelectorAll('#familyColorOptions .color-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  event.currentTarget.classList.add('selected');
+  document.getElementById('familyMemberColor').value = color;
+}
+
+function calculateFamilyMemberProgress(memberId) {
+  const today = todayString();
+  const progress = state.familyProgress?.[today]?.[memberId] || {};
+  
+  // Count completed sholat
+  const sholatDone = Object.values(progress.sholat || {}).filter(v => v).length;
+  return Math.round((sholatDone / 5) * 100);
+}
+
+function renderFamilyTodayProgress() {
+  const container = document.getElementById('familyTodayProgress');
+  if (!container) return;
+  
+  const members = state.familyMembers;
+  
+  if (members.length <= 1) {
+    container.innerHTML = `
+      <div style="padding: 16px; text-align: center;">
+        <p style="font-size: 12px; color: var(--gray-500);">Tambahkan anggota keluarga untuk melihat progress</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = members.map(m => {
+    const progress = calculateFamilyMemberProgress(m.id);
+    return `
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--gray-50); border-radius: 8px; margin-bottom: 8px;">
+        <div class="family-avatar" style="background: ${m.color}; width: 36px; height: 36px; font-size: 16px;">
+          ${m.role === 'istri' ? '👩' : m.role === 'anak_laki' ? '👦' : m.role === 'anak_perempuan' ? '👧' : '👨'}
+        </div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 600;">${escapeHtml(m.name)}</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Progress: ${progress}%</div>
+        </div>
+        <div style="width: 60px; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+          <div style="width: ${progress}%; height: 100%; background: var(--success);"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderFamilySholatBoard() {
+  const container = document.getElementById('familySholatBoard');
+  if (!container) return;
+  
+  const members = state.familyMembers;
+  const sholatList = ['Subuh', 'Dhuha', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya', 'Tahajud', 'Witir'];
+  const today = todayString();
+  
+  let html = `<div class="family-sholat-grid">`;
+  
+  // Header row
+  html += `<div class="family-sholat-cell header">Nama</div>`;
+  sholatList.forEach(s => {
+    html += `<div class="family-sholat-cell header">${s.substring(0, 3)}</div>`;
+  });
+  
+  // Member rows
+  members.forEach(m => {
+    const progress = state.familyProgress?.[today]?.[m.id]?.sholat || {};
+    html += `<div class="family-sholat-cell name">${escapeHtml(m.name.substring(0, 8))}</div>`;
+    
+    sholatList.forEach(s => {
+      const isDone = progress[s.toUpperCase()];
+      if (m.isSelf) {
+        // For self, check from dailySync
+        const selfSholat = state.dailySync?.sholat || [];
+        const selfDone = selfSholat.find(sh => sh.waktu === s.toUpperCase() && sh.status === 'done');
+        html += `<div class="family-sholat-cell ${selfDone ? 'done' : 'pending'}">${selfDone ? '✓' : '·'}</div>`;
+      } else {
+        html += `<div class="family-sholat-cell ${isDone ? 'done' : 'pending'}" 
+                     onclick="toggleFamilySholat('${m.id}', '${s.toUpperCase()}')"
+                     style="cursor: pointer;">
+                  ${isDone ? '✓' : '·'}
+                </div>`;
+      }
+    });
+  });
+  
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function toggleFamilySholat(memberId, waktu) {
+  const today = todayString();
+  
+  if (!state.familyProgress[today]) state.familyProgress[today] = {};
+  if (!state.familyProgress[today][memberId]) state.familyProgress[today][memberId] = { sholat: {} };
+  if (!state.familyProgress[today][memberId].sholat) state.familyProgress[today][memberId].sholat = {};
+  
+  // Toggle
+  state.familyProgress[today][memberId].sholat[waktu] = !state.familyProgress[today][memberId].sholat[waktu];
+  
+  saveFamilyToStorage();
+  renderFamilySholatBoard();
+  renderFamilyTodayProgress();
+  renderFamilyMembers();
+  
+  const member = state.familyMembers.find(m => m.id === memberId);
+  const isDone = state.familyProgress[today][memberId].sholat[waktu];
+  showToast(`${member?.name}: ${waktu} ${isDone ? '✓' : 'dibatalkan'}`, isDone ? 'success' : 'warning');
+}
+
+function renderFamilyHabitBoard() {
+  const container = document.getElementById('familyHabitBoard');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div style="padding: 16px; text-align: center; color: var(--gray-400);">
+      <p style="font-size: 12px;">Fitur habit keluarga coming soon</p>
+    </div>
+  `;
+}
+
+function renderFamilyWeeklyStats() {
+  const container = document.getElementById('familyWeeklyStats');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div style="padding: 16px; text-align: center; color: var(--gray-400);">
+      <p style="font-size: 12px;">Statistik mingguan akan muncul setelah data terkumpul</p>
+    </div>
+  `;
+}
+
+function renderFamilyAchievements() {
+  const container = document.getElementById('familyAchievements');
+  if (!container) return;
+  
+  const achievements = [
+    { icon: '🕌', name: 'Sholat Berjamaah', earned: false },
+    { icon: '📿', name: 'Dzikir Bersama', earned: false },
+    { icon: '📖', name: 'Tilawah Keluarga', earned: false },
+    { icon: '🌙', name: 'Tahajud Berjamaah', earned: false },
+    { icon: '🏆', name: '7 Hari Streak', earned: false },
+    { icon: '⭐', name: 'Sholat 5 Waktu', earned: true },
+    { icon: '💪', name: 'Konsisten', earned: false },
+    { icon: '❤️', name: 'Keluarga Sakinah', earned: false }
+  ];
+  
+  container.innerHTML = achievements.map(a => `
+    <div class="achievement-badge ${a.earned ? 'earned' : 'locked'}">
+      <div class="achievement-icon">${a.icon}</div>
+      <div class="achievement-name">${a.name}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// REMINDER / NOTIFICATION
+// ============================================
+function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    showToast('Browser tidak mendukung notifikasi', 'error');
+    return;
+  }
+  
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      showToast('Notifikasi diaktifkan! 🔔', 'success');
+      updateReminderStatus();
+      scheduleReminders();
+    } else {
+      showToast('Izin notifikasi ditolak', 'error');
+    }
+  });
+}
+
+function updateReminderStatus() {
+  const statusContainer = document.getElementById('reminderStatus');
+  const optionsContainer = document.getElementById('reminderOptions');
+  
+  if (!statusContainer || !optionsContainer) return;
+  
+  if (Notification.permission === 'granted') {
+    statusContainer.innerHTML = `
+      <div class="status-icon">🔔</div>
+      <div class="status-text" style="color: var(--success);">Notifikasi aktif!</div>
+    `;
+    optionsContainer.style.display = 'block';
+    loadReminderSettings();
+  } else {
+    optionsContainer.style.display = 'none';
+  }
+}
+
+function loadReminderSettings() {
+  try {
+    const settings = JSON.parse(localStorage.getItem('syncplanner_reminders') || '{}');
+    document.getElementById('reminderSholat').checked = settings.sholat !== false;
+    document.getElementById('reminderHabit').checked = settings.habit !== false;
+    document.getElementById('reminderJournal').checked = settings.journal === true;
+    document.getElementById('reminderBestWeek').checked = settings.bestWeek === true;
+  } catch (e) {}
+}
+
+function saveReminderSettings() {
+  const settings = {
+    sholat: document.getElementById('reminderSholat')?.checked,
+    habit: document.getElementById('reminderHabit')?.checked,
+    journal: document.getElementById('reminderJournal')?.checked,
+    bestWeek: document.getElementById('reminderBestWeek')?.checked
+  };
+  
+  localStorage.setItem('syncplanner_reminders', JSON.stringify(settings));
+  scheduleReminders();
+  
+  closeModal('reminder');
+  showToast('Pengaturan reminder tersimpan! ✓', 'success');
+}
+
+function scheduleReminders() {
+  // Clear existing
+  if (window.reminderIntervals) {
+    window.reminderIntervals.forEach(id => clearInterval(id));
+  }
+  window.reminderIntervals = [];
+  
+  // Check every minute for scheduled reminders
+  const checkInterval = setInterval(() => {
+    checkAndSendReminders();
+  }, 60000);
+  
+  window.reminderIntervals.push(checkInterval);
+}
+
+function checkAndSendReminders() {
+  if (Notification.permission !== 'granted') return;
+  
+  const settings = JSON.parse(localStorage.getItem('syncplanner_reminders') || '{}');
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  
+  // Sholat reminders (simplified - real implementation would use prayer time API)
+  if (settings.sholat && minute === 0) {
+    const sholatTimes = { 4: 'Subuh', 12: 'Dzuhur', 15: 'Ashar', 18: 'Maghrib', 19: 'Isya' };
+    if (sholatTimes[hour]) {
+      sendNotification('🕌 Waktu Sholat', `Sudah masuk waktu ${sholatTimes[hour]}. Ayo sholat!`);
+    }
+  }
+  
+  // Habit reminder (pagi & sore)
+  if (settings.habit) {
+    if (hour === 5 && minute === 30) {
+      sendNotification('📿 Dzikir Pagi', 'Sudah waktunya dzikir pagi. Bismillah!');
+    }
+    if (hour === 17 && minute === 0) {
+      sendNotification('📿 Dzikir Sore', 'Sudah waktunya dzikir sore. Allahu Akbar!');
+    }
+  }
+  
+  // Journal reminder
+  if (settings.journal && hour === 21 && minute === 0) {
+    sendNotification('📔 Jurnal Malam', 'Sudah waktunya refleksi dan menulis jurnal malam.');
+  }
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission !== 'granted') return;
+  
+  const notification = new Notification(title, {
+    body: body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [200, 100, 200]
+  });
+  
+  notification.onclick = () => {
+    window.focus();
+    notification.close();
+  };
+}
+
+// Initialize reminders on load
+if ('Notification' in window && Notification.permission === 'granted') {
+  scheduleReminders();
+}
+
+// Load mood data on startup
+loadMoodFromStorage();

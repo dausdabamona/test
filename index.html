@@ -2472,6 +2472,465 @@
       line-height: 1.5;
     }
     
+    /* ============================================
+       DASHBOARD STATISTIK STYLES
+       ============================================ */
+    .period-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .period-tabs .tab-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 12px;
+    }
+    
+    .dashboard-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--gray-300);
+    }
+    .summary-card.sholat { border-left-color: #0d47a1; }
+    .summary-card.habit { border-left-color: #2e7d32; }
+    .summary-card.pomodoro { border-left-color: #d32f2f; }
+    .summary-card.task { border-left-color: #f57c00; }
+    
+    .summary-icon {
+      font-size: 28px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-50);
+      border-radius: 50%;
+    }
+    .summary-content { flex: 1; }
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+    }
+    .summary-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      font-weight: 500;
+    }
+    .summary-detail {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    
+    .chart-container {
+      padding: 12px 0;
+      min-height: 120px;
+    }
+    
+    /* Simple Bar Chart */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100px;
+      padding: 0 8px;
+      gap: 8px;
+    }
+    .bar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .bar {
+      width: 100%;
+      max-width: 32px;
+      background: var(--primary);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+      min-height: 4px;
+    }
+    .bar-label {
+      font-size: 10px;
+      color: var(--gray-500);
+    }
+    .bar-value {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    
+    /* Line Chart (simple) */
+    .line-chart {
+      position: relative;
+      height: 80px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 8px;
+    }
+    .line-point {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .point-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .point-dot.mood { background: #f59e0b; }
+    .point-dot.energy { background: #10b981; }
+    
+    /* Insights */
+    .insights-container {
+      padding: 8px 0;
+    }
+    .insight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .insight-icon { font-size: 20px; }
+    .insight-text {
+      font-size: 12px;
+      color: var(--gray-700);
+      line-height: 1.4;
+    }
+    .insight-item.positive { background: #f0fdf4; border-left: 3px solid #10b981; }
+    .insight-item.negative { background: #fef2f2; border-left: 3px solid #ef4444; }
+    .insight-item.neutral { background: #fffbeb; border-left: 3px solid #f59e0b; }
+    
+    /* ============================================
+       MOOD TRACKER STYLES
+       ============================================ */
+    .mood-checkin-card {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+    .mood-checkin {
+      padding: 8px 0;
+    }
+    .mood-question {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-800);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .mood-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .mood-btn-large {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      background: white;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 56px;
+    }
+    .mood-btn-large:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .mood-btn-large.selected {
+      border-color: var(--primary);
+      background: rgba(13, 71, 161, 0.1);
+    }
+    .mood-btn-large .emoji { font-size: 24px; }
+    .mood-btn-large .label { font-size: 10px; color: var(--gray-600); }
+    
+    .energy-slider-large {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
+      border-radius: 4px;
+      outline: none;
+    }
+    .energy-slider-large::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border: 3px solid var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .mood-timeline {
+      padding: 8px 0;
+    }
+    .mood-entry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .mood-entry-time {
+      font-size: 11px;
+      color: var(--gray-500);
+      min-width: 45px;
+    }
+    .mood-entry-emoji { font-size: 24px; }
+    .mood-entry-details { flex: 1; }
+    .mood-entry-energy {
+      font-size: 11px;
+      color: var(--gray-600);
+    }
+    .mood-entry-note {
+      font-size: 11px;
+      color: var(--gray-500);
+      font-style: italic;
+    }
+    
+    .mood-week-chart {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+    }
+    .mood-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .mood-day-label {
+      font-size: 10px;
+      color: var(--gray-500);
+      font-weight: 600;
+    }
+    .mood-day-emoji {
+      font-size: 24px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+      border-radius: 50%;
+    }
+    .mood-day-energy {
+      font-size: 10px;
+      color: var(--gray-600);
+    }
+    
+    .mood-patterns {
+      padding: 8px 0;
+    }
+    .pattern-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+    .pattern-icon { font-size: 20px; }
+    .pattern-text { font-size: 12px; color: var(--gray-700); }
+    
+    /* ============================================
+       FAMILY DASHBOARD STYLES
+       ============================================ */
+    .family-members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 8px 0;
+    }
+    .family-member-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      min-width: 80px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .family-member-card:hover {
+      background: var(--gray-100);
+      transform: translateY(-2px);
+    }
+    .family-member-card.selected {
+      background: rgba(13, 71, 161, 0.1);
+      border: 2px solid var(--primary);
+    }
+    .family-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+    .family-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-800);
+      text-align: center;
+    }
+    .family-role {
+      font-size: 10px;
+      color: var(--gray-500);
+    }
+    .family-score {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--success);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    
+    .family-sholat-board {
+      overflow-x: auto;
+    }
+    .family-sholat-grid {
+      display: grid;
+      grid-template-columns: auto repeat(8, 1fr);
+      gap: 4px;
+      min-width: 400px;
+    }
+    .family-sholat-cell {
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 11px;
+      border-radius: var(--radius-sm);
+    }
+    .family-sholat-cell.header {
+      background: var(--gray-100);
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .family-sholat-cell.name {
+      background: var(--gray-50);
+      font-weight: 500;
+      text-align: left;
+      padding-left: 8px;
+    }
+    .family-sholat-cell.done {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    .family-sholat-cell.pending {
+      background: var(--gray-50);
+      color: var(--gray-400);
+    }
+    
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .achievement-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .achievement-badge.earned {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+    .achievement-badge.locked {
+      opacity: 0.5;
+      filter: grayscale(1);
+    }
+    .achievement-icon { font-size: 28px; }
+    .achievement-name {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    
+    /* Color picker for family */
+    .color-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .color-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .color-btn:hover { transform: scale(1.1); }
+    .color-btn.selected { border-color: var(--gray-800); }
+    
+    /* Checkbox label */
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    
+    /* Reminder status */
+    .reminder-status {
+      text-align: center;
+      padding: 20px;
+    }
+    .reminder-status .status-icon { font-size: 48px; margin-bottom: 12px; }
+    .reminder-status .status-text { font-size: 14px; color: var(--gray-600); margin-bottom: 16px; }
+    
+    .reminder-options {
+      padding: 8px 0;
+    }
+    
     /* Journal Display */
     .journal-display {
       padding: 8px 0;
@@ -3287,6 +3746,41 @@
           </div>
         </div>
         
+        <!-- Dashboard & Analytics -->
+        <div class="menu-group">
+          <div class="menu-group-title">📊 Dashboard & Analytics</div>
+          <div class="menu-item" onclick="showPage('dashboard')">
+            <div class="left">
+              <span class="icon">📊</span>
+              <div class="info">
+                <div class="title">Dashboard Statistik</div>
+                <div class="subtitle">Grafik progress mingguan</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+          <div class="menu-item" onclick="showPage('mood')">
+            <div class="left">
+              <span class="icon">😊</span>
+              <div class="info">
+                <div class="title">Mood Tracker</div>
+                <div class="subtitle">Lacak mood & energi harian</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+          <div class="menu-item" onclick="showPage('family')">
+            <div class="left">
+              <span class="icon">👨‍👩‍👧‍👦</span>
+              <div class="info">
+                <div class="title">Family Dashboard</div>
+                <div class="subtitle">Tracking ibadah keluarga</div>
+              </div>
+            </div>
+            <div class="right"><span class="arrow">›</span></div>
+          </div>
+        </div>
+        
         <!-- Capture -->
         <div class="menu-group">
           <div class="menu-group-title">🧠 Capture</div>
@@ -3561,6 +4055,252 @@
       <div class="section-title">📚 Semua Situasi (27)</div>
       <div id="wisdomListContainer">
         <!-- Rendered by JS -->
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: DASHBOARD STATISTIK ==================== -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">📊 Dashboard Statistik</h1>
+      </div>
+      
+      <!-- Period Selector -->
+      <div class="period-tabs" id="dashboardPeriodTabs">
+        <button class="tab-btn active" onclick="changeDashboardPeriod('week')">Minggu Ini</button>
+        <button class="tab-btn" onclick="changeDashboardPeriod('month')">Bulan Ini</button>
+        <button class="tab-btn" onclick="changeDashboardPeriod('year')">Tahun Ini</button>
+      </div>
+      
+      <!-- Summary Cards -->
+      <div class="dashboard-summary">
+        <div class="summary-card sholat">
+          <div class="summary-icon">🕌</div>
+          <div class="summary-content">
+            <div class="summary-value" id="dashSholatPercent">0%</div>
+            <div class="summary-label">Sholat</div>
+            <div class="summary-detail" id="dashSholatDetail">0/0 waktu</div>
+          </div>
+        </div>
+        <div class="summary-card habit">
+          <div class="summary-icon">📿</div>
+          <div class="summary-content">
+            <div class="summary-value" id="dashHabitPercent">0%</div>
+            <div class="summary-label">Habit</div>
+            <div class="summary-detail" id="dashHabitDetail">0/0 habit</div>
+          </div>
+        </div>
+        <div class="summary-card pomodoro">
+          <div class="summary-icon">🍅</div>
+          <div class="summary-content">
+            <div class="summary-value" id="dashPomodoroCount">0</div>
+            <div class="summary-label">Pomodoro</div>
+            <div class="summary-detail" id="dashPomodoroDetail">0 menit fokus</div>
+          </div>
+        </div>
+        <div class="summary-card task">
+          <div class="summary-icon">✅</div>
+          <div class="summary-content">
+            <div class="summary-value" id="dashTaskCount">0</div>
+            <div class="summary-label">Task Done</div>
+            <div class="summary-detail" id="dashTaskDetail">0 pending</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Charts Section -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">📈 Trend Sholat 7 Hari</span>
+        </div>
+        <div class="chart-container" id="sholatChart">
+          <!-- Bar chart rendered by JS -->
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📊 Trend Mood & Energi</span>
+        </div>
+        <div class="chart-container" id="moodChart">
+          <!-- Line chart rendered by JS -->
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🍅 Distribusi Pomodoro</span>
+        </div>
+        <div class="chart-container" id="pomodoroChart">
+          <!-- Chart rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Insights -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">💡 Insight Minggu Ini</span>
+        </div>
+        <div id="dashboardInsights" class="insights-container">
+          <!-- Generated insights -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: MOOD TRACKER ==================== -->
+    <div class="page" id="page-mood">
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">😊 Mood Tracker</h1>
+      </div>
+      
+      <!-- Quick Mood Check-in -->
+      <div class="card mood-checkin-card">
+        <div class="card-header">
+          <span class="card-title">🎯 Check-in Sekarang</span>
+          <span class="badge" id="moodCheckinTime">-</span>
+        </div>
+        <div class="mood-checkin">
+          <div class="mood-question">Bagaimana perasaanmu saat ini?</div>
+          <div class="mood-buttons" id="quickMoodButtons">
+            <button class="mood-btn-large" onclick="quickMoodCheckin(1)" data-mood="1">
+              <span class="emoji">😫</span>
+              <span class="label">Buruk</span>
+            </button>
+            <button class="mood-btn-large" onclick="quickMoodCheckin(2)" data-mood="2">
+              <span class="emoji">😢</span>
+              <span class="label">Sedih</span>
+            </button>
+            <button class="mood-btn-large" onclick="quickMoodCheckin(3)" data-mood="3">
+              <span class="emoji">😐</span>
+              <span class="label">Biasa</span>
+            </button>
+            <button class="mood-btn-large" onclick="quickMoodCheckin(4)" data-mood="4">
+              <span class="emoji">🙂</span>
+              <span class="label">Baik</span>
+            </button>
+            <button class="mood-btn-large" onclick="quickMoodCheckin(5)" data-mood="5">
+              <span class="emoji">😊</span>
+              <span class="label">Sangat Baik</span>
+            </button>
+          </div>
+          <div class="energy-checkin" style="margin-top: 16px;">
+            <div class="mood-question">Level energi: <span id="quickEnergyValue">5</span>/10</div>
+            <input type="range" class="energy-slider-large" id="quickEnergySlider" min="1" max="10" value="5" oninput="document.getElementById('quickEnergyValue').textContent = this.value">
+          </div>
+          <div class="mood-note" style="margin-top: 12px;">
+            <input type="text" class="form-input" id="quickMoodNote" placeholder="Catatan singkat (opsional)...">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Today's Mood Timeline -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📅 Mood Hari Ini</span>
+          <span class="badge info" id="todayMoodCount">0</span>
+        </div>
+        <div id="todayMoodTimeline" class="mood-timeline">
+          <div class="empty-state" style="padding: 16px;">
+            <p style="font-size: 12px;">Belum ada check-in hari ini</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 7-Day Mood History -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📊 Trend 7 Hari</span>
+        </div>
+        <div class="mood-week-chart" id="moodWeekChart">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Mood Patterns -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🔍 Pola Mood</span>
+        </div>
+        <div id="moodPatterns" class="mood-patterns">
+          <!-- Generated patterns -->
+        </div>
+      </div>
+      
+      <!-- Mood History List -->
+      <div class="section-title" style="margin-top: 16px;">📜 Riwayat Check-in</div>
+      <div id="moodHistoryList">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: FAMILY DASHBOARD ==================== -->
+    <div class="page" id="page-family">
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">👨‍👩‍👧‍👦 Family Dashboard</h1>
+      </div>
+      
+      <!-- Family Members -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">👥 Anggota Keluarga</span>
+          <button class="btn-icon" onclick="openModal('add-family')" title="Tambah">➕</button>
+        </div>
+        <div id="familyMembersList" class="family-members">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Today's Family Progress -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📅 Progress Hari Ini</span>
+          <span class="badge info" id="familyDateBadge">-</span>
+        </div>
+        <div id="familyTodayProgress">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Family Sholat Board -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🕌 Sholat Keluarga</span>
+        </div>
+        <div class="family-sholat-board" id="familySholatBoard">
+          <!-- Grid showing family sholat status -->
+        </div>
+      </div>
+      
+      <!-- Family Habit Board -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📿 Habit Keluarga</span>
+        </div>
+        <div id="familyHabitBoard">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Weekly Family Stats -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">📊 Statistik Mingguan</span>
+        </div>
+        <div id="familyWeeklyStats">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      
+      <!-- Family Achievements -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="card-header">
+          <span class="card-title">🏆 Pencapaian Keluarga</span>
+        </div>
+        <div id="familyAchievements" class="achievements-grid">
+          <!-- Badges/achievements -->
+        </div>
       </div>
     </div>
     
@@ -4655,32 +5395,89 @@
     </div>
   </div>
   
-  <!-- Modal: Don't Add -->
-  <div class="modal-overlay" id="modal-dont-add" onclick="if(event.target===this)closeModal('dont-add')">
+  <!-- Modal: Add Family Member -->
+  <div class="modal-overlay" id="modal-add-family" onclick="if(event.target===this)closeModal('add-family')">
     <div class="modal">
       <div class="modal-header">
-        <span class="modal-title">🚫 Tambah Don't Item</span>
-        <button class="modal-close" onclick="closeModal('dont-add')">✕</button>
+        <span class="modal-title">👤 Tambah Anggota Keluarga</span>
+        <button class="modal-close" onclick="closeModal('add-family')">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Hal yang harus dihindari</label>
-          <input type="text" class="form-input" id="dontItemText" placeholder="Contoh: Cek HP sebelum subuh">
+          <label class="form-label">Nama</label>
+          <input type="text" class="form-input" id="familyMemberName" placeholder="Nama anggota keluarga">
         </div>
         <div class="form-group">
-          <label class="form-label">Alasan</label>
-          <textarea class="form-input form-textarea" id="dontItemReason" placeholder="Mengapa harus dihindari?"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Kategori</label>
-          <select class="form-input form-select" id="dontItemCategory">
-            <option value="FOKUS">🎯 Fokus</option>
-            <option value="WAKTU">⏰ Waktu</option>
-            <option value="ENERGI">⚡ Energi</option>
-            <option value="KEBIASAAN">🔄 Kebiasaan</option>
+          <label class="form-label">Peran</label>
+          <select class="form-input form-select" id="familyMemberRole">
+            <option value="istri">👩 Istri</option>
+            <option value="anak_laki">👦 Anak Laki-laki</option>
+            <option value="anak_perempuan">👧 Anak Perempuan</option>
+            <option value="lainnya">👤 Lainnya</option>
           </select>
         </div>
-        <button class="btn-submit" onclick="submitDontItem()">💾 Simpan</button>
+        <div class="form-group">
+          <label class="form-label">Usia (tahun)</label>
+          <input type="number" class="form-input" id="familyMemberAge" placeholder="Usia" min="0" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Warna Avatar</label>
+          <div class="color-options" id="familyColorOptions">
+            <button type="button" class="color-btn" style="background: #e91e63;" onclick="selectFamilyColor('#e91e63')"></button>
+            <button type="button" class="color-btn" style="background: #2196f3;" onclick="selectFamilyColor('#2196f3')"></button>
+            <button type="button" class="color-btn" style="background: #4caf50;" onclick="selectFamilyColor('#4caf50')"></button>
+            <button type="button" class="color-btn" style="background: #ff9800;" onclick="selectFamilyColor('#ff9800')"></button>
+            <button type="button" class="color-btn" style="background: #9c27b0;" onclick="selectFamilyColor('#9c27b0')"></button>
+            <button type="button" class="color-btn selected" style="background: #607d8b;" onclick="selectFamilyColor('#607d8b')"></button>
+          </div>
+          <input type="hidden" id="familyMemberColor" value="#607d8b">
+        </div>
+        <button class="btn-submit" onclick="addFamilyMember()">👨‍👩‍👧‍👦 Tambahkan</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal: Reminder Settings -->
+  <div class="modal-overlay" id="modal-reminder" onclick="if(event.target===this)closeModal('reminder')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">🔔 Pengaturan Reminder</span>
+        <button class="modal-close" onclick="closeModal('reminder')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="reminder-status" id="reminderStatus">
+          <div class="status-icon">🔕</div>
+          <div class="status-text">Notifikasi belum diaktifkan</div>
+          <button class="btn-submit" onclick="requestNotificationPermission()">🔔 Aktifkan Notifikasi</button>
+        </div>
+        
+        <div class="reminder-options" id="reminderOptions" style="display: none;">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="reminderSholat" checked>
+              <span>🕌 Reminder Sholat</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="reminderHabit" checked>
+              <span>📿 Reminder Habit Pagi & Sore</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="reminderJournal">
+              <span>📔 Reminder Jurnal Malam</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="reminderBestWeek">
+              <span>📆 Reminder Best Week Schedule</span>
+            </label>
+          </div>
+          <button class="btn-submit" onclick="saveReminderSettings()">💾 Simpan Pengaturan</button>
+        </div>
       </div>
     </div>
   </div>
