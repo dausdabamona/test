@@ -3,7 +3,7 @@
 // ============================================
 
 // Default API URL (bisa diubah di Pengaturan)
-const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycby8iRrO-PfuWx1o2U8tCRwiuRvmYyvXkrhzNRrntv37sVtw3ucvt3UDYuWBF3JhXytxHw/exec';
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbzb3kMCfHmTebmIy3ayV4Mjn2Xvp682hvXy_dYfdx73O5_U1nBnRUHPg_cdb7ih0gui8Q/exec';
 
 // CONFIG - Load dari localStorage jika ada
 const CONFIG = {
@@ -215,21 +215,46 @@ async function syncPendingQueue() {
   state.isSyncing = true;
   const itemsToSync = [...state.pendingQueue];
   
-  console.log(`[Sync] Syncing ${itemsToSync.length} pending items...`, itemsToSync);
+  console.log(`[Sync] ====== STARTING SYNC ======`);
+  console.log(`[Sync] API URL: ${CONFIG.API_URL}`);
+  console.log(`[Sync] User ID: ${CONFIG.USER_ID}`);
+  console.log(`[Sync] Items to sync:`, itemsToSync.length);
   
   let successCount = 0;
   let failedItems = [];
   
   for (const item of itemsToSync) {
     try {
-      console.log(`[Sync] Sending: ${item.action}`, item.data);
-      const result = await apiPost(item.action, item.data);
-      console.log(`[Sync] Success: ${item.action}`, result);
-      successCount++;
-      // Remove from queue after success
-      state.pendingQueue = state.pendingQueue.filter(q => q.id !== item.id);
+      const payload = { action: item.action, userId: CONFIG.USER_ID, ...item.data };
+      console.log(`[Sync] Sending ${item.action}:`, JSON.stringify(payload));
+      
+      const response = await fetch(CONFIG.API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+      
+      const responseText = await response.text();
+      console.log(`[Sync] Response for ${item.action}:`, responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch(e) {
+        console.error(`[Sync] Failed to parse response:`, responseText);
+        throw new Error('Invalid JSON response');
+      }
+      
+      if (result.success) {
+        console.log(`[Sync] ✅ Success: ${item.action}`);
+        successCount++;
+        state.pendingQueue = state.pendingQueue.filter(q => q.id !== item.id);
+      } else {
+        console.error(`[Sync] ❌ Backend error: ${item.action}`, result.error);
+        throw new Error(result.error || 'Backend error');
+      }
     } catch (err) {
-      console.error(`[Sync] Failed: ${item.action}`, err.message, item.data);
+      console.error(`[Sync] ❌ Failed: ${item.action}`, err.message);
       failedItems.push(item);
     }
   }
@@ -237,12 +262,11 @@ async function syncPendingQueue() {
   state.isSyncing = false;
   updateSyncIndicator();
   
-  if (successCount > 0) {
-    console.log(`[Sync] Completed: ${successCount} items synced`);
-  }
+  console.log(`[Sync] ====== SYNC COMPLETED ======`);
+  console.log(`[Sync] Success: ${successCount}, Failed: ${failedItems.length}`);
   
   if (failedItems.length > 0) {
-    console.warn(`[Sync] Failed: ${failedItems.length} items`);
+    showToast(`${failedItems.length} item gagal sync`, 'error');
   }
   
   // Invalidate cache setelah sync
@@ -863,7 +887,7 @@ function toggleSholat(waktu, isDone) {
   }
   
   const newStatus = isDone ? 'pending' : 'done';
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayString();
   
   // Update local state properly
   if (state.dailySync) {
@@ -925,7 +949,7 @@ function renderDontListMini() {
   if (!container) return;
   
   const items = state.dontList || [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayString();
   
   if (items.length === 0) {
     container.innerHTML = `<div style="padding: 12px; text-align: center;">
@@ -976,7 +1000,7 @@ function markDontItem(dontId, isViolated) {
   }
   
   // Save to queue
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayString();
   addToQueue('logDontViolation', {
     dont_id: dontId,
     tanggal: today,
@@ -1924,7 +1948,7 @@ function submitSholat() {
   addToQueue('logSholat', {
     data: {
       waktu: waktu,
-      tanggal: new Date().toISOString().split('T')[0],
+      tanggal: todayString(),
       status: 'done',
       lokasi: lokasi,
       berjamaah: berjamaah,
@@ -1957,7 +1981,7 @@ function toggleSholatDirect(waktu, isDone) {
   });
   
   const newStatus = isDone ? 'pending' : 'done';
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayString();
   
   // Update state properly
   if (state.dailySync) {
@@ -2041,7 +2065,7 @@ function toggleHabitRosul(habitId, isCompleted) {
   // ADD TO QUEUE - gunakan toggleHabit yang ada di backend v3
   addToQueue('toggleHabit', { 
     habit_id: habitId,
-    tanggal: new Date().toISOString().split('T')[0]
+    tanggal: todayString()
   });
   
   // SYNC IMMEDIATELY
@@ -3806,7 +3830,7 @@ function selectRelease(value) {
 
 function submitJournal(type) {
   let content = {};
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayString();
   
   if (type === 'morning') {
     content = {

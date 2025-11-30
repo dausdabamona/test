@@ -3,7 +3,7 @@
  * Offline support & caching
  */
 
-const CACHE_NAME = 'sync-planner-v4.5';
+const CACHE_NAME = 'sync-planner-v4.8';
 const ASSETS = [
   './',
   './index.html',
