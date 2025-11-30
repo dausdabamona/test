@@ -4401,14 +4401,23 @@ async function loadBestWeek() {
   try {
     const data = await apiGet('getBestWeek');
     state.bestWeek = {};
+    console.log('[BestWeek] Loaded data:', data);
+    
     if (data && data.length > 0) {
       data.forEach(t => {
-        const parsed = parseJSON(t.data) || {};
+        // Handle both 'data' and 'content' field names for compatibility
+        const rawData = t.data || t.content || '';
+        const parsed = parseJSON(rawData) || {};
+        
+        console.log('[BestWeek] Item:', t.name, 'raw:', rawData?.substring?.(0, 50), 'parsed hari:', parsed.hari);
+        
         if (parsed.hari) {
           state.bestWeek[parsed.hari] = parsed.jadwal || [];
         }
       });
     }
+    
+    console.log('[BestWeek] Final state:', Object.keys(state.bestWeek));
   } catch (err) {
     console.error('Failed to load best week:', err);
   }
