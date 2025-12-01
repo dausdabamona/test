@@ -937,14 +937,44 @@ function renderSunnahMiniList(habits) {
   const habitsList = habits || [];
   let completedCount = 0;
   
-  // Render SEMUA habits, bukan hanya 6
-  const html = habitsList.map(h => {
+  // Group by waktu
+  const waktuOrder = ['PAGI', 'SIANG', 'SORE', 'MALAM'];
+  const waktuIcons = { 'PAGI': '🌅', 'SIANG': '☀️', 'SORE': '🌇', 'MALAM': '🌙' };
+  const waktuLabels = { 'PAGI': 'Pagi', 'SIANG': 'Siang', 'SORE': 'Sore', 'MALAM': 'Malam' };
+  
+  // Group habits by waktu
+  const grouped = {};
+  habitsList.forEach(h => {
+    const waktu = h.waktu || 'LAINNYA';
+    if (!grouped[waktu]) grouped[waktu] = [];
+    grouped[waktu].push(h);
     if (h.completed) completedCount++;
-    return `<div class="sunnah-mini-item ${h.completed ? 'done' : ''}" onclick="toggleHabitRosul('${h.habit_id}', ${h.completed})">
-      <span class="check">${h.completed ? '✓' : ''}</span>
-      <span>${escapeHtml(h.name)}</span>
-    </div>`;
-  }).join('');
+  });
+  
+  // Render grouped
+  let html = '';
+  waktuOrder.forEach(waktu => {
+    if (grouped[waktu] && grouped[waktu].length > 0) {
+      html += `<div class="sunnah-waktu-label">${waktuIcons[waktu] || '📌'} ${waktuLabels[waktu] || waktu}</div>`;
+      grouped[waktu].forEach(h => {
+        html += `<div class="sunnah-mini-item ${h.completed ? 'done' : ''}" onclick="toggleHabitRosul('${h.habit_id}', ${h.completed})">
+          <span class="check">${h.completed ? '✓' : ''}</span>
+          <span>${escapeHtml(h.name)}</span>
+        </div>`;
+      });
+    }
+  });
+  
+  // Handle any without waktu
+  if (grouped['LAINNYA'] && grouped['LAINNYA'].length > 0) {
+    html += `<div class="sunnah-waktu-label">📌 Lainnya</div>`;
+    grouped['LAINNYA'].forEach(h => {
+      html += `<div class="sunnah-mini-item ${h.completed ? 'done' : ''}" onclick="toggleHabitRosul('${h.habit_id}', ${h.completed})">
+        <span class="check">${h.completed ? '✓' : ''}</span>
+        <span>${escapeHtml(h.name)}</span>
+      </div>`;
+    });
+  }
   
   container.innerHTML = html || '<div style="padding: 8px; color: var(--gray-400); font-size: 11px;">Tidak ada sunnah</div>';
   if (badge) badge.textContent = `${completedCount}/${habitsList.length}`;
