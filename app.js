@@ -937,7 +937,8 @@ function renderSunnahMiniList(habits) {
   const habitsList = habits || [];
   let completedCount = 0;
   
-  const html = habitsList.slice(0, 6).map(h => {
+  // Render SEMUA habits, bukan hanya 6
+  const html = habitsList.map(h => {
     if (h.completed) completedCount++;
     return `<div class="sunnah-mini-item ${h.completed ? 'done' : ''}" onclick="toggleHabitRosul('${h.habit_id}', ${h.completed})">
       <span class="check">${h.completed ? '✓' : ''}</span>
