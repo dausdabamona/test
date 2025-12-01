@@ -5437,60 +5437,119 @@ function renderRefleksiPage() {
 // ============================================
 // DAILY QUOTE SYSTEM
 // ============================================
-const DAILY_QUOTES = [
-  // NLP Quotes
-  { text: "Peta bukanlah wilayah. Persepsi kita tentang dunia bukanlah realita sebenarnya.", source: "NLP - Presupposition" },
-  { text: "Tidak ada kegagalan, hanya feedback. Setiap hasil adalah informasi untuk perbaikan.", source: "NLP - Presupposition" },
-  { text: "Makna komunikasi adalah respon yang didapat, bukan niat yang dimiliki.", source: "NLP - Presupposition" },
-  { text: "Jika satu orang bisa melakukan sesuatu, orang lain juga bisa mempelajarinya.", source: "NLP - Modeling" },
-  { text: "Setiap perilaku memiliki niat positif di baliknya.", source: "NLP - Presupposition" },
-  { text: "Orang dengan fleksibilitas tertinggi akan memiliki pengaruh terbesar.", source: "NLP - Presupposition" },
-  { text: "Kamu sudah memiliki semua sumber daya yang dibutuhkan untuk berubah.", source: "NLP - Presupposition" },
-  { text: "Ubah bingkai, ubah makna. Ubah makna, ubah hidup.", source: "NLP - Reframing" },
-  { text: "State menentukan perilaku. Kelola state-mu, kelola hidupmu.", source: "NLP - State Management" },
-  { text: "Afirmasi terbaik: Present, Positive, Personal - Saya ADALAH, bukan saya INGIN.", source: "NLP - Affirmation" },
+// ============================================
+// QUOTES SYSTEM - Database + Fallback
+// ============================================
+
+// State untuk quotes
+let quotesCache = [];
+let quotesLoaded = false;
+
+// Framework icons
+const FRAMEWORK_ICONS = {
+  'STOICISM': '🏛️',
+  'NLP': '🧠',
+  'SEDONA': '💨',
+  'ATOMIC': '⚛️',
+  'CARNEGIE': '🤝',
+  'ISLAMIC': '☪️',
+  'BERPIKIR_BESAR': '💡'
+};
+
+// Fallback quotes jika database tidak tersedia
+const FALLBACK_QUOTES = [
+  // Stoicism
+  { text: "Bukan peristiwa yang mengganggu kita, tetapi penilaian kita tentang peristiwa tersebut.", source: "Epictetus", framework: "STOICISM", category: "MINDSET" },
+  { text: "Antara stimulus dan respons ada ruang. Di ruang itu adalah kekuatan kita untuk memilih respons.", source: "Viktor Frankl", framework: "STOICISM", category: "MINDSET" },
+  { text: "Rintangan di jalan menjadi jalan itu sendiri.", source: "Marcus Aurelius", framework: "STOICISM", category: "TANTANGAN" },
+  { text: "Kamu punya kuasa atas pikiranmu, bukan kejadian di luar.", source: "Marcus Aurelius", framework: "STOICISM", category: "KONTROL" },
   
-  // Sedona Method Quotes
-  { text: "Emosi bukan kamu. Kamu MEMILIKI emosi, bukan MENJADI emosi.", source: "Sedona Method" },
-  { text: "Melepaskan itu natural, seperti melepas genggaman tangan.", source: "Sedona Method" },
-  { text: "Bisakah kamu menerimanya? Bisakah kamu melepaskannya? Kapan?", source: "Sedona Method - 4 Questions" },
-  { text: "Semakin sering melepaskan, semakin mudah melepaskan.", source: "Sedona Method" },
-  { text: "Keinginan mengontrol, diakui, dan aman adalah akar semua emosi negatif.", source: "Sedona Method - 3 Wants" },
-  { text: "Sambut emosi seperti tamu, bukan musuh yang harus dilawan.", source: "Sedona Method - Welcoming" },
-  { text: "Di balik setiap resistensi ada kebebasan yang menunggu.", source: "Sedona Method" },
-  { text: "Lepaskan keinginan untuk mengubah, dan perubahan akan datang.", source: "Sedona Method" },
-  { text: "Kebahagiaan adalah keadaan alami ketika kita berhenti menahan.", source: "Sedona Method" },
-  { text: "Apa keuntungan mempertahankan emosi ini? Bisakah kamu melepaskan keuntungan itu?", source: "Sedona Method - Advantages" },
+  // NLP
+  { text: "Peta bukanlah wilayah. Persepsi kita tentang dunia bukanlah realita sebenarnya.", source: "NLP Presupposition", framework: "NLP", category: "PERSEPSI" },
+  { text: "Tidak ada kegagalan, hanya feedback.", source: "NLP Presupposition", framework: "NLP", category: "PEMBELAJARAN" },
+  { text: "Makna komunikasi adalah respon yang didapat, bukan niat yang dimiliki.", source: "NLP Presupposition", framework: "NLP", category: "KOMUNIKASI" },
+  { text: "Orang dengan fleksibilitas tertinggi akan memiliki pengaruh terbesar.", source: "NLP Presupposition", framework: "NLP", category: "FLEKSIBILITAS" },
   
-  // Atomic Habits Quotes
-  { text: "1% lebih baik setiap hari = 37x lebih baik dalam setahun.", source: "Atomic Habits" },
-  { text: "Kamu tidak naik ke level tujuanmu, kamu jatuh ke level sistemmu.", source: "Atomic Habits" },
-  { text: "Setiap tindakan adalah vote untuk tipe orang yang ingin kamu jadi.", source: "Atomic Habits" },
-  { text: "Kebiasaan adalah compound interest dari perbaikan diri.", source: "Atomic Habits" },
-  { text: "Fokus pada siapa kamu ingin MENJADI, bukan apa yang ingin kamu CAPAI.", source: "Atomic Habits - Identity" },
-  { text: "Make it obvious, attractive, easy, and satisfying.", source: "Atomic Habits - 4 Laws" },
-  { text: "Motivasi itu overrated. Lingkungan lebih penting.", source: "Atomic Habits - Environment" },
-  { text: "Melewatkan sekali adalah kecelakaan. Melewatkan dua kali adalah awal habit baru.", source: "Atomic Habits" },
-  { text: "2-Minute Rule: Skalakan habit apapun ke versi 2 menitnya.", source: "Atomic Habits" },
-  { text: "Habit stacking: Setelah [HABIT LAMA], saya akan [HABIT BARU].", source: "Atomic Habits" },
-  { text: "Jangan putuskan rantainya. Tapi jika putus, jangan biarkan putus dua kali.", source: "Atomic Habits" },
-  { text: "Profesional tetap muncul meskipun tidak mood. Amatir menunggu motivasi.", source: "Atomic Habits" },
-  { text: "Perubahan terjadi bukan dari apa yang kamu lakukan sesekali, tapi apa yang kamu lakukan setiap hari.", source: "Atomic Habits" },
-  { text: "Tujuan menentukan arah, sistem menentukan kemajuan.", source: "Atomic Habits" },
-  { text: "Kemenangan kecil membangun momentum untuk kemenangan besar.", source: "Atomic Habits" }
+  // Sedona
+  { text: "Apa yang kamu tolak, bertahan. Apa yang kamu terima, bisa kamu lepaskan.", source: "Sedona Method", framework: "SEDONA", category: "RELEASING" },
+  { text: "Emosi seperti awan yang lewat. Kamu adalah langit, bukan awannya.", source: "Sedona Method", framework: "SEDONA", category: "KESADARAN" },
+  { text: "Bisakah kamu melepaskan? Maukah kamu melepaskan? Kapan?", source: "Sedona Method", framework: "SEDONA", category: "RELEASING" },
+  
+  // Atomic Habits
+  { text: "Perubahan kecil yang konsisten menciptakan hasil luar biasa.", source: "James Clear - Atomic Habits", framework: "ATOMIC", category: "KONSISTENSI" },
+  { text: "Kamu tidak naik ke level tujuanmu. Kamu jatuh ke level sistemmu.", source: "James Clear - Atomic Habits", framework: "ATOMIC", category: "SISTEM" },
+  { text: "Setiap tindakan adalah suara untuk identitas yang ingin kamu jadi.", source: "James Clear - Atomic Habits", framework: "ATOMIC", category: "IDENTITAS" },
+  { text: "Lingkungan adalah tangan tak terlihat yang membentuk perilaku manusia.", source: "James Clear - Atomic Habits", framework: "ATOMIC", category: "LINGKUNGAN" },
+  
+  // Carnegie
+  { text: "Orang yang bisa menempatkan diri di posisi orang lain tidak perlu khawatir tentang masa depan.", source: "Dale Carnegie", framework: "CARNEGIE", category: "EMPATI" },
+  { text: "Nama seseorang adalah suara paling manis dan penting dalam bahasa apapun baginya.", source: "Dale Carnegie", framework: "CARNEGIE", category: "HUBUNGAN" },
+  { text: "Satu-satunya cara untuk memenangkan argumen adalah dengan menghindarinya.", source: "Dale Carnegie", framework: "CARNEGIE", category: "KONFLIK" },
+  { text: "Jadilah pendengar yang baik. Dorong orang lain untuk berbicara tentang diri mereka.", source: "Dale Carnegie", framework: "CARNEGIE", category: "KOMUNIKASI" },
+  
+  // Islamic
+  { text: "Sebaik-baik kalian adalah yang paling baik terhadap keluarganya.", source: "Hadits Riwayat Tirmidzi", framework: "ISLAMIC", category: "KELUARGA" },
+  { text: "Orang kuat bukanlah yang menang dalam gulat, tetapi yang bisa mengendalikan diri saat marah.", source: "Hadits Riwayat Bukhari", framework: "ISLAMIC", category: "EMOSI" },
+  { text: "Bersabarlah, sesungguhnya Allah beserta orang-orang yang sabar.", source: "QS. Al-Anfal: 46", framework: "ISLAMIC", category: "SABAR" },
+  { text: "Sesungguhnya bersama kesulitan ada kemudahan.", source: "QS. Al-Insyirah: 6", framework: "ISLAMIC", category: "OPTIMISME" },
+  
+  // Berpikir Besar
+  { text: "Ukuran pikiranmu menentukan ukuran kesuksesanmu.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "MINDSET" },
+  { text: "Percaya kamu bisa, dan kamu sudah setengah jalan menuju kesuksesan.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "KEYAKINAN" },
+  { text: "Tindakan menyembuhkan ketakutan. Ketidakaktifan memperkuatnya.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "TINDAKAN" },
+  { text: "Sikap lebih penting dari kecerdasan.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "SIKAP" },
+  { text: "Lihat apa yang bisa jadi, bukan apa yang ada.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "VISI" },
+  { text: "Jangan membuat alasan. Alasan adalah pembunuh kesuksesan.", source: "David Schwartz - Berpikir Besar", framework: "BERPIKIR_BESAR", category: "TINDAKAN" }
 ];
 
+// Load quotes dari database
+async function loadQuotesFromDB() {
+  try {
+    const data = await apiGet('getQuotes', { limit: 100 });
+    if (data && data.length > 0) {
+      quotesCache = data;
+      quotesLoaded = true;
+      console.log(`[Quotes] Loaded ${data.length} quotes from database`);
+    }
+  } catch (err) {
+    console.log('[Quotes] Using fallback quotes:', err.message);
+    quotesCache = FALLBACK_QUOTES;
+    quotesLoaded = true;
+  }
+}
+
+// Get all available quotes
+function getAvailableQuotes() {
+  return quotesCache.length > 0 ? quotesCache : FALLBACK_QUOTES;
+}
+
+// Get random quote with optional filter
+function getRandomQuoteLocal(framework = null) {
+  let quotes = getAvailableQuotes();
+  
+  if (framework && framework !== 'all') {
+    quotes = quotes.filter(q => q.framework === framework.toUpperCase());
+  }
+  
+  if (quotes.length === 0) {
+    quotes = getAvailableQuotes(); // Fallback to all if filter returns empty
+  }
+  
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  return quotes[randomIndex];
+}
+
+// Get daily quote (same quote for whole day based on day of year)
 function getDailyQuote() {
-  // Get quote based on day of year for consistency
+  const quotes = getAvailableQuotes();
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
   const diff = now - start;
   const oneDay = 1000 * 60 * 60 * 24;
   const dayOfYear = Math.floor(diff / oneDay);
   
-  // Use day of year to pick quote (same quote for whole day)
-  const quoteIndex = dayOfYear % DAILY_QUOTES.length;
-  return DAILY_QUOTES[quoteIndex];
+  const quoteIndex = dayOfYear % quotes.length;
+  return quotes[quoteIndex];
 }
 
 function renderDailyQuote() {
@@ -5498,9 +5557,14 @@ function renderDailyQuote() {
   if (!container) return;
   
   const quote = getDailyQuote();
+  const icon = FRAMEWORK_ICONS[quote.framework] || '💡';
+  
   container.innerHTML = `
-    <div class="quote-text">"${quote.text}"</div>
-    <div class="quote-source">— ${quote.source}</div>
+    <div class="quote-text">"${escapeHtml(quote.text)}"</div>
+    <div class="quote-source">— ${escapeHtml(quote.source)}</div>
+    <div class="quote-framework" style="font-size: 10px; color: var(--gray-400); margin-top: 4px;">
+      ${icon} ${quote.framework?.replace('_', ' ') || ''} ${quote.category ? '• ' + quote.category : ''}
+    </div>
   `;
 }
 
@@ -5514,14 +5578,18 @@ function refreshDailyQuote() {
   let attempts = 0;
   
   do {
-    const randomIndex = Math.floor(Math.random() * DAILY_QUOTES.length);
-    newQuote = DAILY_QUOTES[randomIndex];
+    newQuote = getRandomQuoteLocal();
     attempts++;
   } while (currentText.includes(newQuote.text) && attempts < 10);
   
+  const icon = FRAMEWORK_ICONS[newQuote.framework] || '💡';
+  
   container.innerHTML = `
-    <div class="quote-text">"${newQuote.text}"</div>
-    <div class="quote-source">— ${newQuote.source}</div>
+    <div class="quote-text">"${escapeHtml(newQuote.text)}"</div>
+    <div class="quote-source">— ${escapeHtml(newQuote.source)}</div>
+    <div class="quote-framework" style="font-size: 10px; color: var(--gray-400); margin-top: 4px;">
+      ${icon} ${newQuote.framework?.replace('_', ' ') || ''} ${newQuote.category ? '• ' + newQuote.category : ''}
+    </div>
   `;
   
   // Animate

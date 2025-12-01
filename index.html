@@ -5574,38 +5574,33 @@
     ];
 
     // WISDOM QUOTES - Untuk shortcut di header (kombinasi pelajaran)
-    const WISDOM_QUOTES = [
-      { text: "Antara stimulus dan respons, ada ruang. Di ruang itu ada kekuatan untuk memilih.", source: "Viktor Frankl + Stoic", icon: "🏛️" },
-      { text: "Kamu tidak bisa mengontrol angin, tapi bisa mengatur layar.", source: "Stoicism", icon: "⛵" },
-      { text: "Bisakah aku melepaskan ini? Maukah aku melepaskan ini? Kapan?", source: "Sedona Method", icon: "💨" },
-      { text: "Emosi hanyalah tamu. Biarkan datang, sapa, lalu lepaskan pergi.", source: "Sedona + Mindfulness", icon: "🚪" },
-      { text: "Perubahan kecil yang konsisten menciptakan hasil luar biasa.", source: "Atomic Habits", icon: "⚛️" },
-      { text: "Kamu tidak naik ke level tujuanmu, kamu turun ke level sistemmu.", source: "James Clear", icon: "📊" },
-      { text: "Peta bukanlah wilayah. Persepsimu bukan realita.", source: "NLP", icon: "🗺️" },
-      { text: "Makna komunikasi adalah respon yang kamu dapat.", source: "NLP", icon: "💬" },
-      { text: "Jadilah orang yang kamu inginkan anakmu menjadi.", source: "Parenting Wisdom", icon: "👨‍👧" },
-      { text: "Istri tidak butuh solusi. Ia butuh kamu hadir dan mendengar.", source: "Marriage Wisdom", icon: "💑" },
-      { text: "Anak tidak dengar nasihatmu. Mereka melihat contohmu.", source: "Parenting", icon: "👀" },
-      { text: "Mulailah dengan pujian dan apresiasi yang tulus.", source: "Dale Carnegie", icon: "🤝" },
-      { text: "Satu-satunya cara menang argumen adalah menghindarinya.", source: "Dale Carnegie", icon: "🏳️" },
-      { text: "Bicara dengan orang tentang diri mereka, mereka akan dengar berjam-jam.", source: "Carnegie", icon: "👂" },
-      { text: "Jika salah, akui dengan cepat dan tegas.", source: "Dale Carnegie", icon: "✋" },
-      { text: "Buat orang lain merasa penting—dan lakukan dengan tulus.", source: "Carnegie", icon: "⭐" },
-      { text: "اللهم إني أعوذ بك من الهم والحزن - Lindungi aku dari kesedihan dan kekhawatiran.", source: "Doa Nabi ﷺ", icon: "☪️" },
-      { text: "Sebaik-baik kalian adalah yang paling baik terhadap keluarganya.", source: "Hadits", icon: "🏠" },
-      { text: "Anger comes from fear. Release the fear, anger dissolves.", source: "Sedona", icon: "😤" },
-      { text: "Tindakan menciptakan motivasi, bukan sebaliknya.", source: "Behavioral Psychology", icon: "🚀" },
-      { text: "Environment design > Willpower.", source: "Atomic Habits", icon: "🏗️" },
-      { text: "Connection before correction.", source: "Parenting Wisdom", icon: "❤️" },
-      { text: "Empathy over logic dalam situasi emosional.", source: "EQ Wisdom", icon: "🧠" },
-      { text: "What you resist, persists. What you accept, transforms.", source: "Sedona + Jung", icon: "🔄" },
-      { text: "Habit = Cue + Craving + Response + Reward.", source: "Atomic Habits", icon: "🔁" },
-      { text: "Sabarlah. Sesungguhnya Allah bersama orang-orang yang sabar.", source: "QS. Al-Anfal: 46", icon: "📖" },
-      { text: "The obstacle is the way.", source: "Stoicism", icon: "🪨" },
-      { text: "Kamu adalah pengamat pikiran, bukan pikiran itu sendiri.", source: "Mindfulness + NLP", icon: "👁️" },
-      { text: "1% better every day = 37x better in a year.", source: "Atomic Habits", icon: "📈" },
-      { text: "Menegur perilaku, bukan karakter anak.", source: "Parenting", icon: "🗣️" }
+    // Wisdom Quotes akan diload dari database quotes
+    // Ini adalah fallback jika database tidak tersedia
+    let WISDOM_QUOTES_CACHE = [
+      { text: "Antara stimulus dan respons, ada ruang. Di ruang itu ada kekuatan untuk memilih.", source: "Viktor Frankl + Stoic", icon: "🏛️", framework: "STOICISM" },
+      { text: "Kamu tidak bisa mengontrol angin, tapi bisa mengatur layar.", source: "Stoicism", icon: "⛵", framework: "STOICISM" },
+      { text: "Bisakah aku melepaskan ini? Maukah aku melepaskan ini? Kapan?", source: "Sedona Method", icon: "💨", framework: "SEDONA" },
+      { text: "Emosi hanyalah tamu. Biarkan datang, sapa, lalu lepaskan pergi.", source: "Sedona + Mindfulness", icon: "🚪", framework: "SEDONA" },
+      { text: "Perubahan kecil yang konsisten menciptakan hasil luar biasa.", source: "Atomic Habits", icon: "⚛️", framework: "ATOMIC" },
+      { text: "Peta bukanlah wilayah. Persepsimu bukan realita.", source: "NLP", icon: "🗺️", framework: "NLP" },
+      { text: "Mulailah dengan pujian dan apresiasi yang tulus.", source: "Dale Carnegie", icon: "🤝", framework: "CARNEGIE" },
+      { text: "Sebaik-baik kalian adalah yang paling baik terhadap keluarganya.", source: "Hadits", icon: "☪️", framework: "ISLAMIC" },
+      { text: "Ukuran pikiranmu menentukan ukuran kesuksesanmu.", source: "David Schwartz - Berpikir Besar", icon: "💡", framework: "BERPIKIR_BESAR" },
+      { text: "Percaya kamu bisa, dan kamu sudah setengah jalan menuju kesuksesan.", source: "David Schwartz - Berpikir Besar", icon: "💡", framework: "BERPIKIR_BESAR" },
+      { text: "Tindakan menyembuhkan ketakutan. Ketidakaktifan memperkuatnya.", source: "David Schwartz - Berpikir Besar", icon: "🚀", framework: "BERPIKIR_BESAR" },
+      { text: "Sikap lebih penting dari kecerdasan.", source: "David Schwartz - Berpikir Besar", icon: "💡", framework: "BERPIKIR_BESAR" }
     ];
+
+    // Framework icons mapping
+    const WISDOM_FRAMEWORK_ICONS = {
+      'STOICISM': '🏛️',
+      'NLP': '🧠',
+      'SEDONA': '💨',
+      'ATOMIC': '⚛️',
+      'CARNEGIE': '🤝',
+      'ISLAMIC': '☪️',
+      'BERPIKIR_BESAR': '💡'
+    };
 
     // Wisdom State
     let wisdomActiveArea = 'all';
@@ -5787,14 +5782,37 @@
       document.getElementById('wisdomQuotePopup').classList.add('show');
     }
 
-    // Get New Random Wisdom Quote
+    // Get New Random Wisdom Quote - Uses database quotes with fallback
     function getNewWisdomQuote() {
-      const randomIndex = Math.floor(Math.random() * WISDOM_QUOTES.length);
-      const q = WISDOM_QUOTES[randomIndex];
+      // Try to use quotes from database (loaded in app.js)
+      let quotesToUse = [];
       
-      document.getElementById('wisdomQuoteIcon').textContent = q.icon;
+      if (typeof getAvailableQuotes === 'function') {
+        quotesToUse = getAvailableQuotes();
+      }
+      
+      // Fallback to local cache
+      if (!quotesToUse || quotesToUse.length === 0) {
+        quotesToUse = WISDOM_QUOTES_CACHE;
+      }
+      
+      const randomIndex = Math.floor(Math.random() * quotesToUse.length);
+      const q = quotesToUse[randomIndex];
+      
+      // Determine icon
+      let icon = q.icon || WISDOM_FRAMEWORK_ICONS[q.framework] || '💡';
+      
+      document.getElementById('wisdomQuoteIcon').textContent = icon;
       document.getElementById('wisdomQuoteText').textContent = `"${q.text}"`;
       document.getElementById('wisdomQuoteSource').textContent = `— ${q.source}`;
+      
+      // Add framework label if available
+      const sourceEl = document.getElementById('wisdomQuoteSource');
+      if (q.framework) {
+        const fwIcon = WISDOM_FRAMEWORK_ICONS[q.framework] || '';
+        const fwName = q.framework.replace('_', ' ');
+        sourceEl.innerHTML = `— ${q.source}<br><span style="font-size: 10px; opacity: 0.7;">${fwIcon} ${fwName}</span>`;
+      }
     }
 
     // Close wisdom quote popup on ESC
