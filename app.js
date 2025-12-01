@@ -613,6 +613,10 @@ function showPage(pageName, navEl) {
       renderRefleksiPage();
       state.pageLoaded.refleksi = true;
       break;
+    case 'dzikir':
+      initDzikir();
+      state.pageLoaded.dzikir = true;
+      break;
     case 'wisdom':
       if (typeof renderWisdomCards === 'function') {
         renderWisdomCards();
@@ -5654,3 +5658,395 @@ setInterval(() => {
     syncPendingQueue();
   }
 }, 30000);
+
+// ============================================
+// DZIKIR PAGI SORE
+// ============================================
+
+// Data Dzikir dengan keutamaan
+const DZIKIR_DATA = [
+  {
+    id: 'tahlil_100',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+    latin: "Laa ilaaha illallaahu wahdahu laa syariika lahu, lahul mulku wa lahul hamdu wa huwa 'alaa kulli syai'in qadiir",
+    meaning: 'Tidak ada Tuhan selain Allah, Yang Maha Esa, tidak ada sekutu bagi-Nya. Bagi-Nya kerajaan dan pujian. Dia Maha Kuasa atas segala sesuatu.',
+    target: 100,
+    time: 'both',
+    virtue: 'Pahala seperti membebaskan 10 budak, ditetapkan 100 kebaikan, dijauhkan 100 keburukan, dan perlindungan dari setan hingga petang. Tidak ada amal yang lebih baik kecuali yang mengamalkan lebih banyak.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '🏆'
+  },
+  {
+    id: 'subhanallah_100',
+    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+    latin: "Subhaanallaahi wa bihamdihi",
+    meaning: 'Maha Suci Allah dan segala puji bagi-Nya',
+    target: 100,
+    time: 'both',
+    virtue: 'Kesalahan-kesalahannya akan terampuni walaupun sebanyak buih di lautan.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '🌊'
+  },
+  {
+    id: 'subhanallah_azim',
+    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيمِ',
+    latin: "Subhaanallaahi wa bihamdihi, Subhaanallaahil 'Azhiim",
+    meaning: 'Maha Suci Allah dan segala puji bagi-Nya, Maha Suci Allah Yang Maha Agung',
+    target: 33,
+    time: 'both',
+    virtue: 'Dua kalimat yang ringan di lisan, berat di timbangan, dan disukai Ar-Rahman.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '⚖️'
+  },
+  {
+    id: 'tahlil_takbir',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
+    latin: "Laa ilaaha illallaahu wallaahu akbar, wa laa hawla wa laa quwwata illaa billaah",
+    meaning: 'Tidak ada Tuhan selain Allah, Allah Maha Besar, tidak ada daya dan kekuatan kecuali dengan Allah',
+    target: 33,
+    time: 'both',
+    virtue: 'Diampuni dosa-dosanya walaupun seperti buih lautan.',
+    source: 'HR. Muslim',
+    icon: '🌟'
+  },
+  {
+    id: 'istighfar',
+    arabic: 'أَسْتَغْفِرُ اللَّهَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ',
+    latin: "Astaghfirullaahal ladzii laa ilaaha illaa huwal hayyul qayyuum wa atuubu ilaih",
+    meaning: 'Aku memohon ampun kepada Allah yang tidak ada Tuhan selain Dia, Yang Maha Hidup lagi Maha Berdiri Sendiri, dan aku bertaubat kepada-Nya',
+    target: 3,
+    time: 'both',
+    virtue: 'Akan diampuni walaupun dia pernah lari dari medan pertempuran.',
+    source: 'HR. Abu Dawud & Tirmidzi',
+    icon: '🙏'
+  },
+  {
+    id: 'radhitu',
+    arabic: 'رَضِيتُ بِاللَّهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ رَسُولًا',
+    latin: "Radhiitu billaahi rabban, wa bil islaami diinan, wa bi muhammadin rasuulan",
+    meaning: 'Aku ridha Allah sebagai Tuhan, Islam sebagai agama, dan Muhammad sebagai Rasul',
+    target: 3,
+    time: 'both',
+    virtue: 'Wajib baginya untuk masuk Surga.',
+    source: 'HR. Abu Dawud',
+    icon: '🕌'
+  },
+  {
+    id: 'kafaratul_majlis',
+    arabic: 'سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ',
+    latin: "Subhaanakallaahumma wa bihamdika, asyhadu an laa ilaaha illaa anta, astaghfiruka wa atuubu ilaik",
+    meaning: 'Maha Suci Engkau ya Allah dan segala puji bagi-Mu. Aku bersaksi tidak ada Tuhan selain Engkau. Aku memohon ampun dan bertaubat kepada-Mu',
+    target: 1,
+    time: 'both',
+    virtue: 'Kafaratul Majelis - Diampuni dosanya selama di majelisnya itu.',
+    source: 'HR. Tirmidzi',
+    icon: '📿'
+  },
+  {
+    id: 'taubat',
+    arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
+    latin: "Rabbighfir lii wa tub 'alayya innaka antat tawwaabur rahiim",
+    meaning: 'Ya Tuhanku, ampunilah aku dan terimalah taubatku. Sesungguhnya Engkau Maha Menerima taubat lagi Maha Penyayang',
+    target: 100,
+    time: 'both',
+    virtue: 'Nabi ﷺ membaca doa ini 100 kali dalam sehari.',
+    source: 'HR. Tirmidzi & Ibnu Majah',
+    icon: '💚'
+  },
+  {
+    id: 'bismillah_perlindungan',
+    arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
+    latin: "Bismillaahil ladzii laa yadhurru ma'asmihi syai'un fil ardhi wa laa fis samaa'i wa huwas samii'ul 'aliim",
+    meaning: 'Dengan nama Allah yang tidak ada sesuatupun di bumi dan di langit yang membahayakan bersama nama-Nya. Dia Maha Mendengar lagi Maha Mengetahui',
+    target: 3,
+    time: 'both',
+    virtue: 'Tidak akan diganggu oleh sesuatupun.',
+    source: 'HR. Abu Dawud & Tirmidzi',
+    icon: '🛡️'
+  },
+  {
+    id: 'sayyidul_istighfar',
+    arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ وَأَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَعْتَرِفُ بِذُنُوبِي فَاغْفِرْ لِي ذُنُوبِي إِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
+    latin: "Allaahumma anta rabbii laa ilaaha illaa anta, khalaqtanii wa ana 'abduka wa ana 'alaa 'ahdika wa wa'dika mastatha'tu. A'uudzu bika min syarri maa shana'tu. Abu'u laka bini'matika 'alayya wa a'tarifu bidzunuubii faghfir lii dzunuubii innahu laa yaghfirudz dzunuuba illaa anta",
+    meaning: 'Ya Allah, Engkau adalah Tuhanku. Tidak ada Tuhan selain Engkau. Engkau telah menciptakan aku dan aku adalah hamba-Mu. Aku berada dalam perjanjian dan janji-Mu semampuku. Aku berlindung kepada-Mu dari keburukan yang aku perbuat. Aku mengakui nikmat-Mu padaku dan aku mengakui dosaku. Ampunilah aku karena tidak ada yang mengampuni dosa selain Engkau.',
+    target: 1,
+    time: 'both',
+    virtue: 'Sayyidul Istighfar - Siapa membacanya sore hari lalu meninggal malam itu, ia masuk surga. Siapa membacanya pagi hari lalu meninggal hari itu, ia masuk surga.',
+    source: 'HR. Bukhari',
+    icon: '👑'
+  },
+  {
+    id: 'doa_kesusahan',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ',
+    latin: "Laa ilaaha illallaahul 'azhiimul haliim. Laa ilaaha illallaahu rabbul 'arsyil 'azhiim. Laa ilaaha illallaahu rabbus samaawaati wa rabbul ardhi wa rabbul 'arsyil kariim",
+    meaning: 'Tidak ada Tuhan selain Allah Yang Maha Agung lagi Maha Penyantun. Tidak ada Tuhan selain Allah Tuhan Arsy yang agung. Tidak ada Tuhan selain Allah Tuhan langit dan bumi serta Tuhan Arsy yang mulia.',
+    target: 7,
+    time: 'both',
+    virtue: 'Doa Nabi ﷺ saat kesusahan dan kesedihan.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '🤲'
+  },
+  {
+    id: 'melihat_ujian',
+    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا',
+    latin: "Alhamdulillaahil ladzii 'aafaanii mimmab talaaka bihi wa fadhdhalanii 'alaa katsiirin mimman khalaqa tafdhiilaa",
+    meaning: 'Segala puji bagi Allah yang telah menyelamatkan aku dari ujian yang menimpamu dan mengutamakan aku atas kebanyakan makhluk-Nya dengan keutamaan yang sempurna',
+    target: 1,
+    time: 'both',
+    virtue: 'Dibaca saat melihat orang yang tertimpa ujian/musibah. Diselamatkan dari ujian tersebut selama ia masih hidup.',
+    source: 'HR. Tirmidzi',
+    icon: '👁️'
+  },
+  {
+    id: 'tasbih_100',
+    arabic: 'سُبْحَانَ اللَّهِ',
+    latin: "Subhaanallah",
+    meaning: 'Maha Suci Allah',
+    target: 100,
+    time: 'both',
+    virtue: 'Seperti pahala 100 kali haji.',
+    source: 'HR. Tirmidzi',
+    icon: '✨'
+  },
+  {
+    id: 'tahmid_100',
+    arabic: 'الْحَمْدُ لِلَّهِ',
+    latin: "Alhamdulillah",
+    meaning: 'Segala puji bagi Allah',
+    target: 100,
+    time: 'both',
+    virtue: 'Seperti membawa 100 kuda di jalan Allah atau berperang 100 peperangan.',
+    source: 'HR. Tirmidzi',
+    icon: '🐎'
+  },
+  {
+    id: 'tahlil_murni_100',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ',
+    latin: "Laa ilaaha illallah",
+    meaning: 'Tidak ada Tuhan selain Allah',
+    target: 100,
+    time: 'both',
+    virtue: 'Seperti memerdekakan budak dari anak Ismail.',
+    source: 'HR. Tirmidzi',
+    icon: '🕊️'
+  },
+  {
+    id: 'takbir_100',
+    arabic: 'اللَّهُ أَكْبَرُ',
+    latin: "Allahu Akbar",
+    meaning: 'Allah Maha Besar',
+    target: 100,
+    time: 'both',
+    virtue: 'Tidak ada yang membawa amal lebih banyak pada hari itu kecuali yang membaca lebih banyak.',
+    source: 'HR. Tirmidzi',
+    icon: '🌙'
+  }
+];
+
+// State dzikir
+let dzikirState = {
+  time: 'pagi', // 'pagi' atau 'sore'
+  currentDzikir: null,
+  currentCount: 0,
+  progress: {}
+};
+
+// Initialize dzikir from localStorage
+function initDzikir() {
+  const today = todayString();
+  const savedData = localStorage.getItem(`dzikir_${today}`);
+  if (savedData) {
+    dzikirState.progress = JSON.parse(savedData);
+  }
+  
+  // Auto detect time
+  const hour = new Date().getHours();
+  dzikirState.time = hour < 12 ? 'pagi' : 'sore';
+  
+  renderDzikirPage();
+}
+
+// Set dzikir time
+function setDzikirTime(time) {
+  dzikirState.time = time;
+  document.getElementById('btnDzikirPagi').classList.toggle('active', time === 'pagi');
+  document.getElementById('btnDzikirSore').classList.toggle('active', time === 'sore');
+  renderDzikirPage();
+}
+
+// Render dzikir page
+function renderDzikirPage() {
+  const time = dzikirState.time;
+  const timeLabel = time === 'pagi' ? '🌅 Dzikir Pagi' : '🌆 Dzikir Sore';
+  
+  document.getElementById('dzikirTimeLabel').textContent = timeLabel;
+  
+  // Calculate progress
+  const today = todayString();
+  const progress = dzikirState.progress[time] || {};
+  
+  let completedCount = 0;
+  let totalDzikir = 0;
+  
+  DZIKIR_DATA.forEach(d => {
+    if (d.time === 'both' || d.time === time) {
+      totalDzikir++;
+      if (progress[d.id] >= d.target) {
+        completedCount++;
+      }
+    }
+  });
+  
+  const progressPercent = totalDzikir > 0 ? Math.round((completedCount / totalDzikir) * 100) : 0;
+  
+  document.getElementById('dzikirProgressText').textContent = `${completedCount}/${totalDzikir} selesai`;
+  document.getElementById('dzikirProgressFill').style.width = `${progressPercent}%`;
+  
+  // Total count
+  let totalCount = 0;
+  Object.values(progress).forEach(c => totalCount += (c || 0));
+  document.getElementById('dzikirTotalCount').textContent = `Total: ${totalCount} dzikir`;
+  
+  // Update menu badge
+  const menuBadge = document.getElementById('menuDzikirBadge');
+  if (menuBadge) menuBadge.textContent = `${progressPercent}%`;
+  
+  // Render list
+  const container = document.getElementById('dzikirList');
+  container.innerHTML = DZIKIR_DATA
+    .filter(d => d.time === 'both' || d.time === time)
+    .map(d => {
+      const count = progress[d.id] || 0;
+      const isCompleted = count >= d.target;
+      
+      return `
+        <div class="dzikir-item ${isCompleted ? 'completed' : ''}" onclick="openDzikirCounter('${d.id}')">
+          <div class="dzikir-item-icon">${isCompleted ? '✓' : d.icon}</div>
+          <div class="dzikir-item-content">
+            <div class="dzikir-item-arabic">${d.arabic.substring(0, 50)}${d.arabic.length > 50 ? '...' : ''}</div>
+            <div class="dzikir-item-title">${d.latin.substring(0, 40)}${d.latin.length > 40 ? '...' : ''}</div>
+            <div class="dzikir-item-count">${d.target}x • ${d.source}</div>
+          </div>
+          <div class="dzikir-item-progress">
+            <div class="dzikir-item-progress-text">${count}/${d.target}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+}
+
+// Open dzikir counter
+function openDzikirCounter(id) {
+  const dzikir = DZIKIR_DATA.find(d => d.id === id);
+  if (!dzikir) return;
+  
+  dzikirState.currentDzikir = dzikir;
+  
+  const today = todayString();
+  const progress = dzikirState.progress[dzikirState.time] || {};
+  dzikirState.currentCount = progress[id] || 0;
+  
+  document.getElementById('dzikirCounterTitle').textContent = dzikir.latin.substring(0, 50);
+  document.getElementById('dzikirCounterArabic').textContent = dzikir.arabic;
+  document.getElementById('dzikirCounterLatin').textContent = dzikir.latin;
+  document.getElementById('dzikirCounterMeaning').textContent = dzikir.meaning;
+  document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
+  document.getElementById('dzikirTargetCount').textContent = `/ ${dzikir.target}`;
+  document.getElementById('dzikirVirtueText').textContent = dzikir.virtue;
+  
+  updateDzikirCircleColor();
+  
+  document.getElementById('dzikirCounterModal').classList.add('show');
+}
+
+// Close dzikir counter
+function closeDzikirCounter() {
+  document.getElementById('dzikirCounterModal').classList.remove('show');
+  saveDzikirProgress();
+  renderDzikirPage();
+}
+
+// Increment dzikir
+function incrementDzikir() {
+  if (!dzikirState.currentDzikir) return;
+  
+  dzikirState.currentCount++;
+  document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
+  
+  updateDzikirCircleColor();
+  
+  // Vibrate if supported
+  if (navigator.vibrate) {
+    navigator.vibrate(30);
+  }
+  
+  // Auto complete if reached target
+  if (dzikirState.currentCount >= dzikirState.currentDzikir.target) {
+    // Optional: auto close or show celebration
+    document.getElementById('dzikirCountCircle').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+  }
+}
+
+// Decrement dzikir
+function decrementDzikir() {
+  if (dzikirState.currentCount > 0) {
+    dzikirState.currentCount--;
+    document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
+    updateDzikirCircleColor();
+  }
+}
+
+// Reset current dzikir
+function resetCurrentDzikir() {
+  dzikirState.currentCount = 0;
+  document.getElementById('dzikirCurrentCount').textContent = '0';
+  updateDzikirCircleColor();
+}
+
+// Update circle color based on progress
+function updateDzikirCircleColor() {
+  const target = dzikirState.currentDzikir?.target || 100;
+  const progress = dzikirState.currentCount / target;
+  const circle = document.getElementById('dzikirCountCircle');
+  
+  if (progress >= 1) {
+    circle.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+  } else if (progress >= 0.5) {
+    circle.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+  } else {
+    circle.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+  }
+}
+
+// Complete dzikir
+function completeDzikir() {
+  saveDzikirProgress();
+  closeDzikirCounter();
+  showToast('Dzikir tersimpan! ✓', 'success');
+}
+
+// Save dzikir progress
+function saveDzikirProgress() {
+  if (!dzikirState.currentDzikir) return;
+  
+  const time = dzikirState.time;
+  if (!dzikirState.progress[time]) {
+    dzikirState.progress[time] = {};
+  }
+  
+  dzikirState.progress[time][dzikirState.currentDzikir.id] = dzikirState.currentCount;
+  
+  const today = todayString();
+  localStorage.setItem(`dzikir_${today}`, JSON.stringify(dzikirState.progress));
+}
+
+// Reset dzikir today
+function resetDzikirToday() {
+  if (!confirm('Reset semua dzikir hari ini?')) return;
+  
+  dzikirState.progress = {};
+  const today = todayString();
+  localStorage.removeItem(`dzikir_${today}`);
+  renderDzikirPage();
+  showToast('Dzikir direset', 'info');
+}

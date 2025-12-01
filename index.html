@@ -2934,6 +2934,257 @@
       .page-title { font-size: 18px; }
     }
     
+    /* ==================== DZIKIR PAGI SORE STYLES ==================== */
+    .dzikir-time-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .dzikir-time-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dzikir-time-btn.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #dbeafe, #eff6ff);
+      color: var(--primary);
+    }
+    
+    .dzikir-progress-card {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      color: white;
+      margin-bottom: 16px;
+    }
+    .dzikir-progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .dzikir-progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .dzikir-progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .dzikir-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .dzikir-stats .btn-link { color: white; opacity: 0.8; }
+    
+    .dzikir-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .dzikir-item {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .dzikir-item:hover { border-color: var(--primary-light); }
+    .dzikir-item.completed {
+      background: linear-gradient(135deg, #d1fae5, #ecfdf5);
+      border-color: var(--success);
+    }
+    
+    .dzikir-item-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .dzikir-item.completed .dzikir-item-icon {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    
+    .dzikir-item-content { flex: 1; min-width: 0; }
+    .dzikir-item-arabic {
+      font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      direction: rtl;
+      text-align: right;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+    }
+    .dzikir-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    .dzikir-item-count {
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+    
+    .dzikir-item-progress {
+      text-align: right;
+      min-width: 50px;
+    }
+    .dzikir-item-progress-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .dzikir-item.completed .dzikir-item-progress-text { color: var(--success); }
+    
+    /* Dzikir Counter Modal */
+    .dzikir-counter-modal {
+      max-width: 400px;
+      padding: 24px;
+      text-align: center;
+    }
+    .dzikir-counter-header {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .dzikir-counter-header .close-btn {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .dzikir-counter-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    
+    .dzikir-counter-arabic {
+      font-family: 'Scheherazade New', 'Traditional Arabic', serif;
+      font-size: 28px;
+      line-height: 1.8;
+      color: var(--gray-800);
+      padding: 16px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: var(--radius-lg);
+      margin-bottom: 12px;
+    }
+    
+    .dzikir-counter-latin {
+      font-size: 13px;
+      color: var(--gray-600);
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    
+    .dzikir-counter-meaning {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 20px;
+      padding: 0 12px;
+    }
+    
+    .dzikir-counter-display {
+      margin: 24px 0;
+    }
+    .dzikir-count-circle {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+      transition: transform 0.1s;
+      user-select: none;
+    }
+    .dzikir-count-circle:active {
+      transform: scale(0.95);
+    }
+    .dzikir-current {
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+      line-height: 1;
+    }
+    .dzikir-target {
+      font-size: 16px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .dzikir-counter-controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .dzikir-ctrl-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--gray-200);
+      background: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dzikir-ctrl-btn:hover { border-color: var(--primary); }
+    .dzikir-ctrl-btn.big {
+      width: 64px;
+      height: 64px;
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      font-size: 32px;
+    }
+    
+    .dzikir-virtue-card {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .dzikir-virtue-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--warning);
+      margin-bottom: 4px;
+    }
+    .dzikir-virtue-text {
+      font-size: 12px;
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+    
     /* ==================== WISDOM STOIK STYLES ==================== */
     .wisdom-stats {
       display: flex;
@@ -3736,9 +3987,22 @@
               <span class="arrow">›</span>
             </div>
           </div>
-          <div class="menu-item" onclick="showPage('habits')">
+          <div class="menu-item" onclick="showPage('dzikir')">
             <div class="left">
               <span class="icon">📿</span>
+              <div class="info">
+                <div class="title">Dzikir Pagi & Sore</div>
+                <div class="subtitle">Counter dzikir dengan keutamaan</div>
+              </div>
+            </div>
+            <div class="right">
+              <span class="badge info" id="menuDzikirBadge">0%</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+          <div class="menu-item" onclick="showPage('habits')">
+            <div class="left">
+              <span class="icon">🌙</span>
               <div class="info">
                 <div class="title">Sunnah Rasulullah ﷺ</div>
                 <div class="subtitle">Habit harian berbasis sunnah</div>
@@ -3963,6 +4227,91 @@
           </div>
         </div>
         <button class="btn-submit btn-secondary" style="margin-top: 12px;" onclick="loadHabitLogHistory(14)">📅 Lihat 14 Hari</button>
+      </div>
+    </div>
+    
+    <!-- ==================== PAGE: DZIKIR PAGI SORE ==================== -->
+    <div class="page" id="page-dzikir">
+      <div class="page-header">
+        <button class="back-btn" onclick="showPage('menu')">← Kembali</button>
+        <h1 class="page-title">📿 Dzikir Pagi & Sore</h1>
+      </div>
+      
+      <!-- Time Toggle -->
+      <div class="dzikir-time-toggle">
+        <button class="dzikir-time-btn active" id="btnDzikirPagi" onclick="setDzikirTime('pagi')">
+          🌅 Pagi
+        </button>
+        <button class="dzikir-time-btn" id="btnDzikirSore" onclick="setDzikirTime('sore')">
+          🌆 Sore
+        </button>
+      </div>
+      
+      <!-- Progress Overview -->
+      <div class="dzikir-progress-card">
+        <div class="dzikir-progress-header">
+          <span id="dzikirTimeLabel">🌅 Dzikir Pagi</span>
+          <span class="dzikir-progress-text" id="dzikirProgressText">0/15 selesai</span>
+        </div>
+        <div class="dzikir-progress-bar">
+          <div class="dzikir-progress-fill" id="dzikirProgressFill" style="width: 0%"></div>
+        </div>
+        <div class="dzikir-stats">
+          <span id="dzikirTotalCount">Total: 0 dzikir</span>
+          <button class="btn-link" onclick="resetDzikirToday()">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <!-- Dzikir List -->
+      <div class="dzikir-list" id="dzikirList">
+        <!-- Will be rendered by JavaScript -->
+      </div>
+      
+      <!-- Dzikir Counter Modal -->
+      <div class="modal" id="dzikirCounterModal">
+        <div class="modal-overlay" onclick="closeDzikirCounter()"></div>
+        <div class="modal-content dzikir-counter-modal">
+          <div class="dzikir-counter-header">
+            <button class="close-btn" onclick="closeDzikirCounter()">✕</button>
+            <div class="dzikir-counter-title" id="dzikirCounterTitle">Dzikir</div>
+          </div>
+          
+          <div class="dzikir-counter-arabic" id="dzikirCounterArabic" dir="rtl">
+            اللَّهُ أَكْبَرُ
+          </div>
+          
+          <div class="dzikir-counter-latin" id="dzikirCounterLatin">
+            Transliterasi
+          </div>
+          
+          <div class="dzikir-counter-meaning" id="dzikirCounterMeaning">
+            Arti
+          </div>
+          
+          <div class="dzikir-counter-display">
+            <div class="dzikir-count-circle" id="dzikirCountCircle" onclick="incrementDzikir()">
+              <span class="dzikir-current" id="dzikirCurrentCount">0</span>
+              <span class="dzikir-target" id="dzikirTargetCount">/ 100</span>
+            </div>
+          </div>
+          
+          <div class="dzikir-counter-controls">
+            <button class="dzikir-ctrl-btn" onclick="decrementDzikir()">−</button>
+            <button class="dzikir-ctrl-btn big" onclick="incrementDzikir()">+</button>
+            <button class="dzikir-ctrl-btn" onclick="resetCurrentDzikir()">↺</button>
+          </div>
+          
+          <div class="dzikir-virtue-card" id="dzikirVirtueCard">
+            <div class="dzikir-virtue-title">✨ Keutamaan</div>
+            <div class="dzikir-virtue-text" id="dzikirVirtueText">
+              Keutamaan dzikir ini...
+            </div>
+          </div>
+          
+          <button class="btn-submit" onclick="completeDzikir()" id="btnCompleteDzikir">
+            ✓ Selesai
+          </button>
+        </div>
       </div>
     </div>
     
