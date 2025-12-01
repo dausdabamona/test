@@ -2654,6 +2654,108 @@
     .sunnah-waktu-label:first-child {
       margin-top: 0;
     }
+    
+    /* Best Week Schedule */
+    .best-week-schedule {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+    .schedule-item:hover {
+      background: var(--gray-100);
+    }
+    .schedule-time {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 45px;
+      font-size: 12px;
+    }
+    .schedule-activity {
+      flex: 1;
+    }
+    .schedule-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+      font-size: 10px;
+      color: var(--gray-500);
+    }
+    
+    /* Today Schedule on Home */
+    .today-schedule-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .today-schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .today-schedule-item:hover {
+      background: var(--gray-100);
+    }
+    .today-schedule-item.current {
+      background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+      border-left-color: var(--primary);
+    }
+    .today-schedule-item.done {
+      background: var(--success-light);
+      border-left-color: var(--success);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+    .today-schedule-item .check-circle {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gray-300);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .today-schedule-item.done .check-circle {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    .today-schedule-item .schedule-time {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 45px;
+      font-size: 12px;
+    }
+    .today-schedule-item .schedule-activity {
+      flex: 1;
+      font-size: 12px;
+    }
+    .today-schedule-item.current .schedule-time {
+      color: var(--primary);
+    }
     .sunnah-mini-item {
       display: flex;
       align-items: center;
@@ -3460,6 +3562,17 @@
         <div class="empty-state" style="padding: 20px;">
           <p>Belum ada task hari ini</p>
           <button class="btn-submit" style="width: auto; margin-top: 12px;" onclick="openModal('task')">+ Tambah Task</button>
+        </div>
+      </div>
+      
+      <!-- Jadwal Ideal Hari Ini -->
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>📅 Jadwal Ideal Hari Ini</span>
+        <button class="btn-icon" onclick="showPage('bestweek')" title="Edit di Best Week" style="font-size: 11px; padding: 4px 8px; background: var(--gray-100); border-radius: 4px;">✏️ Edit</button>
+      </div>
+      <div class="card" id="todayScheduleCard">
+        <div class="today-schedule-container" id="todayScheduleList">
+          <!-- Rendered by JS -->
         </div>
       </div>
       

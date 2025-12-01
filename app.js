@@ -96,6 +96,227 @@ const state = {
   },
   // Batch 3: Best Week, Learning, Wellbeing
   bestWeek: {},
+  // Default Best Week Template - Kebiasaan Rasulullah ﷺ untuk PNS
+  defaultBestWeek: {
+    // Senin - Jumat (Hari Kerja PNS)
+    1: [ // Senin
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 2 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 1 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🏃 Olahraga ringan 15 menit', kategori: 'KESEHATAN' },
+      { waktu: '06:00', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '06:30', aktivitas: '🚿 Mandi & persiapan kerja', kategori: 'PRIBADI' },
+      { waktu: '07:00', aktivitas: '🚗 Berangkat kerja', kategori: 'KERJA' },
+      { waktu: '07:30', aktivitas: '💼 Sampai kantor, Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '📋 Review tugas & prioritas hari ini', kategori: 'KERJA' },
+      { waktu: '08:30', aktivitas: '💻 Deep Work - tugas utama', kategori: 'KERJA' },
+      { waktu: '10:00', aktivitas: '☕ Istirahat sejenak', kategori: 'PRIBADI' },
+      { waktu: '10:15', aktivitas: '💻 Lanjut tugas / meeting', kategori: 'KERJA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '🍽️ Makan siang (1/3 perut)', kategori: 'KESEHATAN' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah (tidur siang 15-20 menit)', kategori: 'KESEHATAN' },
+      { waktu: '13:30', aktivitas: '💻 Lanjut tugas sore', kategori: 'KERJA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '💻 Selesaikan tugas hari ini', kategori: 'KERJA' },
+      { waktu: '16:00', aktivitas: '📿 Dzikir sore', kategori: 'IBADAH' },
+      { waktu: '16:30', aktivitas: '🚗 Pulang kerja', kategori: 'KERJA' },
+      { waktu: '17:30', aktivitas: '👨‍👩‍👧 Quality time keluarga', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '📚 Baca buku / belajar', kategori: 'PENGEMBANGAN' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & muhasabah', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur (wudhu, doa, miring kanan)', kategori: 'KESEHATAN' }
+    ],
+    2: [ // Selasa (sama dengan Senin)
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 2 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 1 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🏃 Olahraga ringan 15 menit', kategori: 'KESEHATAN' },
+      { waktu: '06:00', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '06:30', aktivitas: '🚿 Mandi & persiapan kerja', kategori: 'PRIBADI' },
+      { waktu: '07:00', aktivitas: '🚗 Berangkat kerja', kategori: 'KERJA' },
+      { waktu: '07:30', aktivitas: '💼 Sampai kantor, Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '📋 Review tugas & prioritas hari ini', kategori: 'KERJA' },
+      { waktu: '08:30', aktivitas: '💻 Deep Work - tugas utama', kategori: 'KERJA' },
+      { waktu: '10:00', aktivitas: '☕ Istirahat sejenak', kategori: 'PRIBADI' },
+      { waktu: '10:15', aktivitas: '💻 Lanjut tugas / meeting', kategori: 'KERJA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '🍽️ Makan siang (1/3 perut)', kategori: 'KESEHATAN' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah (tidur siang 15-20 menit)', kategori: 'KESEHATAN' },
+      { waktu: '13:30', aktivitas: '💻 Lanjut tugas sore', kategori: 'KERJA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '💻 Selesaikan tugas hari ini', kategori: 'KERJA' },
+      { waktu: '16:00', aktivitas: '📿 Dzikir sore', kategori: 'IBADAH' },
+      { waktu: '16:30', aktivitas: '🚗 Pulang kerja', kategori: 'KERJA' },
+      { waktu: '17:30', aktivitas: '👨‍👩‍👧 Quality time keluarga', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '📚 Baca buku / belajar', kategori: 'PENGEMBANGAN' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & muhasabah', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur (wudhu, doa, miring kanan)', kategori: 'KESEHATAN' }
+    ],
+    3: [ // Rabu
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 2 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 1 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🏃 Olahraga ringan 15 menit', kategori: 'KESEHATAN' },
+      { waktu: '06:00', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '06:30', aktivitas: '🚿 Mandi & persiapan kerja', kategori: 'PRIBADI' },
+      { waktu: '07:00', aktivitas: '🚗 Berangkat kerja', kategori: 'KERJA' },
+      { waktu: '07:30', aktivitas: '💼 Sampai kantor, Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '📋 Review tugas & prioritas hari ini', kategori: 'KERJA' },
+      { waktu: '08:30', aktivitas: '💻 Deep Work - tugas utama', kategori: 'KERJA' },
+      { waktu: '10:00', aktivitas: '☕ Istirahat sejenak', kategori: 'PRIBADI' },
+      { waktu: '10:15', aktivitas: '💻 Lanjut tugas / meeting', kategori: 'KERJA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '🍽️ Makan siang (1/3 perut)', kategori: 'KESEHATAN' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah (tidur siang 15-20 menit)', kategori: 'KESEHATAN' },
+      { waktu: '13:30', aktivitas: '💻 Lanjut tugas sore', kategori: 'KERJA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '💻 Selesaikan tugas hari ini', kategori: 'KERJA' },
+      { waktu: '16:00', aktivitas: '📿 Dzikir sore', kategori: 'IBADAH' },
+      { waktu: '16:30', aktivitas: '🚗 Pulang kerja', kategori: 'KERJA' },
+      { waktu: '17:30', aktivitas: '👨‍👩‍👧 Quality time keluarga', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '📚 Baca buku / belajar', kategori: 'PENGEMBANGAN' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & muhasabah', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur (wudhu, doa, miring kanan)', kategori: 'KESEHATAN' }
+    ],
+    4: [ // Kamis - Puasa Sunnah
+      { waktu: '03:00', aktivitas: '🍽️ Sahur (niat puasa Kamis)', kategori: 'IBADAH' },
+      { waktu: '03:30', aktivitas: '🌙 Tahajud 4 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 1 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🚶 Jalan santai (puasa)', kategori: 'KESEHATAN' },
+      { waktu: '06:00', aktivitas: '👨‍👩‍👧 Quality time pagi keluarga', kategori: 'KELUARGA' },
+      { waktu: '06:30', aktivitas: '🚿 Mandi & persiapan kerja', kategori: 'PRIBADI' },
+      { waktu: '07:00', aktivitas: '🚗 Berangkat kerja', kategori: 'KERJA' },
+      { waktu: '07:30', aktivitas: '💼 Sampai kantor, Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '📋 Review tugas & prioritas hari ini', kategori: 'KERJA' },
+      { waktu: '08:30', aktivitas: '💻 Deep Work - tugas utama', kategori: 'KERJA' },
+      { waktu: '10:00', aktivitas: '☕ Istirahat (tidak makan/minum)', kategori: 'PRIBADI' },
+      { waktu: '10:15', aktivitas: '💻 Lanjut tugas / meeting', kategori: 'KERJA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '📖 Baca buku / istirahat', kategori: 'PENGEMBANGAN' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah (tidur siang)', kategori: 'KESEHATAN' },
+      { waktu: '13:30', aktivitas: '💻 Lanjut tugas sore', kategori: 'KERJA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '💻 Selesaikan tugas hari ini', kategori: 'KERJA' },
+      { waktu: '16:00', aktivitas: '📿 Dzikir sore & persiapan pulang', kategori: 'IBADAH' },
+      { waktu: '16:30', aktivitas: '🚗 Pulang kerja', kategori: 'KERJA' },
+      { waktu: '17:30', aktivitas: '👨‍👩‍👧 Siapkan buka bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🍽️ Buka puasa + Sholat Maghrib', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '📚 Baca buku / belajar', kategori: 'PENGEMBANGAN' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & muhasabah', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur (wudhu, doa, miring kanan)', kategori: 'KESEHATAN' }
+    ],
+    5: [ // Jumat - Hari Istimewa
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 4 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Surah Al-Kahfi', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Shalawat 100x', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🚿 Mandi Jumat & pakai wangi', kategori: 'PRIBADI' },
+      { waktu: '06:00', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '06:30', aktivitas: '👔 Persiapan kerja (pakaian terbaik)', kategori: 'PRIBADI' },
+      { waktu: '07:00', aktivitas: '🚗 Berangkat kerja', kategori: 'KERJA' },
+      { waktu: '07:30', aktivitas: '💼 Sampai kantor, Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '📋 Review tugas & prioritas hari ini', kategori: 'KERJA' },
+      { waktu: '08:30', aktivitas: '💻 Deep Work - tugas utama', kategori: 'KERJA' },
+      { waktu: '10:00', aktivitas: '☕ Istirahat sejenak', kategori: 'PRIBADI' },
+      { waktu: '10:15', aktivitas: '💻 Lanjut tugas / meeting', kategori: 'KERJA' },
+      { waktu: '11:30', aktivitas: '🕌 Berangkat ke masjid (lebih awal)', kategori: 'IBADAH' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Jumat + Khutbah', kategori: 'IBADAH' },
+      { waktu: '13:00', aktivitas: '🍽️ Makan siang', kategori: 'KESEHATAN' },
+      { waktu: '13:30', aktivitas: '💻 Lanjut tugas sore', kategori: 'KERJA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '💻 Selesaikan tugas minggu ini', kategori: 'KERJA' },
+      { waktu: '16:00', aktivitas: '📿 Dzikir sore + Weekly Review', kategori: 'IBADAH' },
+      { waktu: '16:30', aktivitas: '🚗 Pulang kerja', kategori: 'KERJA' },
+      { waktu: '17:30', aktivitas: '👨‍👩‍👧 Quality time keluarga', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '👨‍👩‍👧 Family time / jalan-jalan', kategori: 'KELUARGA' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & muhasabah', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur (wudhu, doa, miring kanan)', kategori: 'KESEHATAN' }
+    ],
+    6: [ // Sabtu - Keluarga & Pengembangan Diri
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 4 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 2 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🏃 Olahraga pagi (jogging/sepeda)', kategori: 'KESEHATAN' },
+      { waktu: '06:30', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '07:30', aktivitas: '☀️ Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '🧹 Bersih-bersih rumah bersama', kategori: 'KELUARGA' },
+      { waktu: '09:00', aktivitas: '📚 Belajar/kursus online', kategori: 'PENGEMBANGAN' },
+      { waktu: '10:00', aktivitas: '👨‍👩‍👧 Aktivitas bersama anak', kategori: 'KELUARGA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '🍽️ Makan siang bersama', kategori: 'KELUARGA' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah', kategori: 'KESEHATAN' },
+      { waktu: '14:00', aktivitas: '👨‍👩‍👧 Jalan-jalan keluarga', kategori: 'KELUARGA' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '📿 Dzikir sore', kategori: 'IBADAH' },
+      { waktu: '16:00', aktivitas: '👨‍👩‍👧 Quality time dengan pasangan', kategori: 'KELUARGA' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Kajian keluarga', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '🎮 Family game / nonton bersama', kategori: 'KELUARGA' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal & evaluasi minggu', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur', kategori: 'KESEHATAN' }
+    ],
+    7: [ // Minggu - Ibadah & Persiapan Minggu Depan
+      { waktu: '03:30', aktivitas: '🌙 Bangun, Tahajud 4 rakaat', kategori: 'IBADAH' },
+      { waktu: '04:00', aktivitas: '📖 Tilawah Al-Quran 2 juz', kategori: 'IBADAH' },
+      { waktu: '04:30', aktivitas: '🕌 Sholat Subuh berjamaah di masjid', kategori: 'IBADAH' },
+      { waktu: '05:00', aktivitas: '📿 Dzikir pagi & Doa', kategori: 'IBADAH' },
+      { waktu: '05:30', aktivitas: '🏃 Olahraga pagi', kategori: 'KESEHATAN' },
+      { waktu: '06:30', aktivitas: '🍳 Sarapan bersama keluarga', kategori: 'KELUARGA' },
+      { waktu: '07:30', aktivitas: '☀️ Sholat Dhuha', kategori: 'IBADAH' },
+      { waktu: '08:00', aktivitas: '👨‍👩‍👧 Waktu berkualitas keluarga', kategori: 'KELUARGA' },
+      { waktu: '09:00', aktivitas: '📚 Kajian/belajar agama', kategori: 'IBADAH' },
+      { waktu: '10:00', aktivitas: '🛒 Belanja mingguan / keperluan', kategori: 'KELUARGA' },
+      { waktu: '12:00', aktivitas: '🕌 Sholat Dzuhur berjamaah', kategori: 'IBADAH' },
+      { waktu: '12:30', aktivitas: '🍽️ Makan siang bersama', kategori: 'KELUARGA' },
+      { waktu: '13:00', aktivitas: '😴 Qailulah', kategori: 'KESEHATAN' },
+      { waktu: '14:00', aktivitas: '📋 Review & Planning minggu depan', kategori: 'PENGEMBANGAN' },
+      { waktu: '15:00', aktivitas: '🕌 Sholat Ashar', kategori: 'IBADAH' },
+      { waktu: '15:30', aktivitas: '📿 Dzikir sore', kategori: 'IBADAH' },
+      { waktu: '16:00', aktivitas: '👨‍👩‍👧 Persiapan anak untuk sekolah', kategori: 'KELUARGA' },
+      { waktu: '17:00', aktivitas: '🧹 Rapikan rumah & pakaian', kategori: 'PRIBADI' },
+      { waktu: '18:00', aktivitas: '🕌 Sholat Maghrib berjamaah', kategori: 'IBADAH' },
+      { waktu: '18:30', aktivitas: '📖 Mengaji bersama anak', kategori: 'KELUARGA' },
+      { waktu: '19:00', aktivitas: '🍽️ Makan malam bersama', kategori: 'KELUARGA' },
+      { waktu: '19:30', aktivitas: '🕌 Sholat Isya berjamaah', kategori: 'IBADAH' },
+      { waktu: '20:00', aktivitas: '📋 Finalisasi persiapan Senin', kategori: 'KERJA' },
+      { waktu: '20:30', aktivitas: '👨‍👩‍👧 Family sharing (cerita minggu ini)', kategori: 'KELUARGA' },
+      { waktu: '21:00', aktivitas: '📝 Jurnal malam & niat minggu depan', kategori: 'IBADAH' },
+      { waktu: '21:30', aktivitas: '⭐ Sholat Witir', kategori: 'IBADAH' },
+      { waktu: '22:00', aktivitas: '😴 Tidur awal (persiapan Senin)', kategori: 'KESEHATAN' }
+    ]
+  },
   learnings: [],
   wellbeingTrends: []
 };
@@ -482,10 +703,12 @@ async function loadAllData() {
     Promise.all([
       loadGoals(true),
       loadKanban(false),
-      loadDontList()
+      loadDontList(),
+      loadBestWeek()
     ]).then(() => {
       // After data loaded, render home components
       renderTodayFocus();
+      renderTodaySchedule();
     }).catch(() => {});
     
     // Load less critical in background
@@ -1206,6 +1429,117 @@ function renderTodayFocus() {
     }).join('')}
     <button class="btn-link" style="margin-top: 8px; text-align: center; display: block; width: 100%;" onclick="showPage('kanban')">Lihat Semua Task →</button>
   `;
+}
+
+// Render Jadwal Ideal Hari Ini di Beranda
+function renderTodaySchedule() {
+  const container = document.getElementById('todayScheduleList');
+  if (!container) return;
+  
+  // Get current day (1=Senin, 7=Minggu)
+  const now = new Date();
+  const dayOfWeek = now.getDay() || 7; // Convert Sunday (0) to 7
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+  
+  // Get today's schedule
+  const jadwal = state.bestWeek?.[dayOfWeek] || state.defaultBestWeek?.[dayOfWeek] || [];
+  
+  if (jadwal.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <p style="color: var(--gray-400);">Belum ada jadwal untuk hari ini</p>
+        <button class="btn-submit btn-secondary" style="width: auto; margin-top: 12px;" onclick="showPage('bestweek')">+ Atur Jadwal</button>
+      </div>`;
+    return;
+  }
+  
+  // Get completed schedules from localStorage
+  const today = todayString();
+  const completedKey = `schedule_completed_${today}`;
+  const completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+  
+  // Warna kategori
+  const kategoriColors = {
+    'IBADAH': '#10b981',
+    'KERJA': '#3b82f6',
+    'KELUARGA': '#ec4899',
+    'KESEHATAN': '#f59e0b',
+    'PENGEMBANGAN': '#8b5cf6',
+    'PRIBADI': '#6b7280'
+  };
+  
+  // Find current time slot
+  let currentIndex = -1;
+  for (let i = 0; i < jadwal.length; i++) {
+    const itemTime = jadwal[i].waktu;
+    const nextTime = jadwal[i + 1]?.waktu || '23:59';
+    if (currentTimeStr >= itemTime && currentTimeStr < nextTime) {
+      currentIndex = i;
+      break;
+    }
+  }
+  
+  // Render schedule items
+  const html = jadwal.map((item, index) => {
+    const isDone = completed.includes(index);
+    const isCurrent = index === currentIndex;
+    const isPast = item.waktu < currentTimeStr && !isCurrent;
+    const color = kategoriColors[item.kategori] || '#6b7280';
+    
+    return `
+      <div class="today-schedule-item ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}" 
+           onclick="toggleScheduleItem(${index})"
+           style="border-left-color: ${color}; ${isPast && !isDone ? 'opacity: 0.5;' : ''}">
+        <div class="check-circle">${isDone ? '✓' : ''}</div>
+        <span class="schedule-time">${item.waktu}</span>
+        <span class="schedule-activity">${escapeHtml(item.aktivitas)}</span>
+      </div>`;
+  }).join('');
+  
+  // Count completed
+  const completedCount = completed.length;
+  const totalCount = jadwal.length;
+  const progressPercent = Math.round((completedCount / totalCount) * 100);
+  
+  container.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+      <span style="font-size: 12px; color: var(--gray-500);">
+        ${getDayName(dayOfWeek)} • ${completedCount}/${totalCount} selesai
+      </span>
+      <div style="width: 60px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
+        <div style="width: ${progressPercent}%; height: 100%; background: var(--success); transition: width 0.3s;"></div>
+      </div>
+    </div>
+    ${html}
+  `;
+}
+
+// Toggle schedule item completion
+function toggleScheduleItem(index) {
+  const today = todayString();
+  const completedKey = `schedule_completed_${today}`;
+  let completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+  
+  if (completed.includes(index)) {
+    completed = completed.filter(i => i !== index);
+  } else {
+    completed.push(index);
+  }
+  
+  localStorage.setItem(completedKey, JSON.stringify(completed));
+  renderTodaySchedule();
+  
+  // Show toast
+  const isNowCompleted = completed.includes(index);
+  showToast(isNowCompleted ? 'Aktivitas selesai! ✓' : 'Aktivitas dibatalkan', isNowCompleted ? 'success' : 'info');
+}
+
+// Get day name
+function getDayName(dayNum) {
+  const days = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  return days[dayNum] || '';
 }
 
 function renderKanban() {
@@ -4388,8 +4722,19 @@ async function loadBestWeek() {
         }
       });
     }
+    
+    // Jika kosong, gunakan default template
+    for (let day = 1; day <= 7; day++) {
+      if (!state.bestWeek[day] || state.bestWeek[day].length === 0) {
+        state.bestWeek[day] = state.defaultBestWeek[day] || [];
+      }
+    }
   } catch (err) {
     console.error('Failed to load best week:', err);
+    // Fallback ke default jika error
+    for (let day = 1; day <= 7; day++) {
+      state.bestWeek[day] = state.defaultBestWeek[day] || [];
+    }
   }
 }
 
@@ -4401,7 +4746,7 @@ function showBestWeekDay(day) {
   });
   
   const container = document.getElementById('bestWeekContent');
-  const jadwal = state.bestWeek[day] || [];
+  const jadwal = state.bestWeek[day] || state.defaultBestWeek[day] || [];
   
   if (jadwal.length === 0) {
     container.innerHTML = `
@@ -4413,17 +4758,50 @@ function showBestWeekDay(day) {
     return;
   }
   
+  // Warna kategori
+  const kategoriColors = {
+    'IBADAH': '#10b981',
+    'KERJA': '#3b82f6',
+    'KELUARGA': '#ec4899',
+    'KESEHATAN': '#f59e0b',
+    'PENGEMBANGAN': '#8b5cf6',
+    'PRIBADI': '#6b7280'
+  };
+  
   container.innerHTML = `
-    <div style="font-size: 13px; line-height: 2;">
-      ${jadwal.map(item => `
-        <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--gray-100);">
-          <span style="font-weight: 600; color: var(--primary); min-width: 50px;">${item.waktu}</span>
-          <span>${escapeHtml(item.aktivitas)}</span>
-        </div>
-      `).join('')}
+    <div class="best-week-schedule">
+      ${jadwal.map(item => {
+        const color = kategoriColors[item.kategori] || '#6b7280';
+        return `
+        <div class="schedule-item" style="border-left: 3px solid ${color};">
+          <span class="schedule-time">${item.waktu}</span>
+          <span class="schedule-activity">${escapeHtml(item.aktivitas)}</span>
+        </div>`;
+      }).join('')}
     </div>
-    <button class="btn-submit btn-secondary" style="margin-top: 16px;" onclick="openBestWeekEdit(${day})">✏️ Edit</button>
+    <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+      <button class="btn-submit btn-secondary" style="flex: 1;" onclick="openBestWeekEdit(${day})">✏️ Edit</button>
+      <button class="btn-submit btn-secondary" style="flex: 1;" onclick="resetBestWeekDay(${day})">🔄 Reset Default</button>
+    </div>
+    <div class="schedule-legend">
+      <span style="color: #10b981;">● Ibadah</span>
+      <span style="color: #3b82f6;">● Kerja</span>
+      <span style="color: #ec4899;">● Keluarga</span>
+      <span style="color: #f59e0b;">● Kesehatan</span>
+      <span style="color: #8b5cf6;">● Pengembangan</span>
+    </div>
   `;
+}
+
+function resetBestWeekDay(day) {
+  if (!confirm('Reset jadwal hari ini ke template default Rasulullah ﷺ?')) return;
+  state.bestWeek[day] = JSON.parse(JSON.stringify(state.defaultBestWeek[day] || []));
+  addToQueue('saveBestWeek', {
+    dayNumber: day,
+    jadwal: state.bestWeek[day]
+  });
+  showBestWeekDay(day);
+  showToast('Jadwal direset ke default! ✓', 'success');
 }
 
 function openBestWeekEdit(day) {
@@ -4886,26 +5264,78 @@ function renderRefleksiPage() {
   const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const today = new Date();
   const dayNum = today.getDay() === 0 ? 7 : today.getDay();
+  const currentHour = today.getHours();
+  const currentMinute = today.getMinutes();
+  const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
   
   // Set day label
   const dayLabel = document.getElementById('refleksiHariIni');
   if (dayLabel) dayLabel.textContent = days[today.getDay()];
   
+  // Set badge day
+  const dayBadge = document.getElementById('refleksiBestWeekDay');
+  if (dayBadge) dayBadge.textContent = days[today.getDay()];
+  
   // Best Week Template
   const bestWeekContainer = document.getElementById('refleksiBestWeek');
   if (bestWeekContainer) {
-    const jadwal = state.bestWeek?.[dayNum] || [];
+    const jadwal = state.bestWeek?.[dayNum] || state.defaultBestWeek?.[dayNum] || [];
+    
     if (jadwal.length > 0) {
-      bestWeekContainer.innerHTML = jadwal.map(j => `
-        <div class="refleksi-schedule-item">
-          <span class="time">${j.jam || j.time || ''}</span>
-          <span class="activity">${escapeHtml(j.aktivitas || j.activity || '')}</span>
+      // Get completed schedules from localStorage
+      const todayStr = todayString();
+      const completedKey = `schedule_completed_${todayStr}`;
+      const completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+      
+      // Warna kategori
+      const kategoriColors = {
+        'IBADAH': '#10b981',
+        'KERJA': '#3b82f6',
+        'KELUARGA': '#ec4899',
+        'KESEHATAN': '#f59e0b',
+        'PENGEMBANGAN': '#8b5cf6',
+        'PRIBADI': '#6b7280'
+      };
+      
+      // Find current time slot
+      let currentIndex = -1;
+      for (let i = 0; i < jadwal.length; i++) {
+        const itemTime = jadwal[i].waktu;
+        const nextTime = jadwal[i + 1]?.waktu || '23:59';
+        if (currentTimeStr >= itemTime && currentTimeStr < nextTime) {
+          currentIndex = i;
+          break;
+        }
+      }
+      
+      const completedCount = completed.length;
+      const totalCount = jadwal.length;
+      
+      bestWeekContainer.innerHTML = `
+        <div style="font-size: 11px; color: var(--gray-500); margin-bottom: 8px;">
+          ${completedCount}/${totalCount} aktivitas selesai
         </div>
-      `).join('');
+        <div class="today-schedule-container" style="max-height: 250px;">
+          ${jadwal.map((j, index) => {
+            const isDone = completed.includes(index);
+            const isCurrent = index === currentIndex;
+            const color = kategoriColors[j.kategori] || '#6b7280';
+            return `
+              <div class="today-schedule-item ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}" 
+                   onclick="toggleScheduleItem(${index}); renderRefleksiPage();"
+                   style="border-left-color: ${color};">
+                <div class="check-circle">${isDone ? '✓' : ''}</div>
+                <span class="schedule-time">${j.waktu}</span>
+                <span class="schedule-activity">${escapeHtml(j.aktivitas)}</span>
+              </div>`;
+          }).join('')}
+        </div>
+        <button class="btn-link" style="margin-top: 12px;" onclick="showPage('bestweek')">✏️ Edit Jadwal Mingguan →</button>
+      `;
     } else {
       bestWeekContainer.innerHTML = `<div style="padding: 12px; text-align: center;">
         <p style="color: var(--gray-400); font-size: 12px;">Belum ada jadwal ideal untuk hari ini</p>
-        <button class="btn-link" onclick="showPage('bestweek')">Atur Best Week →</button>
+        <button class="btn-submit btn-secondary" style="width: auto; margin-top: 8px;" onclick="showPage('bestweek')">+ Atur Best Week</button>
       </div>`;
     }
   }
