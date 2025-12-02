@@ -5607,9 +5607,15 @@ function refreshDailyQuote() {
 // ============================================
 // INIT
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
-  // Render daily quote first
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load quotes from database first
+  await loadQuotesFromDB();
+  
+  // Render daily quote
   renderDailyQuote();
+  
+  // Update dzikir progress di header
+  updateDzikirHeader();
   
   // Load all data (includes journal)
   loadAllData();
@@ -5866,6 +5872,40 @@ function initDzikir() {
   renderDzikirPage();
 }
 
+// Update dzikir progress di header (bisa dipanggil dari home)
+function updateDzikirHeader() {
+  const today = todayString();
+  const savedData = localStorage.getItem(`dzikir_${today}`);
+  
+  if (!savedData) {
+    const headerEl = document.getElementById('dzikirProgress');
+    if (headerEl) headerEl.textContent = '0%';
+    return;
+  }
+  
+  const progress = JSON.parse(savedData);
+  const hour = new Date().getHours();
+  const time = hour < 12 ? 'pagi' : 'sore';
+  const timeProgress = progress[time] || {};
+  
+  let completedCount = 0;
+  let totalDzikir = 0;
+  
+  DZIKIR_DATA.forEach(d => {
+    if (d.time === 'both' || d.time === time) {
+      totalDzikir++;
+      if (timeProgress[d.id] >= d.target) {
+        completedCount++;
+      }
+    }
+  });
+  
+  const progressPercent = totalDzikir > 0 ? Math.round((completedCount / totalDzikir) * 100) : 0;
+  
+  const headerEl = document.getElementById('dzikirProgress');
+  if (headerEl) headerEl.textContent = `${progressPercent}%`;
+}
+
 // Set dzikir time
 function setDzikirTime(time) {
   dzikirState.time = time;
@@ -5910,6 +5950,10 @@ function renderDzikirPage() {
   // Update menu badge
   const menuBadge = document.getElementById('menuDzikirBadge');
   if (menuBadge) menuBadge.textContent = `${progressPercent}%`;
+  
+  // Update header dzikir progress
+  const headerDzikirProgress = document.getElementById('dzikirProgress');
+  if (headerDzikirProgress) headerDzikirProgress.textContent = `${progressPercent}%`;
   
   // Render list
   const container = document.getElementById('dzikirList');

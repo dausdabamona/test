@@ -117,13 +117,23 @@
     }
     .header-stats .stats-left {
       display: flex;
-      gap: 16px;
+      gap: 12px;
     }
     .header-stats .stat-item {
       font-size: 13px;
       display: flex;
       align-items: center;
       gap: 4px;
+    }
+    .header-stats .stat-item.clickable {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
+      transition: all 0.2s;
+    }
+    .header-stats .stat-item.clickable:hover {
+      background: rgba(255,255,255,0.25);
     }
     .header-stats .stat-item .value { font-weight: 700; }
     
@@ -3707,10 +3717,9 @@
     </div>
     <div class="header-stats">
       <div class="stats-left">
+        <div class="stat-item clickable" onclick="showPage('dzikir')" title="Dzikir Pagi Sore">📿 <span class="value" id="dzikirProgress">0%</span></div>
         <div class="stat-item">🕌 <span class="value" id="sholatCount">0/8</span></div>
-        <div class="stat-item">📿 <span class="value" id="habitCount">0/11</span></div>
-        <div class="stat-item">🍅 <span class="value" id="pomodoroCount">0</span></div>
-        <div class="stat-item">⏱️ <span class="value" id="focusMinutes">0m</span></div>
+        <div class="stat-item">🌙 <span class="value" id="habitCount">0/11</span></div>
       </div>
       <div class="quick-icons">
         <button class="quick-icon-btn" onclick="openQuickBrainDump()" title="Brain Dump">🧠</button>
