@@ -1459,6 +1459,55 @@
     }
     .modal-body { padding: 20px; }
     
+    /* Brain Dump Destination Options */
+    .braindump-destination-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .destination-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 8px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .destination-option:hover {
+      border-color: var(--primary-light);
+      background: var(--gray-50);
+    }
+    .destination-option.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    }
+    .destination-option input[type="radio"] {
+      display: none;
+    }
+    .destination-option .dest-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+    .destination-option .dest-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-align: center;
+    }
+    .destination-option.active .dest-label {
+      color: var(--primary);
+    }
+    
+    @media (max-width: 400px) {
+      .braindump-destination-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
     /* Forms */
     .form-group { margin-bottom: 16px; }
     .form-label {
@@ -5541,14 +5590,87 @@
   
   <!-- Modal: Quick Brain Dump -->
   <div class="modal-overlay" id="modal-quick-braindump" onclick="if(event.target===this)closeModal('quick-braindump')">
-    <div class="modal">
+    <div class="modal" style="max-width: 450px;">
       <div class="modal-header">
-        <span class="modal-title">🧠 Quick Brain Dump</span>
-        <button class="modal-close" onclick="closeModal('quick-braindump')">✕</button>
+        <span class="modal-title" style="font-size: 20px;">🧠 Quick Brain Dump</span>
+        <button class="modal-close" onclick="closeModal('quick-braindump')" style="font-size: 24px;">✕</button>
       </div>
-      <div class="modal-body">
-        <textarea class="form-input form-textarea" id="quickBrainDumpInput" placeholder="Tulis ide, pikiran, apapun..." style="min-height: 120px;"></textarea>
-        <button class="btn-submit" style="margin-top: 12px;" onclick="submitQuickBrainDump()">💾 Simpan</button>
+      <div class="modal-body" style="padding: 20px;">
+        <textarea class="form-input form-textarea" id="quickBrainDumpInput" placeholder="Tulis ide, pikiran, apapun yang terlintas di benakmu..." style="min-height: 180px; font-size: 18px; line-height: 1.7; padding: 16px; border-radius: 12px;"></textarea>
+        
+        <div class="form-group" style="margin-top: 20px;">
+          <label class="form-label" style="font-size: 15px; font-weight: 600; margin-bottom: 12px; display: block;">📍 Simpan ke:</label>
+          <div class="braindump-destination-options">
+            <label class="destination-option active" data-dest="braindump">
+              <input type="radio" name="braindumpDest" value="braindump" checked>
+              <span class="dest-icon">🧠</span>
+              <span class="dest-label">Brain Dump</span>
+            </label>
+            <label class="destination-option" data-dest="task">
+              <input type="radio" name="braindumpDest" value="task">
+              <span class="dest-icon">📋</span>
+              <span class="dest-label">Task</span>
+            </label>
+            <label class="destination-option" data-dest="journal">
+              <input type="radio" name="braindumpDest" value="journal">
+              <span class="dest-icon">📝</span>
+              <span class="dest-label">Jurnal</span>
+            </label>
+            <label class="destination-option" data-dest="learning">
+              <input type="radio" name="braindumpDest" value="learning">
+              <span class="dest-icon">📚</span>
+              <span class="dest-label">Pelajaran</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Task options (hidden by default) -->
+        <div id="quickTaskOptions" style="display: none; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 14px;">🎯 Prioritas</label>
+            <select class="form-input form-select" id="quickTaskPriority" style="font-size: 16px; padding: 12px;">
+              <option value="HIGH">🔴 Tinggi</option>
+              <option value="MEDIUM" selected>🟡 Sedang</option>
+              <option value="LOW">🟢 Rendah</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size: 14px;">📅 Target Selesai</label>
+            <input type="date" class="form-input" id="quickTaskDueDate" style="font-size: 16px; padding: 12px;">
+          </div>
+        </div>
+        
+        <!-- Journal options (hidden by default) -->
+        <div id="quickJournalOptions" style="display: none; margin-top: 16px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 14px;">📖 Tipe Jurnal</label>
+            <select class="form-input form-select" id="quickJournalType" style="font-size: 16px; padding: 12px;">
+              <option value="gratitude">🙏 Syukur</option>
+              <option value="reflection">💭 Refleksi</option>
+              <option value="idea">💡 Ide</option>
+              <option value="note">📝 Catatan</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Learning options (hidden by default) -->
+        <div id="quickLearningOptions" style="display: none; margin-top: 16px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 14px;">📚 Kategori</label>
+            <select class="form-input form-select" id="quickLearningCategory" style="font-size: 16px; padding: 12px;">
+              <option value="HIKMAH">🌙 Hikmah</option>
+              <option value="TEKNIS">💻 Teknis</option>
+              <option value="BISNIS">💼 Bisnis</option>
+              <option value="KEHIDUPAN">🌱 Kehidupan</option>
+              <option value="LAINNYA">📌 Lainnya</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button class="btn-submit btn-secondary" style="flex: 1; font-size: 16px; padding: 14px;" onclick="closeModal('quick-braindump')">Batal</button>
+          <button class="btn-submit" style="flex: 2; font-size: 16px; padding: 14px;" onclick="submitQuickBrainDump()">💾 Simpan</button>
+        </div>
       </div>
     </div>
   </div>

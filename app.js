@@ -4499,7 +4499,46 @@ function parseJSON(str) {
 // ============================================
 function openQuickBrainDump() {
   document.getElementById('quickBrainDumpInput').value = '';
+  
+  // Reset destination to braindump
+  document.querySelectorAll('.destination-option').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.dest === 'braindump') {
+      opt.classList.add('active');
+      opt.querySelector('input').checked = true;
+    }
+  });
+  
+  // Hide extra options
+  document.getElementById('quickTaskOptions').style.display = 'none';
+  document.getElementById('quickJournalOptions').style.display = 'none';
+  const learningOpts = document.getElementById('quickLearningOptions');
+  if (learningOpts) learningOpts.style.display = 'none';
+  
+  // Set default due date to tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dueDateEl = document.getElementById('quickTaskDueDate');
+  if (dueDateEl) dueDateEl.value = tomorrow.toISOString().split('T')[0];
+  
   openModal('quick-braindump');
+  
+  // Setup destination option listeners
+  setTimeout(() => {
+    document.querySelectorAll('.destination-option').forEach(opt => {
+      opt.onclick = function() {
+        document.querySelectorAll('.destination-option').forEach(o => o.classList.remove('active'));
+        this.classList.add('active');
+        this.querySelector('input').checked = true;
+        
+        const dest = this.dataset.dest;
+        document.getElementById('quickTaskOptions').style.display = dest === 'task' ? 'block' : 'none';
+        document.getElementById('quickJournalOptions').style.display = dest === 'journal' ? 'block' : 'none';
+        const learningOpts = document.getElementById('quickLearningOptions');
+        if (learningOpts) learningOpts.style.display = dest === 'learning' ? 'block' : 'none';
+      };
+    });
+  }, 100);
 }
 
 function submitQuickBrainDump() {
@@ -4511,21 +4550,102 @@ function submitQuickBrainDump() {
     return;
   }
   
+  // Get selected destination
+  const selectedDest = document.querySelector('.destination-option.active')?.dataset.dest || 'braindump';
+  
   const tempId = 'temp_' + Date.now();
   const now = new Date();
   
-  const newDump = {
-    log_id: tempId,
-    content: content,
-    time: now.toTimeString().slice(0, 5),
-    created_at: now.toISOString()
-  };
-  state.brainDumps = [newDump, ...(state.brainDumps || [])];
-  
-  addToQueue('saveBrainDump', { content: content });
-  
-  closeModal('quick-braindump');
-  showToast('Brain dump tersimpan! 🧠', 'success');
+  switch(selectedDest) {
+    case 'task':
+      // Save as task
+      const priority = document.getElementById('quickTaskPriority')?.value || 'MEDIUM';
+      const dueDate = document.getElementById('quickTaskDueDate')?.value || null;
+      const newTask = {
+        task_id: tempId,
+        title: content,
+        priority: priority,
+        status: 'TODO',
+        due_date: dueDate,
+        created_at: now.toISOString()
+      };
+      state.kanban.TODO = [newTask, ...(state.kanban.TODO || [])];
+      addToQueue('saveTask', { title: content, priority: priority, status: 'TODO', due_date: dueDate });
+      closeModal('quick-braindump');
+      showToast('Task berhasil ditambahkan! 📋', 'success');
+      break;
+      
+    case 'journal':
+      // Save to journal
+      const journalType = document.getElementById('quickJournalType')?.value || 'reflection';
+      const typeLabels = {
+        'gratitude': '🙏 Syukur',
+        'reflection': '💭 Refleksi',
+        'idea': '💡 Ide',
+        'note': '📝 Catatan'
+      };
+      
+      // Add to evening journal reflections or create new entry
+      const journalEntry = {
+        type: journalType,
+        label: typeLabels[journalType],
+        content: content,
+        time: now.toTimeString().slice(0, 5)
+      };
+      
+      // Store in localStorage for now, will be merged with journal
+      let quickJournals = JSON.parse(localStorage.getItem('quickJournals') || '[]');
+      quickJournals.unshift(journalEntry);
+      localStorage.setItem('quickJournals', JSON.stringify(quickJournals));
+      
+      closeModal('quick-braindump');
+      showToast(`${typeLabels[journalType]} tersimpan! 📝`, 'success');
+      break;
+      
+    case 'learning':
+      // Save as learning/pelajaran
+      const learningCategory = document.getElementById('quickLearningCategory')?.value || 'LAINNYA';
+      const categoryLabels = {
+        'HIKMAH': '🌙 Hikmah',
+        'TEKNIS': '💻 Teknis',
+        'BISNIS': '💼 Bisnis',
+        'KEHIDUPAN': '🌱 Kehidupan',
+        'LAINNYA': '📌 Lainnya'
+      };
+      
+      const newLearning = {
+        learning_id: tempId,
+        content: content,
+        category: learningCategory,
+        source: 'Quick Brain Dump',
+        created_at: now.toISOString()
+      };
+      
+      // Add to state if exists
+      if (!state.learnings) state.learnings = [];
+      state.learnings.unshift(newLearning);
+      
+      // Save via API
+      addToQueue('saveLearning', { content: content, category: learningCategory, source: 'Quick Brain Dump' });
+      
+      closeModal('quick-braindump');
+      showToast(`${categoryLabels[learningCategory]} tersimpan! 📚`, 'success');
+      break;
+      
+    default:
+      // Save as brain dump (original behavior)
+      const newDump = {
+        log_id: tempId,
+        content: content,
+        time: now.toTimeString().slice(0, 5),
+        created_at: now.toISOString()
+      };
+      state.brainDumps = [newDump, ...(state.brainDumps || [])];
+      addToQueue('saveBrainDump', { content: content });
+      closeModal('quick-braindump');
+      showToast('Brain dump tersimpan! 🧠', 'success');
+      break;
+  }
 }
 
 // ============================================
