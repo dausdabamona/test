@@ -6468,8 +6468,16 @@ function updateDzikirFullscreenUI(dzikir) {
   updateDzikirFsProgress();
 }
 
+// Debounce flag untuk mencegah double trigger di mobile
+let dzikirNavDebounce = false;
+
 // Go to previous dzikir
 function goToPrevDzikir() {
+  // Debounce untuk mencegah double trigger
+  if (dzikirNavDebounce) return;
+  dzikirNavDebounce = true;
+  setTimeout(() => { dzikirNavDebounce = false; }, 300);
+  
   if (dzikirState.currentIndex <= 0) return;
   
   // Save current progress first
@@ -6488,10 +6496,17 @@ function goToPrevDzikir() {
   
   // Haptic feedback
   if (navigator.vibrate) navigator.vibrate(20);
+  
+  console.log('[Dzikir] Prev:', dzikirState.currentIndex, dzikir.id);
 }
 
 // Go to next dzikir
 function goToNextDzikir() {
+  // Debounce untuk mencegah double trigger
+  if (dzikirNavDebounce) return;
+  dzikirNavDebounce = true;
+  setTimeout(() => { dzikirNavDebounce = false; }, 300);
+  
   if (dzikirState.currentIndex >= DZIKIR_DATA.length - 1) return;
   
   // Save current progress first
@@ -6510,6 +6525,8 @@ function goToNextDzikir() {
   
   // Haptic feedback
   if (navigator.vibrate) navigator.vibrate(20);
+  
+  console.log('[Dzikir] Next:', dzikirState.currentIndex, dzikir.id);
 }
 
 // Close dzikir fullscreen

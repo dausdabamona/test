@@ -3395,29 +3395,39 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       margin-top: 16px;
-      padding: 0 20px;
+      padding: 0 16px;
+      width: 100%;
     }
     .dzikir-fs-nav-btn {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding: 10px 16px;
+      padding: 12px 18px;
+      min-height: 44px;
+      min-width: 44px;
       background: rgba(255,255,255,0.15);
       border: none;
-      border-radius: 20px;
+      border-radius: 22px;
       color: white;
       font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
+      -webkit-tap-highlight-color: rgba(255,255,255,0.3);
+      touch-action: manipulation;
+      user-select: none;
     }
-    .dzikir-fs-nav-btn:hover {
-      background: rgba(255,255,255,0.25);
+    .dzikir-fs-nav-btn:hover,
+    .dzikir-fs-nav-btn:active {
+      background: rgba(255,255,255,0.3);
     }
     .dzikir-fs-nav-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+      pointer-events: none;
     }
     .dzikir-fs-nav-indicator {
       font-size: 13px;
@@ -6827,11 +6837,11 @@
       
       <!-- Navigasi Prev/Next Dzikir -->
       <div class="dzikir-fs-nav">
-        <button class="dzikir-fs-nav-btn" id="dzikirPrevBtn" onclick="goToPrevDzikir()">
+        <button type="button" class="dzikir-fs-nav-btn" id="dzikirPrevBtn" onclick="goToPrevDzikir()" ontouchend="goToPrevDzikir(); event.preventDefault();">
           ← Sebelumnya
         </button>
         <span class="dzikir-fs-nav-indicator" id="dzikirNavIndicator">1/16</span>
-        <button class="dzikir-fs-nav-btn" id="dzikirNextBtn" onclick="goToNextDzikir()">
+        <button type="button" class="dzikir-fs-nav-btn" id="dzikirNextBtn" onclick="goToNextDzikir()" ontouchend="goToNextDzikir(); event.preventDefault();">
           Berikutnya →
         </button>
       </div>
