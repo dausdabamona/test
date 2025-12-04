@@ -71,9 +71,10 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--gray-100);
       color: var(--gray-900);
-      line-height: 1.5;
+      line-height: 1.6;
       min-height: 100vh;
       padding-bottom: 80px;
+      font-size: 16px;
     }
     
     /* Header */
@@ -91,8 +92,8 @@
       align-items: center;
       margin-bottom: 16px;
     }
-    .header-top h1 { font-size: 20px; font-weight: 700; }
-    .header-date { font-size: 13px; opacity: 0.9; }
+    .header-top h1 { font-size: 22px; font-weight: 700; }
+    .header-date { font-size: 14px; opacity: 0.9; }
     
     .header-greeting {
       text-align: center;
@@ -193,16 +194,16 @@
       align-items: center;
       margin-bottom: 16px;
     }
-    .card-title { font-size: 16px; font-weight: 700; }
+    .card-title { font-size: 17px; font-weight: 700; }
     .card-action {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--primary);
       cursor: pointer;
       font-weight: 600;
     }
     
     .section-title {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--gray-700);
       margin: 24px 0 12px;
@@ -232,13 +233,13 @@
       flex: 1;
     }
     .quote-text {
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.6;
       font-weight: 500;
       margin-bottom: 8px;
     }
     .quote-source {
-      font-size: 12px;
+      font-size: 13px;
       opacity: 0.85;
       font-style: italic;
     }
@@ -280,29 +281,29 @@
       margin-bottom: 12px;
     }
     .journal-card .title {
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .journal-card .status {
-      font-size: 11px;
-      padding: 4px 10px;
+      font-size: 12px;
+      padding: 5px 12px;
       border-radius: var(--radius-full);
       font-weight: 600;
     }
     .journal-card .status.done { background: var(--success-light); color: var(--success); }
     .journal-card .status.pending { background: var(--gray-100); color: var(--gray-500); }
     .journal-card .content {
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.8;
       color: var(--gray-700);
     }
     .journal-card .content .label {
       font-weight: 600;
       color: var(--gray-800);
-      margin-top: 8px;
+      margin-top: 10px;
     }
     .journal-card .content .label:first-child { margin-top: 0; }
     
@@ -310,35 +311,36 @@
     .journal-saved-content {
       background: var(--gray-50);
       border-radius: var(--radius-md);
-      padding: 12px;
+      padding: 14px;
     }
     .journal-item {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .journal-item:last-child { margin-bottom: 0; }
     .journal-label {
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--gray-500);
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
     .journal-text {
-      font-size: 13px;
+      font-size: 15px;
       color: var(--gray-700);
-      line-height: 1.5;
+      line-height: 1.6;
       white-space: pre-wrap;
     }
     
     .journal-card textarea {
       width: 100%;
-      min-height: 50px;
-      padding: 10px;
+      min-height: 60px;
+      padding: 12px;
       border: 1px solid var(--gray-200);
       border-radius: var(--radius-md);
-      font-size: 13px;
+      font-size: 15px;
       font-family: inherit;
       resize: none;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      line-height: 1.6;
     }
     .journal-card textarea:focus {
       outline: none;
@@ -807,13 +809,13 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .back-btn {
       background: none;
       border: none;
       color: var(--primary);
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       cursor: pointer;
       padding: 8px 0;
@@ -823,7 +825,7 @@
     }
     .back-btn:hover { text-decoration: underline; }
     .page-title {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--gray-800);
       margin: 0;
@@ -1398,7 +1400,7 @@
       align-items: center;
       padding: 8px 12px;
       color: var(--gray-500);
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       border: none;
@@ -1408,7 +1410,7 @@
     }
     .nav-item:hover { background: var(--gray-100); }
     .nav-item.active { color: var(--primary); }
-    .nav-item .icon { font-size: 26px; margin-bottom: 4px; }
+    .nav-item .icon { font-size: 28px; margin-bottom: 4px; }
     
     /* Modal */
     .modal-overlay {
@@ -1447,15 +1449,15 @@
       background: white;
       z-index: 1;
     }
-    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-title { font-size: 20px; font-weight: 700; }
     .modal-close {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border: none;
       background: var(--gray-100);
       border-radius: var(--radius-full);
       cursor: pointer;
-      font-size: 16px;
+      font-size: 18px;
     }
     .modal-body { padding: 20px; }
     
@@ -1512,32 +1514,32 @@
     .form-group { margin-bottom: 16px; }
     .form-label {
       display: block;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--gray-700);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .form-input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border: 2px solid var(--gray-200);
       border-radius: var(--radius-md);
-      font-size: 14px;
+      font-size: 16px;
       font-family: inherit;
       transition: border-color 0.2s;
     }
     .form-input:focus { outline: none; border-color: var(--primary); }
-    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
     .form-select { background: white; cursor: pointer; }
     
     .btn-submit {
       width: 100%;
-      padding: 14px 24px;
+      padding: 16px 24px;
       background: var(--gradient-header);
       color: white;
       border: none;
       border-radius: var(--radius-md);
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow-md);
@@ -1713,8 +1715,8 @@
       box-shadow: var(--shadow-sm);
     }
     .menu-group-title {
-      padding: 12px 16px;
-      font-size: 11px;
+      padding: 14px 16px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--gray-500);
       text-transform: uppercase;
@@ -1725,36 +1727,36 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
+      padding: 16px;
       cursor: pointer;
       border-bottom: 1px solid var(--gray-100);
       transition: background 0.2s;
     }
     .menu-item:last-child { border-bottom: none; }
     .menu-item:hover { background: var(--gray-50); }
-    .menu-item .left { display: flex; align-items: center; gap: 12px; }
+    .menu-item .left { display: flex; align-items: center; gap: 14px; }
     .menu-item .icon {
-      font-size: 22px;
-      width: 36px;
-      height: 36px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: var(--gray-100);
       border-radius: var(--radius-md);
     }
-    .menu-item .info .title { font-size: 14px; font-weight: 600; }
-    .menu-item .info .subtitle { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+    .menu-item .info .title { font-size: 16px; font-weight: 600; }
+    .menu-item .info .subtitle { font-size: 13px; color: var(--gray-500); margin-top: 3px; }
     .menu-item .right { display: flex; align-items: center; gap: 8px; }
     .menu-item .badge {
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: var(--radius-full);
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 600;
     }
     .menu-item .badge.success { background: var(--success-light); color: var(--success); }
     .menu-item .badge.info { background: var(--info-light); color: var(--info); }
-    .menu-item .arrow { color: var(--gray-400); }
+    .menu-item .arrow { color: var(--gray-400); font-size: 18px; }
     
     /* Pages */
     .page { display: none; }
@@ -1764,12 +1766,12 @@
     /* Tabs */
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
     .tab-btn {
-      padding: 10px 18px;
+      padding: 12px 20px;
       border: none;
       border-radius: var(--radius-full);
       background: var(--gray-100);
       color: var(--gray-600);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
@@ -1784,7 +1786,7 @@
       color: var(--gray-500);
     }
     .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-    .empty-state p { font-size: 13px; line-height: 1.6; }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
     
     /* Sholat Grid (untuk page ibadah) */
     .sholat-container {
@@ -3093,29 +3095,29 @@
     .dzikir-item-content { flex: 1; min-width: 0; }
     .dzikir-item-arabic {
       font-family: 'Scheherazade New', 'Traditional Arabic', serif;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.6;
       direction: rtl;
       text-align: right;
       color: var(--gray-800);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .dzikir-item-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--gray-700);
     }
     .dzikir-item-count {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--gray-500);
     }
     
     .dzikir-item-progress {
       text-align: right;
-      min-width: 50px;
+      min-width: 55px;
     }
     .dzikir-item-progress-text {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--primary);
     }
@@ -3123,7 +3125,7 @@
     
     /* Dzikir Counter Modal */
     .dzikir-counter-modal {
-      max-width: 400px;
+      max-width: 420px;
       padding: 24px;
       text-align: center;
     }
@@ -3137,34 +3139,35 @@
       top: 0;
     }
     .dzikir-counter-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--gray-700);
     }
     
     .dzikir-counter-arabic {
       font-family: 'Scheherazade New', 'Traditional Arabic', serif;
-      font-size: 28px;
+      font-size: 32px;
       line-height: 1.8;
       color: var(--gray-800);
-      padding: 16px;
+      padding: 20px;
       background: linear-gradient(135deg, #fef3c7, #fde68a);
       border-radius: var(--radius-lg);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     
     .dzikir-counter-latin {
-      font-size: 13px;
+      font-size: 15px;
       color: var(--gray-600);
       font-style: italic;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     
     .dzikir-counter-meaning {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--gray-500);
       margin-bottom: 20px;
       padding: 0 12px;
+      line-height: 1.6;
     }
     
     .dzikir-counter-display {
