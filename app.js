@@ -4500,6 +4500,14 @@ function parseJSON(str) {
 function openQuickBrainDump() {
   document.getElementById('quickBrainDumpInput').value = '';
   
+  // Reset time input (kosongkan, akan pakai waktu saat ini jika tidak diisi)
+  const timeInput = document.getElementById('quickBrainDumpTime');
+  if (timeInput) timeInput.value = '';
+  
+  // Reset kategori ke Lainnya
+  const categoryInput = document.getElementById('quickBrainDumpCategory');
+  if (categoryInput) categoryInput.value = 'LAINNYA';
+  
   // Reset destination to braindump
   document.querySelectorAll('.destination-option').forEach(opt => {
     opt.classList.remove('active');
@@ -4553,8 +4561,19 @@ function submitQuickBrainDump() {
   // Get selected destination
   const selectedDest = document.querySelector('.destination-option.active')?.dataset.dest || 'braindump';
   
+  // Get waktu (optional) dan kategori
+  const timeInput = document.getElementById('quickBrainDumpTime')?.value;
+  const category = document.getElementById('quickBrainDumpCategory')?.value || 'LAINNYA';
+  
   const tempId = 'temp_' + Date.now();
   const now = new Date();
+  
+  // Waktu: gunakan input jika ada, atau waktu saat ini
+  const recordTime = timeInput || now.toTimeString().slice(0, 5);
+  
+  // Get day of week (untuk perbandingan dengan Best Week)
+  const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const dayOfWeek = dayNames[now.getDay()];
   
   switch(selectedDest) {
     case 'task':
@@ -4567,10 +4586,11 @@ function submitQuickBrainDump() {
         priority: priority,
         status: 'TODO',
         due_date: dueDate,
+        category: category,
         created_at: now.toISOString()
       };
       state.kanban.TODO = [newTask, ...(state.kanban.TODO || [])];
-      addToQueue('saveTask', { title: content, priority: priority, status: 'TODO', due_date: dueDate });
+      addToQueue('saveTask', { title: content, priority: priority, status: 'TODO', due_date: dueDate, category: category });
       closeModal('quick-braindump');
       showToast('Task berhasil ditambahkan! 📋', 'success');
       break;
@@ -4590,7 +4610,11 @@ function submitQuickBrainDump() {
         type: journalType,
         label: typeLabels[journalType],
         content: content,
-        time: now.toTimeString().slice(0, 5)
+        time: recordTime,
+        category: category,
+        day: dayOfWeek,
+        date: now.toISOString().split('T')[0],
+        created_at: now.toISOString()
       };
       
       // Store in localStorage for now, will be merged with journal
@@ -4633,19 +4657,78 @@ function submitQuickBrainDump() {
       break;
       
     default:
-      // Save as brain dump (original behavior)
+      // Save as brain dump with time and category
+      const categoryIcons = {
+        'IBADAH': '🕌',
+        'KERJA': '💼',
+        'KELUARGA': '👨‍👩‍👧',
+        'OLAHRAGA': '🏃',
+        'ISTIRAHAT': '😴',
+        'BELAJAR': '📚',
+        'SOSIAL': '🤝',
+        'LAINNYA': '📝'
+      };
+      
       const newDump = {
         log_id: tempId,
         content: content,
-        time: now.toTimeString().slice(0, 5),
+        time: recordTime,
+        category: category,
+        categoryIcon: categoryIcons[category] || '📝',
+        day: dayOfWeek,
+        date: now.toISOString().split('T')[0],
         created_at: now.toISOString()
       };
       state.brainDumps = [newDump, ...(state.brainDumps || [])];
-      addToQueue('saveBrainDump', { content: content });
+      
+      // Also save to activity log for weekly comparison
+      saveActivityLog(newDump);
+      
+      addToQueue('saveBrainDump', { content: content, time: recordTime, category: category });
       closeModal('quick-braindump');
       showToast('Brain dump tersimpan! 🧠', 'success');
       break;
   }
+}
+
+// Save activity log untuk perbandingan dengan Best Week
+function saveActivityLog(entry) {
+  const today = new Date().toISOString().split('T')[0];
+  const weekKey = getWeekKey(new Date());
+  
+  // Get existing activity logs
+  let activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '{}');
+  
+  // Initialize week if not exists
+  if (!activityLogs[weekKey]) {
+    activityLogs[weekKey] = {};
+  }
+  
+  // Initialize day if not exists
+  if (!activityLogs[weekKey][entry.day]) {
+    activityLogs[weekKey][entry.day] = [];
+  }
+  
+  // Add entry
+  activityLogs[weekKey][entry.day].push({
+    time: entry.time,
+    category: entry.category,
+    content: entry.content,
+    date: entry.date
+  });
+  
+  // Sort by time
+  activityLogs[weekKey][entry.day].sort((a, b) => a.time.localeCompare(b.time));
+  
+  // Save
+  localStorage.setItem('activityLogs', JSON.stringify(activityLogs));
+}
+
+// Get week key (year-week number)
+function getWeekKey(date) {
+  const year = date.getFullYear();
+  const weekNum = getWeekNumber(date);
+  return `${year}-W${weekNum}`;
 }
 
 // ============================================
@@ -4659,6 +4742,9 @@ async function loadReviewPage() {
   
   // Load stats (use existing data)
   updateReviewStats();
+  
+  // Load Best Week comparison
+  refreshBestWeekComparison();
   
   // Load current week review
   try {
@@ -4678,6 +4764,212 @@ async function loadReviewPage() {
   } catch (err) {
     console.error('Failed to load review history:', err);
   }
+}
+
+// Refresh Best Week Comparison
+function refreshBestWeekComparison() {
+  const weekKey = getWeekKey(new Date());
+  const activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '{}');
+  const weekLogs = activityLogs[weekKey] || {};
+  
+  // Best Week Template from state atau localStorage
+  const bestWeek = state.bestWeek || JSON.parse(localStorage.getItem('bestWeekTemplate') || '{}');
+  
+  // Category definitions
+  const categories = ['IBADAH', 'KERJA', 'KELUARGA', 'OLAHRAGA', 'BELAJAR'];
+  const categoryIcons = {
+    'IBADAH': '🕌',
+    'KERJA': '💼',
+    'KELUARGA': '👨‍👩‍👧',
+    'OLAHRAGA': '🏃',
+    'BELAJAR': '📚'
+  };
+  
+  // Count activities per category
+  let totalPlanned = 0;
+  let totalActual = 0;
+  const categoryStats = {};
+  
+  categories.forEach(cat => {
+    categoryStats[cat] = { planned: 0, actual: 0 };
+  });
+  
+  // Count planned from Best Week
+  const dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  dayNames.forEach(day => {
+    const daySchedule = bestWeek[day] || [];
+    daySchedule.forEach(item => {
+      const cat = mapActivityToCategory(item.activity || item.label || '');
+      if (categoryStats[cat]) {
+        categoryStats[cat].planned++;
+        totalPlanned++;
+      }
+    });
+  });
+  
+  // Count actual from activity logs
+  Object.keys(weekLogs).forEach(day => {
+    const dayLogs = weekLogs[day] || [];
+    dayLogs.forEach(log => {
+      const cat = log.category || 'LAINNYA';
+      if (categoryStats[cat]) {
+        categoryStats[cat].actual++;
+        totalActual++;
+      }
+    });
+  });
+  
+  // Calculate adherence score
+  const adherenceScore = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
+  
+  // Update UI
+  const adherenceValue = document.getElementById('adherenceValue');
+  const adherenceSubtitle = document.getElementById('adherenceSubtitle');
+  const adherenceCircle = document.querySelector('.adherence-circle');
+  
+  if (adherenceValue) {
+    adherenceValue.textContent = totalActual > 0 ? Math.min(adherenceScore, 100) : '-';
+  }
+  
+  if (adherenceSubtitle) {
+    if (totalActual === 0) {
+      adherenceSubtitle.textContent = 'Belum ada aktivitas tercatat minggu ini';
+    } else {
+      adherenceSubtitle.textContent = `${totalActual} aktivitas tercatat dari ${totalPlanned || 'N/A'} rencana`;
+    }
+  }
+  
+  if (adherenceCircle) {
+    if (adherenceScore >= 80) {
+      adherenceCircle.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (adherenceScore >= 50) {
+      adherenceCircle.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    } else {
+      adherenceCircle.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    }
+  }
+  
+  // Update category breakdown
+  const breakdownContainer = document.getElementById('categoryBreakdown');
+  if (breakdownContainer) {
+    let html = '';
+    categories.forEach(cat => {
+      const stats = categoryStats[cat];
+      const pct = stats.planned > 0 ? Math.round((stats.actual / stats.planned) * 100) : (stats.actual > 0 ? 100 : 0);
+      const fillWidth = Math.min(pct, 100);
+      
+      html += `
+        <div class="category-item">
+          <span class="cat-icon">${categoryIcons[cat]}</span>
+          <span class="cat-name">${cat.charAt(0) + cat.slice(1).toLowerCase()}</span>
+          <div class="cat-bar"><div class="cat-fill" style="width: ${fillWidth}%"></div></div>
+          <span class="cat-percent">${stats.actual > 0 ? pct + '%' : '-'}</span>
+        </div>
+      `;
+    });
+    breakdownContainer.innerHTML = html;
+  }
+}
+
+// Map activity text to category
+function mapActivityToCategory(activity) {
+  const text = activity.toLowerCase();
+  
+  if (text.includes('sholat') || text.includes('tahajud') || text.includes('dzikir') || text.includes('quran') || text.includes('ibadah') || text.includes('dhuha')) {
+    return 'IBADAH';
+  }
+  if (text.includes('kerja') || text.includes('kantor') || text.includes('meeting') || text.includes('rapat') || text.includes('fokus') || text.includes('email')) {
+    return 'KERJA';
+  }
+  if (text.includes('keluarga') || text.includes('anak') || text.includes('istri') || text.includes('makan bersama') || text.includes('quality time')) {
+    return 'KELUARGA';
+  }
+  if (text.includes('olahraga') || text.includes('jogging') || text.includes('gym') || text.includes('lari') || text.includes('senam')) {
+    return 'OLAHRAGA';
+  }
+  if (text.includes('belajar') || text.includes('baca') || text.includes('kursus') || text.includes('training') || text.includes('studi')) {
+    return 'BELAJAR';
+  }
+  
+  return 'LAINNYA';
+}
+
+// Open detail comparison modal
+function openBestWeekDetailModal() {
+  renderBestWeekDetail();
+  openModal('bestweek-detail');
+}
+
+// Render detailed comparison
+function renderBestWeekDetail() {
+  const container = document.getElementById('bestweekDetailContent');
+  if (!container) return;
+  
+  const weekKey = getWeekKey(new Date());
+  const activityLogs = JSON.parse(localStorage.getItem('activityLogs') || '{}');
+  const weekLogs = activityLogs[weekKey] || {};
+  const bestWeek = state.bestWeek || JSON.parse(localStorage.getItem('bestWeekTemplate') || '{}');
+  
+  const dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  const categoryIcons = {
+    'IBADAH': '🕌',
+    'KERJA': '💼',
+    'KELUARGA': '👨‍👩‍👧',
+    'OLAHRAGA': '🏃',
+    'ISTIRAHAT': '😴',
+    'BELAJAR': '📚',
+    'SOSIAL': '🤝',
+    'LAINNYA': '📝'
+  };
+  
+  let html = '';
+  let hasData = false;
+  
+  dayNames.forEach(day => {
+    const planned = bestWeek[day] || [];
+    const actual = weekLogs[day] || [];
+    
+    if (planned.length > 0 || actual.length > 0) {
+      hasData = true;
+      html += `
+        <div style="margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 16px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--gray-200);">
+            📅 ${day}
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 8px;">📋 Rencana (Best Week)</div>
+              ${planned.length > 0 ? planned.map(p => `
+                <div style="font-size: 13px; padding: 6px 8px; background: var(--gray-50); border-radius: 6px; margin-bottom: 4px;">
+                  <span style="color: var(--gray-400);">${p.time || '-'}</span> ${p.activity || p.label || '-'}
+                </div>
+              `).join('') : '<div style="font-size: 12px; color: var(--gray-400);">Tidak ada rencana</div>'}
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 8px;">✅ Aktual (Tercatat)</div>
+              ${actual.length > 0 ? actual.map(a => `
+                <div style="font-size: 13px; padding: 6px 8px; background: var(--success-light); border-radius: 6px; margin-bottom: 4px;">
+                  <span style="color: var(--gray-500);">${a.time || '-'}</span> ${categoryIcons[a.category] || '📝'} ${a.content ? a.content.substring(0, 30) : '-'}
+                </div>
+              `).join('') : '<div style="font-size: 12px; color: var(--gray-400);">Belum ada catatan</div>'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  if (!hasData) {
+    html = `
+      <div class="empty-state">
+        <span class="icon">📊</span>
+        <p style="font-size: 14px;">Catat aktivitas melalui Brain Dump untuk melihat perbandingan dengan Best Week</p>
+        <p style="font-size: 12px; color: var(--gray-400); margin-top: 8px;">Tips: Buat jadwal Best Week terlebih dahulu, lalu catat aktivitas harian</p>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
 }
 
 function updateReviewStats() {
