@@ -6292,6 +6292,7 @@ let dzikirState = {
   time: 'pagi', // 'pagi' atau 'sore'
   currentDzikir: null,
   currentCount: 0,
+  currentIndex: 0,
   progress: {}
 };
 
@@ -6419,25 +6420,20 @@ function renderDzikirPage() {
 
 // Open dzikir counter
 function openDzikirCounter(id) {
-  const dzikir = DZIKIR_DATA.find(d => d.id === id);
-  if (!dzikir) return;
+  const dzikirIndex = DZIKIR_DATA.findIndex(d => d.id === id);
+  if (dzikirIndex === -1) return;
+  
+  const dzikir = DZIKIR_DATA[dzikirIndex];
   
   dzikirState.currentDzikir = dzikir;
+  dzikirState.currentIndex = dzikirIndex;
   
   const today = todayString();
   const progress = dzikirState.progress[dzikirState.time] || {};
   dzikirState.currentCount = progress[id] || 0;
   
   // Update fullscreen elements
-  document.getElementById('dzikirFsTitle').textContent = dzikir.icon + ' ' + dzikir.latin.substring(0, 30);
-  document.getElementById('dzikirFsArabic').textContent = dzikir.arabic;
-  document.getElementById('dzikirFsLatin').textContent = dzikir.latin;
-  document.getElementById('dzikirFsMeaning').textContent = dzikir.meaning;
-  document.getElementById('dzikirFsCount').textContent = dzikirState.currentCount;
-  document.getElementById('dzikirFsTarget').textContent = `/ ${dzikir.target}`;
-  document.getElementById('dzikirFsVirtueText').textContent = dzikir.virtue;
-  
-  updateDzikirFsProgress();
+  updateDzikirFullscreenUI(dzikir);
   
   // Show fullscreen
   document.getElementById('dzikirFullscreen').classList.add('active');
@@ -6445,6 +6441,75 @@ function openDzikirCounter(id) {
   
   // Prevent scroll
   document.body.style.overflow = 'hidden';
+}
+
+// Update fullscreen UI dengan dzikir baru
+function updateDzikirFullscreenUI(dzikir) {
+  document.getElementById('dzikirFsTitle').textContent = dzikir.icon + ' ' + dzikir.latin.substring(0, 25);
+  document.getElementById('dzikirFsArabic').textContent = dzikir.arabic;
+  document.getElementById('dzikirFsLatin').textContent = dzikir.latin;
+  document.getElementById('dzikirFsMeaning').textContent = dzikir.meaning;
+  document.getElementById('dzikirFsCount').textContent = dzikirState.currentCount;
+  document.getElementById('dzikirFsTarget').textContent = `/ ${dzikir.target}`;
+  document.getElementById('dzikirFsVirtueText').textContent = dzikir.virtue;
+  
+  // Update navigation indicator
+  const indicator = document.getElementById('dzikirNavIndicator');
+  if (indicator) {
+    indicator.textContent = `${dzikirState.currentIndex + 1}/${DZIKIR_DATA.length}`;
+  }
+  
+  // Update prev/next button state
+  const prevBtn = document.getElementById('dzikirPrevBtn');
+  const nextBtn = document.getElementById('dzikirNextBtn');
+  if (prevBtn) prevBtn.disabled = dzikirState.currentIndex === 0;
+  if (nextBtn) nextBtn.disabled = dzikirState.currentIndex === DZIKIR_DATA.length - 1;
+  
+  updateDzikirFsProgress();
+}
+
+// Go to previous dzikir
+function goToPrevDzikir() {
+  if (dzikirState.currentIndex <= 0) return;
+  
+  // Save current progress first
+  saveDzikirProgress();
+  
+  // Move to previous
+  dzikirState.currentIndex--;
+  const dzikir = DZIKIR_DATA[dzikirState.currentIndex];
+  dzikirState.currentDzikir = dzikir;
+  
+  // Load progress for new dzikir
+  const progress = dzikirState.progress[dzikirState.time] || {};
+  dzikirState.currentCount = progress[dzikir.id] || 0;
+  
+  updateDzikirFullscreenUI(dzikir);
+  
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(20);
+}
+
+// Go to next dzikir
+function goToNextDzikir() {
+  if (dzikirState.currentIndex >= DZIKIR_DATA.length - 1) return;
+  
+  // Save current progress first
+  saveDzikirProgress();
+  
+  // Move to next
+  dzikirState.currentIndex++;
+  const dzikir = DZIKIR_DATA[dzikirState.currentIndex];
+  dzikirState.currentDzikir = dzikir;
+  
+  // Load progress for new dzikir
+  const progress = dzikirState.progress[dzikirState.time] || {};
+  dzikirState.currentCount = progress[dzikir.id] || 0;
+  
+  updateDzikirFullscreenUI(dzikir);
+  
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(20);
 }
 
 // Close dzikir fullscreen
