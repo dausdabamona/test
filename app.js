@@ -5628,23 +5628,42 @@ const FALLBACK_QUOTES = [
 
 // Load quotes dari database
 async function loadQuotesFromDB() {
+  console.log('[Quotes] Starting loadQuotesFromDB...');
   try {
-    const data = await apiGet('getQuotes', { limit: 100 });
-    if (data && data.length > 0) {
+    console.log('[Quotes] Calling API getQuotes...');
+    const data = await apiGet('getQuotes', { limit: 250 });
+    
+    console.log('[Quotes] API Response type:', typeof data, Array.isArray(data) ? `(array of ${data.length})` : '');
+    
+    if (data && Array.isArray(data) && data.length > 0) {
       quotesCache = data;
       quotesLoaded = true;
-      console.log(`[Quotes] Loaded ${data.length} quotes from database`);
+      console.log(`[Quotes] ✅ Loaded ${data.length} quotes from database`);
+    } else if (data && data.error) {
+      console.log('[Quotes] ⚠️ API Error:', data.error);
+      quotesCache = FALLBACK_QUOTES;
+      quotesLoaded = true;
+    } else {
+      console.log('[Quotes] ⚠️ No quotes returned, using fallback. Data:', data);
+      quotesCache = FALLBACK_QUOTES;
+      quotesLoaded = true;
     }
   } catch (err) {
-    console.log('[Quotes] Using fallback quotes:', err.message);
+    console.log('[Quotes] ❌ Error loading quotes:', err.message, err);
     quotesCache = FALLBACK_QUOTES;
     quotesLoaded = true;
   }
+  console.log('[Quotes] Final quotesCache length:', quotesCache.length);
 }
 
 // Get all available quotes
 function getAvailableQuotes() {
-  return quotesCache.length > 0 ? quotesCache : FALLBACK_QUOTES;
+  // Check if quotesCache has valid data
+  if (quotesCache && Array.isArray(quotesCache) && quotesCache.length > 0) {
+    return quotesCache;
+  }
+  // Return fallback
+  return FALLBACK_QUOTES;
 }
 
 // Get random quote with optional filter
@@ -5728,10 +5747,15 @@ function refreshDailyQuote() {
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[App] DOMContentLoaded - Starting initialization...');
+  
   // Load quotes from database first
+  console.log('[App] Loading quotes...');
   await loadQuotesFromDB();
+  console.log('[App] Quotes loaded, quotesCache:', quotesCache?.length || 0);
   
   // Render daily quote
+  console.log('[App] Rendering daily quote...');
   renderDailyQuote();
   
   // Update dzikir progress di header
@@ -5740,6 +5764,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load all data (includes journal)
   loadAllData();
   loadPomodoroSettings();
+  
+  console.log('[App] Initialization complete');
 });
 
 // Register service worker
