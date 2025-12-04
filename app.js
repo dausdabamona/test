@@ -6136,83 +6136,130 @@ function openDzikirCounter(id) {
   const progress = dzikirState.progress[dzikirState.time] || {};
   dzikirState.currentCount = progress[id] || 0;
   
-  document.getElementById('dzikirCounterTitle').textContent = dzikir.latin.substring(0, 50);
-  document.getElementById('dzikirCounterArabic').textContent = dzikir.arabic;
-  document.getElementById('dzikirCounterLatin').textContent = dzikir.latin;
-  document.getElementById('dzikirCounterMeaning').textContent = dzikir.meaning;
-  document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
-  document.getElementById('dzikirTargetCount').textContent = `/ ${dzikir.target}`;
-  document.getElementById('dzikirVirtueText').textContent = dzikir.virtue;
+  // Update fullscreen elements
+  document.getElementById('dzikirFsTitle').textContent = dzikir.icon + ' ' + dzikir.latin.substring(0, 30);
+  document.getElementById('dzikirFsArabic').textContent = dzikir.arabic;
+  document.getElementById('dzikirFsLatin').textContent = dzikir.latin;
+  document.getElementById('dzikirFsMeaning').textContent = dzikir.meaning;
+  document.getElementById('dzikirFsCount').textContent = dzikirState.currentCount;
+  document.getElementById('dzikirFsTarget').textContent = `/ ${dzikir.target}`;
+  document.getElementById('dzikirFsVirtueText').textContent = dzikir.virtue;
   
-  updateDzikirCircleColor();
+  updateDzikirFsProgress();
   
-  document.getElementById('dzikirCounterModal').classList.add('show');
+  // Show fullscreen
+  document.getElementById('dzikirFullscreen').classList.add('active');
+  document.body.classList.add('dzikir-fullscreen-active');
+  
+  // Prevent scroll
+  document.body.style.overflow = 'hidden';
 }
 
-// Close dzikir counter
-function closeDzikirCounter() {
-  document.getElementById('dzikirCounterModal').classList.remove('show');
+// Close dzikir fullscreen
+function closeDzikirFullscreen() {
+  document.getElementById('dzikirFullscreen').classList.remove('active');
+  document.body.classList.remove('dzikir-fullscreen-active');
+  document.body.style.overflow = '';
+  
   saveDzikirProgress();
   renderDzikirPage();
+  updateDzikirHeader();
 }
 
-// Increment dzikir
-function incrementDzikir() {
+// Increment dzikir fullscreen
+function incrementDzikirFs() {
   if (!dzikirState.currentDzikir) return;
   
   dzikirState.currentCount++;
-  document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
+  document.getElementById('dzikirFsCount').textContent = dzikirState.currentCount;
   
-  updateDzikirCircleColor();
+  updateDzikirFsProgress();
   
   // Vibrate if supported
   if (navigator.vibrate) {
     navigator.vibrate(30);
   }
-  
-  // Auto complete if reached target
-  if (dzikirState.currentCount >= dzikirState.currentDzikir.target) {
-    // Optional: auto close or show celebration
-    document.getElementById('dzikirCountCircle').style.background = 'linear-gradient(135deg, #10b981, #059669)';
-  }
 }
 
-// Decrement dzikir
-function decrementDzikir() {
+// Decrement dzikir fullscreen
+function decrementDzikirFs() {
   if (dzikirState.currentCount > 0) {
     dzikirState.currentCount--;
-    document.getElementById('dzikirCurrentCount').textContent = dzikirState.currentCount;
-    updateDzikirCircleColor();
+    document.getElementById('dzikirFsCount').textContent = dzikirState.currentCount;
+    updateDzikirFsProgress();
   }
 }
 
-// Reset current dzikir
-function resetCurrentDzikir() {
+// Reset dzikir fullscreen
+function resetDzikirFs() {
   dzikirState.currentCount = 0;
-  document.getElementById('dzikirCurrentCount').textContent = '0';
-  updateDzikirCircleColor();
+  document.getElementById('dzikirFsCount').textContent = '0';
+  updateDzikirFsProgress();
 }
 
-// Update circle color based on progress
-function updateDzikirCircleColor() {
+// Update progress bar and circle color
+function updateDzikirFsProgress() {
   const target = dzikirState.currentDzikir?.target || 100;
   const progress = dzikirState.currentCount / target;
-  const circle = document.getElementById('dzikirCountCircle');
+  const percentage = Math.min(progress * 100, 100);
+  
+  // Update progress bar
+  const progressBar = document.getElementById('dzikirFsProgressBar');
+  progressBar.style.width = percentage + '%';
+  
+  // Update circle and button colors based on completion
+  const circle = document.getElementById('dzikirFsCircle');
+  const completeBtn = document.getElementById('dzikirFsCompleteBtn');
   
   if (progress >= 1) {
-    circle.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-  } else if (progress >= 0.5) {
-    circle.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    circle.classList.add('completed');
+    progressBar.classList.add('completed');
+    completeBtn.classList.add('done');
+    completeBtn.textContent = '✓ Alhamdulillah, Selesai!';
   } else {
-    circle.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+    circle.classList.remove('completed');
+    progressBar.classList.remove('completed');
+    completeBtn.classList.remove('done');
+    completeBtn.textContent = '✓ Selesai & Simpan';
   }
 }
 
-// Complete dzikir
-function completeDzikir() {
+// Complete dzikir fullscreen
+function completeDzikirFs() {
   saveDzikirProgress();
-  closeDzikirCounter();
-  showToast('Dzikir tersimpan! ✓', 'success');
+  closeDzikirFullscreen();
+  
+  const target = dzikirState.currentDzikir?.target || 100;
+  if (dzikirState.currentCount >= target) {
+    showToast('Masya Allah! Dzikir selesai ✨', 'success');
+  } else {
+    showToast('Dzikir tersimpan! ✓', 'success');
+  }
+}
+
+// Legacy functions for backward compatibility
+function closeDzikirCounter() {
+  closeDzikirFullscreen();
+}
+
+function incrementDzikir() {
+  incrementDzikirFs();
+}
+
+function decrementDzikir() {
+  decrementDzikirFs();
+}
+
+function resetCurrentDzikir() {
+  resetDzikirFs();
+}
+
+function updateDzikirCircleColor() {
+  updateDzikirFsProgress();
+}
+
+function completeDzikir() {
+  completeDzikirFs();
 }
 
 // Save dzikir progress

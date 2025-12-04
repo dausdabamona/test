@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0D47A1">
   <meta name="description" content="Sync Planner - Produktivitas Islami untuk ASN">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Sync Planner - Produktivitas Islami</title>
   
@@ -3123,109 +3124,235 @@
     }
     .dzikir-item.completed .dzikir-item-progress-text { color: var(--success); }
     
-    /* Dzikir Counter Modal */
-    .dzikir-counter-modal {
-      max-width: 420px;
-      padding: 24px;
-      text-align: center;
+    /* Dzikir Fullscreen Counter */
+    .dzikir-fullscreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #064e3b 0%, #065f46 50%, #047857 100%);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .dzikir-counter-header {
-      position: relative;
-      margin-bottom: 16px;
-    }
-    .dzikir-counter-header .close-btn {
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
-    .dzikir-counter-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--gray-700);
+    .dzikir-fullscreen.active {
+      display: flex;
     }
     
-    .dzikir-counter-arabic {
-      font-family: 'Scheherazade New', 'Traditional Arabic', serif;
-      font-size: 32px;
-      line-height: 1.8;
-      color: var(--gray-800);
-      padding: 20px;
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border-radius: var(--radius-lg);
-      margin-bottom: 14px;
+    .dzikir-fs-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0));
     }
-    
-    .dzikir-counter-latin {
-      font-size: 15px;
-      color: var(--gray-600);
-      font-style: italic;
-      margin-bottom: 10px;
-    }
-    
-    .dzikir-counter-meaning {
-      font-size: 14px;
-      color: var(--gray-500);
-      margin-bottom: 20px;
-      padding: 0 12px;
-      line-height: 1.6;
-    }
-    
-    .dzikir-counter-display {
-      margin: 24px 0;
-    }
-    .dzikir-count-circle {
-      width: 160px;
-      height: 160px;
+    .dzikir-fs-back {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #10b981, #059669);
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .dzikir-fs-back:hover {
+      background: rgba(255,255,255,0.25);
+    }
+    .dzikir-fs-title {
+      flex: 1;
+      text-align: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin-right: 44px;
+    }
+    
+    .dzikir-fs-content {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 0 auto;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .dzikir-fs-arabic {
+      font-family: 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+      font-size: 36px;
+      line-height: 1.8;
+      color: white;
+      text-align: center;
+      direction: rtl;
+      padding: 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      margin-bottom: 16px;
+      max-width: 100%;
+      backdrop-filter: blur(10px);
+    }
+    
+    .dzikir-fs-latin {
+      font-size: 16px;
+      color: rgba(255,255,255,0.85);
+      font-style: italic;
+      text-align: center;
+      margin-bottom: 8px;
+      padding: 0 20px;
+    }
+    
+    .dzikir-fs-meaning {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+    
+    .dzikir-fs-counter {
+      position: relative;
+      margin: 20px 0;
+    }
+    
+    .dzikir-fs-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 8px 40px rgba(251, 191, 36, 0.4);
       transition: transform 0.1s;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
-    .dzikir-count-circle:active {
+    .dzikir-fs-circle:active {
       transform: scale(0.95);
     }
-    .dzikir-current {
-      font-size: 48px;
+    .dzikir-fs-circle.completed {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 8px 40px rgba(16, 185, 129, 0.4);
+    }
+    
+    .dzikir-fs-count {
+      font-size: 56px;
       font-weight: 700;
       color: white;
       line-height: 1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .dzikir-target {
-      font-size: 16px;
-      color: rgba(255,255,255,0.8);
+    .dzikir-fs-target {
+      font-size: 18px;
+      color: rgba(255,255,255,0.9);
+      margin-top: 4px;
     }
     
-    .dzikir-counter-controls {
+    .dzikir-fs-progress {
+      width: 200px;
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .dzikir-fs-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      border-radius: 3px;
+      transition: width 0.2s;
+    }
+    .dzikir-fs-progress-bar.completed {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+    
+    .dzikir-fs-controls {
       display: flex;
       justify-content: center;
-      gap: 16px;
-      margin: 20px 0;
+      gap: 20px;
+      margin-top: 24px;
     }
-    .dzikir-ctrl-btn {
-      width: 48px;
-      height: 48px;
+    .dzikir-fs-btn {
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      border: 2px solid var(--gray-200);
-      background: white;
-      font-size: 24px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 28px;
       cursor: pointer;
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .dzikir-ctrl-btn:hover { border-color: var(--primary); }
-    .dzikir-ctrl-btn.big {
-      width: 64px;
-      height: 64px;
-      background: var(--primary);
+    .dzikir-fs-btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+    }
+    .dzikir-fs-btn.primary {
+      width: 72px;
+      height: 72px;
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+      font-size: 36px;
+    }
+    
+    .dzikir-fs-virtue {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      max-width: 340px;
+      backdrop-filter: blur(10px);
+    }
+    .dzikir-fs-virtue-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .dzikir-fs-virtue-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.6;
+    }
+    
+    .dzikir-fs-footer {
+      padding: 16px 20px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    }
+    .dzikir-fs-complete-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1f2937;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .dzikir-fs-complete-btn:hover {
+      transform: translateY(-2px);
+    }
+    .dzikir-fs-complete-btn.done {
+      background: linear-gradient(135deg, #10b981, #059669);
       color: white;
-      border-color: var(--primary);
-      font-size: 32px;
+    }
+    
+    /* Hide elements when fullscreen dzikir is active */
+    body.dzikir-fullscreen-active .header,
+    body.dzikir-fullscreen-active .bottom-nav,
+    body.dzikir-fullscreen-active .main {
+      display: none !important;
     }
     
     .dzikir-virtue-card {
@@ -4328,52 +4455,6 @@
         <!-- Will be rendered by JavaScript -->
       </div>
       
-      <!-- Dzikir Counter Modal -->
-      <div class="modal" id="dzikirCounterModal">
-        <div class="modal-overlay" onclick="closeDzikirCounter()"></div>
-        <div class="modal-content dzikir-counter-modal">
-          <div class="dzikir-counter-header">
-            <button class="close-btn" onclick="closeDzikirCounter()">✕</button>
-            <div class="dzikir-counter-title" id="dzikirCounterTitle">Dzikir</div>
-          </div>
-          
-          <div class="dzikir-counter-arabic" id="dzikirCounterArabic" dir="rtl">
-            اللَّهُ أَكْبَرُ
-          </div>
-          
-          <div class="dzikir-counter-latin" id="dzikirCounterLatin">
-            Transliterasi
-          </div>
-          
-          <div class="dzikir-counter-meaning" id="dzikirCounterMeaning">
-            Arti
-          </div>
-          
-          <div class="dzikir-counter-display">
-            <div class="dzikir-count-circle" id="dzikirCountCircle" onclick="incrementDzikir()">
-              <span class="dzikir-current" id="dzikirCurrentCount">0</span>
-              <span class="dzikir-target" id="dzikirTargetCount">/ 100</span>
-            </div>
-          </div>
-          
-          <div class="dzikir-counter-controls">
-            <button class="dzikir-ctrl-btn" onclick="decrementDzikir()">−</button>
-            <button class="dzikir-ctrl-btn big" onclick="incrementDzikir()">+</button>
-            <button class="dzikir-ctrl-btn" onclick="resetCurrentDzikir()">↺</button>
-          </div>
-          
-          <div class="dzikir-virtue-card" id="dzikirVirtueCard">
-            <div class="dzikir-virtue-title">✨ Keutamaan</div>
-            <div class="dzikir-virtue-text" id="dzikirVirtueText">
-              Keutamaan dzikir ini...
-            </div>
-          </div>
-          
-          <button class="btn-submit" onclick="completeDzikir()" id="btnCompleteDzikir">
-            ✓ Selesai
-          </button>
-        </div>
-      </div>
     </div>
     
     <!-- ==================== PAGE: VISION ==================== -->
@@ -6270,17 +6351,33 @@
       // Try to use quotes from database (loaded in app.js)
       let quotesToUse = [];
       
-      if (typeof getAvailableQuotes === 'function') {
-        quotesToUse = getAvailableQuotes();
+      try {
+        if (typeof getAvailableQuotes === 'function') {
+          const dbQuotes = getAvailableQuotes();
+          console.log('[WisdomQuote] getAvailableQuotes returned:', dbQuotes?.length || 0, 'quotes');
+          if (dbQuotes && Array.isArray(dbQuotes) && dbQuotes.length > 0) {
+            quotesToUse = dbQuotes;
+          }
+        }
+      } catch (e) {
+        console.log('[WisdomQuote] Error getting quotes:', e);
       }
       
       // Fallback to local cache
       if (!quotesToUse || quotesToUse.length === 0) {
+        console.log('[WisdomQuote] Using WISDOM_QUOTES_CACHE fallback');
         quotesToUse = WISDOM_QUOTES_CACHE;
       }
       
+      console.log('[WisdomQuote] Using', quotesToUse.length, 'quotes');
+      
       const randomIndex = Math.floor(Math.random() * quotesToUse.length);
       const q = quotesToUse[randomIndex];
+      
+      if (!q) {
+        console.log('[WisdomQuote] No quote found at index', randomIndex);
+        return;
+      }
       
       // Determine icon
       let icon = q.icon || WISDOM_FRAMEWORK_ICONS[q.framework] || '💡';
@@ -6294,7 +6391,7 @@
       if (q.framework) {
         const fwIcon = WISDOM_FRAMEWORK_ICONS[q.framework] || '';
         const fwName = q.framework.replace('_', ' ');
-        sourceEl.innerHTML = `— ${q.source}<br><span style="font-size: 10px; opacity: 0.7;">${fwIcon} ${fwName}</span>`;
+        sourceEl.innerHTML = `— ${q.source}<br><span style="font-size: 12px; opacity: 0.7;">${fwIcon} ${fwName}</span>`;
       }
     }
 
@@ -6347,6 +6444,58 @@
       }
     }
   </script>
+
+  <!-- Dzikir Fullscreen Counter -->
+  <div class="dzikir-fullscreen" id="dzikirFullscreen">
+    <div class="dzikir-fs-header">
+      <button class="dzikir-fs-back" onclick="closeDzikirFullscreen()">←</button>
+      <div class="dzikir-fs-title" id="dzikirFsTitle">Dzikir</div>
+    </div>
+    
+    <div class="dzikir-fs-content">
+      <div class="dzikir-fs-arabic" id="dzikirFsArabic" dir="rtl">
+        سُبْحَانَ اللَّهِ
+      </div>
+      
+      <div class="dzikir-fs-latin" id="dzikirFsLatin">
+        Subhanallah
+      </div>
+      
+      <div class="dzikir-fs-meaning" id="dzikirFsMeaning">
+        Maha Suci Allah
+      </div>
+      
+      <div class="dzikir-fs-counter">
+        <div class="dzikir-fs-circle" id="dzikirFsCircle" onclick="incrementDzikirFs()">
+          <span class="dzikir-fs-count" id="dzikirFsCount">0</span>
+          <span class="dzikir-fs-target" id="dzikirFsTarget">/ 100</span>
+        </div>
+      </div>
+      
+      <div class="dzikir-fs-progress">
+        <div class="dzikir-fs-progress-bar" id="dzikirFsProgressBar" style="width: 0%"></div>
+      </div>
+      
+      <div class="dzikir-fs-controls">
+        <button class="dzikir-fs-btn" onclick="decrementDzikirFs()">−</button>
+        <button class="dzikir-fs-btn primary" onclick="incrementDzikirFs()">+</button>
+        <button class="dzikir-fs-btn" onclick="resetDzikirFs()">↺</button>
+      </div>
+      
+      <div class="dzikir-fs-virtue" id="dzikirFsVirtue">
+        <div class="dzikir-fs-virtue-title">✨ Keutamaan</div>
+        <div class="dzikir-fs-virtue-text" id="dzikirFsVirtueText">
+          Keutamaan dzikir ini...
+        </div>
+      </div>
+    </div>
+    
+    <div class="dzikir-fs-footer">
+      <button class="dzikir-fs-complete-btn" id="dzikirFsCompleteBtn" onclick="completeDzikirFs()">
+        ✓ Selesai & Simpan
+      </button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
