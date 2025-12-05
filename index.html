@@ -2157,6 +2157,210 @@
       font-size: 64px;
       margin-bottom: 16px;
     }
+    
+    /* Pomodoro Fullscreen Mode */
+    .pomodoro-fullscreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .pomodoro-fullscreen.active {
+      display: flex;
+    }
+    .pomodoro-fullscreen.break-mode {
+      background: linear-gradient(180deg, #059669 0%, #047857 50%, #065f46 100%);
+    }
+    
+    .pomo-fs-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top, 0));
+    }
+    .pomo-fs-back {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pomo-fs-back:hover {
+      background: rgba(255,255,255,0.25);
+    }
+    .pomo-fs-title {
+      flex: 1;
+      text-align: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin-right: 44px;
+    }
+    
+    .pomo-fs-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .pomo-fs-icon {
+      font-size: 60px;
+      margin-bottom: 16px;
+    }
+    
+    .pomo-fs-timer-ring {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      margin-bottom: 24px;
+    }
+    .pomo-fs-timer-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .pomo-fs-timer-ring .timer-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.2);
+      stroke-width: 10;
+    }
+    .pomo-fs-timer-ring .timer-progress {
+      fill: none;
+      stroke: rgba(255,255,255,0.9);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .pomo-fs-timer-ring .timer-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .pomo-fs-time {
+      font-size: 56px;
+      font-weight: 700;
+      color: white;
+      line-height: 1;
+    }
+    .pomo-fs-label {
+      font-size: 16px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 8px;
+    }
+    
+    .pomo-fs-task {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      text-align: center;
+      max-width: 300px;
+    }
+    .pomo-fs-task-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 4px;
+    }
+    .pomo-fs-task-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .pomo-fs-controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    .pomo-fs-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .pomo-fs-btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+    }
+    .pomo-fs-btn.primary {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+      font-size: 32px;
+    }
+    
+    .pomo-fs-footer {
+      padding: 16px 20px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+      text-align: center;
+    }
+    .pomo-fs-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .pomo-fs-stat-value {
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+    }
+    
+    /* Hide elements when fullscreen pomodoro is active */
+    body.pomodoro-fullscreen-active .header,
+    body.pomodoro-fullscreen-active .bottom-nav,
+    body.pomodoro-fullscreen-active .main {
+      display: none !important;
+    }
+    
+    /* Mobile responsive pomodoro fullscreen */
+    @media (max-width: 480px) {
+      .pomo-fs-timer-ring {
+        width: 220px;
+        height: 220px;
+      }
+      .pomo-fs-time {
+        font-size: 48px;
+      }
+      .pomo-fs-icon {
+        font-size: 48px;
+      }
+      .pomo-fs-btn {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+      }
+      .pomo-fs-btn.primary {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+      }
+    }
+    
     .quick-pomodoro-goals {
       display: flex;
       flex-direction: column;
@@ -6797,6 +7001,54 @@
       }
     }
   </script>
+
+  <!-- Pomodoro Fullscreen Timer -->
+  <div class="pomodoro-fullscreen" id="pomodoroFullscreen">
+    <div class="pomo-fs-header">
+      <button class="pomo-fs-back" onclick="closePomodoroFullscreen()">←</button>
+      <div class="pomo-fs-title" id="pomoFsTitle">🍅 Fokus</div>
+    </div>
+    
+    <div class="pomo-fs-content">
+      <div class="pomo-fs-icon" id="pomoFsIcon">🍅</div>
+      
+      <div class="pomo-fs-timer-ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="timer-bg" cx="50" cy="50" r="45"></circle>
+          <circle class="timer-progress" id="pomoFsProgress" cx="50" cy="50" r="45" 
+                  stroke-dasharray="283" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="timer-display">
+          <div class="pomo-fs-time" id="pomoFsTime">25:00</div>
+          <div class="pomo-fs-label" id="pomoFsLabel">Fokus</div>
+        </div>
+      </div>
+      
+      <div class="pomo-fs-task" id="pomoFsTask">
+        <div class="pomo-fs-task-label">Sedang mengerjakan</div>
+        <div class="pomo-fs-task-name" id="pomoFsTaskName">-</div>
+      </div>
+      
+      <div class="pomo-fs-controls">
+        <button class="pomo-fs-btn" onclick="resetPomodoroFs()">↺</button>
+        <button class="pomo-fs-btn primary" id="pomoFsPlayBtn" onclick="togglePomodoroFs()">▶</button>
+        <button class="pomo-fs-btn" onclick="skipPomodoroFs()">⏭</button>
+      </div>
+    </div>
+    
+    <div class="pomo-fs-footer">
+      <div class="pomo-fs-stats">
+        <div>
+          <div class="pomo-fs-stat-value" id="pomoFsSessions">0</div>
+          <div>Sesi</div>
+        </div>
+        <div>
+          <div class="pomo-fs-stat-value" id="pomoFsMinutes">0m</div>
+          <div>Total</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Dzikir Fullscreen Counter -->
   <div class="dzikir-fullscreen" id="dzikirFullscreen">
