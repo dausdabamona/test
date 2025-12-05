@@ -4589,10 +4589,26 @@ function submitQuickBrainDump() {
         category: category,
         created_at: now.toISOString()
       };
-      state.kanban.TODO = [newTask, ...(state.kanban.TODO || [])];
+      
+      // Pastikan state.kanban.TODO ada
+      if (!state.kanban) state.kanban = { TODO: [], DOING: [], DONE: [] };
+      if (!state.kanban.TODO) state.kanban.TODO = [];
+      
+      state.kanban.TODO = [newTask, ...state.kanban.TODO];
+      
+      // Save to localStorage juga
+      localStorage.setItem('kanbanTasks', JSON.stringify(state.kanban));
+      
       addToQueue('saveTask', { title: content, priority: priority, status: 'TODO', due_date: dueDate, category: category });
       closeModal('quick-braindump');
+      
+      // Re-render task page jika sedang di halaman task
+      if (typeof renderKanban === 'function') {
+        renderKanban();
+      }
+      
       showToast('Task berhasil ditambahkan! 📋', 'success');
+      console.log('[BrainDump] Task added:', newTask);
       break;
       
     case 'journal':
@@ -6109,50 +6125,41 @@ setInterval(() => {
 
 // Data Dzikir dengan keutamaan
 const DZIKIR_DATA = [
+  // Target 1x - Paling Sedikit & Pendek
   {
-    id: 'tahlil_100',
-    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
-    latin: "Laa ilaaha illallaahu wahdahu laa syariika lahu, lahul mulku wa lahul hamdu wa huwa 'alaa kulli syai'in qadiir",
-    meaning: 'Tidak ada Tuhan selain Allah, Yang Maha Esa, tidak ada sekutu bagi-Nya. Bagi-Nya kerajaan dan pujian. Dia Maha Kuasa atas segala sesuatu.',
-    target: 100,
+    id: 'kafaratul_majlis',
+    arabic: 'سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ',
+    latin: "Subhaanakallaahumma wa bihamdika, asyhadu an laa ilaaha illaa anta, astaghfiruka wa atuubu ilaik",
+    meaning: 'Maha Suci Engkau ya Allah dan segala puji bagi-Mu. Aku bersaksi tidak ada Tuhan selain Engkau. Aku memohon ampun dan bertaubat kepada-Mu',
+    target: 1,
     time: 'both',
-    virtue: 'Pahala seperti membebaskan 10 budak, ditetapkan 100 kebaikan, dijauhkan 100 keburukan, dan perlindungan dari setan hingga petang. Tidak ada amal yang lebih baik kecuali yang mengamalkan lebih banyak.',
-    source: 'HR. Bukhari & Muslim',
-    icon: '🏆'
+    virtue: 'Kafaratul Majelis - Diampuni dosanya selama di majelisnya itu.',
+    source: 'HR. Tirmidzi',
+    icon: '📿'
   },
   {
-    id: 'subhanallah_100',
-    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
-    latin: "Subhaanallaahi wa bihamdihi",
-    meaning: 'Maha Suci Allah dan segala puji bagi-Nya',
-    target: 100,
+    id: 'melihat_ujian',
+    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا',
+    latin: "Alhamdulillaahil ladzii 'aafaanii mimmab talaaka bihi wa fadhdhalanii 'alaa katsiirin mimman khalaqa tafdhiilaa",
+    meaning: 'Segala puji bagi Allah yang telah menyelamatkan aku dari ujian yang menimpamu dan mengutamakan aku atas kebanyakan makhluk-Nya dengan keutamaan yang sempurna',
+    target: 1,
     time: 'both',
-    virtue: 'Kesalahan-kesalahannya akan terampuni walaupun sebanyak buih di lautan.',
-    source: 'HR. Bukhari & Muslim',
-    icon: '🌊'
+    virtue: 'Dibaca saat melihat orang yang tertimpa ujian/musibah. Diselamatkan dari ujian tersebut selama ia masih hidup.',
+    source: 'HR. Tirmidzi',
+    icon: '👁️'
   },
   {
-    id: 'subhanallah_azim',
-    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيمِ',
-    latin: "Subhaanallaahi wa bihamdihi, Subhaanallaahil 'Azhiim",
-    meaning: 'Maha Suci Allah dan segala puji bagi-Nya, Maha Suci Allah Yang Maha Agung',
-    target: 33,
+    id: 'sayyidul_istighfar',
+    arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ وَأَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَعْتَرِفُ بِذُنُوبِي فَاغْفِرْ لِي ذُنُوبِي إِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
+    latin: "Allaahumma anta rabbii laa ilaaha illaa anta, khalaqtanii wa ana 'abduka wa ana 'alaa 'ahdika wa wa'dika mastatha'tu. A'uudzu bika min syarri maa shana'tu. Abu'u laka bini'matika 'alayya wa a'tarifu bidzunuubii faghfir lii dzunuubii innahu laa yaghfirudz dzunuuba illaa anta",
+    meaning: 'Ya Allah, Engkau adalah Tuhanku. Tidak ada Tuhan selain Engkau. Engkau telah menciptakan aku dan aku adalah hamba-Mu. Aku berada dalam perjanjian dan janji-Mu semampuku. Aku berlindung kepada-Mu dari keburukan yang aku perbuat. Aku mengakui nikmat-Mu padaku dan aku mengakui dosaku. Ampunilah aku karena tidak ada yang mengampuni dosa selain Engkau.',
+    target: 1,
     time: 'both',
-    virtue: 'Dua kalimat yang ringan di lisan, berat di timbangan, dan disukai Ar-Rahman.',
-    source: 'HR. Bukhari & Muslim',
-    icon: '⚖️'
+    virtue: 'Sayyidul Istighfar - Siapa membacanya sore hari lalu meninggal malam itu, ia masuk surga. Siapa membacanya pagi hari lalu meninggal hari itu, ia masuk surga.',
+    source: 'HR. Bukhari',
+    icon: '👑'
   },
-  {
-    id: 'tahlil_takbir',
-    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
-    latin: "Laa ilaaha illallaahu wallaahu akbar, wa laa hawla wa laa quwwata illaa billaah",
-    meaning: 'Tidak ada Tuhan selain Allah, Allah Maha Besar, tidak ada daya dan kekuatan kecuali dengan Allah',
-    target: 33,
-    time: 'both',
-    virtue: 'Diampuni dosa-dosanya walaupun seperti buih lautan.',
-    source: 'HR. Muslim',
-    icon: '🌟'
-  },
+  // Target 3x
   {
     id: 'istighfar',
     arabic: 'أَسْتَغْفِرُ اللَّهَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ',
@@ -6176,28 +6183,6 @@ const DZIKIR_DATA = [
     icon: '🕌'
   },
   {
-    id: 'kafaratul_majlis',
-    arabic: 'سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ',
-    latin: "Subhaanakallaahumma wa bihamdika, asyhadu an laa ilaaha illaa anta, astaghfiruka wa atuubu ilaik",
-    meaning: 'Maha Suci Engkau ya Allah dan segala puji bagi-Mu. Aku bersaksi tidak ada Tuhan selain Engkau. Aku memohon ampun dan bertaubat kepada-Mu',
-    target: 1,
-    time: 'both',
-    virtue: 'Kafaratul Majelis - Diampuni dosanya selama di majelisnya itu.',
-    source: 'HR. Tirmidzi',
-    icon: '📿'
-  },
-  {
-    id: 'taubat',
-    arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
-    latin: "Rabbighfir lii wa tub 'alayya innaka antat tawwaabur rahiim",
-    meaning: 'Ya Tuhanku, ampunilah aku dan terimalah taubatku. Sesungguhnya Engkau Maha Menerima taubat lagi Maha Penyayang',
-    target: 100,
-    time: 'both',
-    virtue: 'Nabi ﷺ membaca doa ini 100 kali dalam sehari.',
-    source: 'HR. Tirmidzi & Ibnu Majah',
-    icon: '💚'
-  },
-  {
     id: 'bismillah_perlindungan',
     arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
     latin: "Bismillaahil ladzii laa yadhurru ma'asmihi syai'un fil ardhi wa laa fis samaa'i wa huwas samii'ul 'aliim",
@@ -6208,17 +6193,7 @@ const DZIKIR_DATA = [
     source: 'HR. Abu Dawud & Tirmidzi',
     icon: '🛡️'
   },
-  {
-    id: 'sayyidul_istighfar',
-    arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ وَأَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَعْتَرِفُ بِذُنُوبِي فَاغْفِرْ لِي ذُنُوبِي إِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
-    latin: "Allaahumma anta rabbii laa ilaaha illaa anta, khalaqtanii wa ana 'abduka wa ana 'alaa 'ahdika wa wa'dika mastatha'tu. A'uudzu bika min syarri maa shana'tu. Abu'u laka bini'matika 'alayya wa a'tarifu bidzunuubii faghfir lii dzunuubii innahu laa yaghfirudz dzunuuba illaa anta",
-    meaning: 'Ya Allah, Engkau adalah Tuhanku. Tidak ada Tuhan selain Engkau. Engkau telah menciptakan aku dan aku adalah hamba-Mu. Aku berada dalam perjanjian dan janji-Mu semampuku. Aku berlindung kepada-Mu dari keburukan yang aku perbuat. Aku mengakui nikmat-Mu padaku dan aku mengakui dosaku. Ampunilah aku karena tidak ada yang mengampuni dosa selain Engkau.',
-    target: 1,
-    time: 'both',
-    virtue: 'Sayyidul Istighfar - Siapa membacanya sore hari lalu meninggal malam itu, ia masuk surga. Siapa membacanya pagi hari lalu meninggal hari itu, ia masuk surga.',
-    source: 'HR. Bukhari',
-    icon: '👑'
-  },
+  // Target 7x
   {
     id: 'doa_kesusahan',
     arabic: 'لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ',
@@ -6230,17 +6205,30 @@ const DZIKIR_DATA = [
     source: 'HR. Bukhari & Muslim',
     icon: '🤲'
   },
+  // Target 33x
   {
-    id: 'melihat_ujian',
-    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا',
-    latin: "Alhamdulillaahil ladzii 'aafaanii mimmab talaaka bihi wa fadhdhalanii 'alaa katsiirin mimman khalaqa tafdhiilaa",
-    meaning: 'Segala puji bagi Allah yang telah menyelamatkan aku dari ujian yang menimpamu dan mengutamakan aku atas kebanyakan makhluk-Nya dengan keutamaan yang sempurna',
-    target: 1,
+    id: 'subhanallah_azim',
+    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيمِ',
+    latin: "Subhaanallaahi wa bihamdihi, Subhaanallaahil 'Azhiim",
+    meaning: 'Maha Suci Allah dan segala puji bagi-Nya, Maha Suci Allah Yang Maha Agung',
+    target: 33,
     time: 'both',
-    virtue: 'Dibaca saat melihat orang yang tertimpa ujian/musibah. Diselamatkan dari ujian tersebut selama ia masih hidup.',
-    source: 'HR. Tirmidzi',
-    icon: '👁️'
+    virtue: 'Dua kalimat yang ringan di lisan, berat di timbangan, dan disukai Ar-Rahman.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '⚖️'
   },
+  {
+    id: 'tahlil_takbir',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
+    latin: "Laa ilaaha illallaahu wallaahu akbar, wa laa hawla wa laa quwwata illaa billaah",
+    meaning: 'Tidak ada Tuhan selain Allah, Allah Maha Besar, tidak ada daya dan kekuatan kecuali dengan Allah',
+    target: 33,
+    time: 'both',
+    virtue: 'Diampuni dosa-dosanya walaupun seperti buih lautan.',
+    source: 'HR. Muslim',
+    icon: '🌟'
+  },
+  // Target 100x - Pendek dulu
   {
     id: 'tasbih_100',
     arabic: 'سُبْحَانَ اللَّهِ',
@@ -6284,6 +6272,40 @@ const DZIKIR_DATA = [
     virtue: 'Tidak ada yang membawa amal lebih banyak pada hari itu kecuali yang membaca lebih banyak.',
     source: 'HR. Tirmidzi',
     icon: '🌙'
+  },
+  {
+    id: 'subhanallah_100',
+    arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+    latin: "Subhaanallaahi wa bihamdihi",
+    meaning: 'Maha Suci Allah dan segala puji bagi-Nya',
+    target: 100,
+    time: 'both',
+    virtue: 'Kesalahan-kesalahannya akan terampuni walaupun sebanyak buih di lautan.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '🌊'
+  },
+  {
+    id: 'taubat',
+    arabic: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ',
+    latin: "Rabbighfir lii wa tub 'alayya innaka antat tawwaabur rahiim",
+    meaning: 'Ya Tuhanku, ampunilah aku dan terimalah taubatku. Sesungguhnya Engkau Maha Menerima taubat lagi Maha Penyayang',
+    target: 100,
+    time: 'both',
+    virtue: 'Nabi ﷺ membaca doa ini 100 kali dalam sehari.',
+    source: 'HR. Tirmidzi & Ibnu Majah',
+    icon: '💚'
+  },
+  // Target 100x - Paling Panjang (terakhir)
+  {
+    id: 'tahlil_100',
+    arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+    latin: "Laa ilaaha illallaahu wahdahu laa syariika lahu, lahul mulku wa lahul hamdu wa huwa 'alaa kulli syai'in qadiir",
+    meaning: 'Tidak ada Tuhan selain Allah, Yang Maha Esa, tidak ada sekutu bagi-Nya. Bagi-Nya kerajaan dan pujian. Dia Maha Kuasa atas segala sesuatu.',
+    target: 100,
+    time: 'both',
+    virtue: 'Pahala seperti membebaskan 10 budak, ditetapkan 100 kebaikan, dijauhkan 100 keburukan, dan perlindungan dari setan hingga petang. Tidak ada amal yang lebih baik kecuali yang mengamalkan lebih banyak.',
+    source: 'HR. Bukhari & Muslim',
+    icon: '🏆'
   }
 ];
 
@@ -6661,3 +6683,165 @@ function resetDzikirToday() {
   renderDzikirPage();
   showToast('Dzikir direset', 'info');
 }
+
+// ============================================
+// POMODORO FULLSCREEN FUNCTIONS
+// ============================================
+
+let pomoFsInterval = null;
+
+// Open Pomodoro Fullscreen when timer is active
+function openPomodoroFullscreen() {
+  if (!state.pomodoro?.active) return;
+  
+  updatePomodoroFullscreenUI();
+  
+  document.getElementById('pomodoroFullscreen').classList.add('active');
+  document.body.classList.add('pomodoro-fullscreen-active');
+  document.body.style.overflow = 'hidden';
+  
+  // Start UI update interval
+  pomoFsInterval = setInterval(updatePomodoroFullscreenUI, 1000);
+}
+
+// Close Pomodoro Fullscreen
+function closePomodoroFullscreen() {
+  document.getElementById('pomodoroFullscreen').classList.remove('active');
+  document.body.classList.remove('pomodoro-fullscreen-active');
+  document.body.style.overflow = '';
+  
+  if (pomoFsInterval) {
+    clearInterval(pomoFsInterval);
+    pomoFsInterval = null;
+  }
+}
+
+// Update Pomodoro Fullscreen UI
+function updatePomodoroFullscreenUI() {
+  if (!state.pomodoro?.active) {
+    closePomodoroFullscreen();
+    return;
+  }
+  
+  const remaining = state.pomodoro.remaining;
+  const duration = state.pomodoro.duration;
+  const typeInfo = POMODORO_TYPES[state.pomodoro.type];
+  
+  // Format time
+  const minutes = Math.floor(remaining / 60);
+  const seconds = remaining % 60;
+  const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  
+  // Update time display
+  const timeEl = document.getElementById('pomoFsTime');
+  if (timeEl) timeEl.textContent = timeStr;
+  
+  // Update progress ring
+  const progress = (duration - remaining) / duration;
+  const circumference = 2 * Math.PI * 45; // r=45
+  const offset = circumference * (1 - progress);
+  const progressEl = document.getElementById('pomoFsProgress');
+  if (progressEl) progressEl.style.strokeDashoffset = offset;
+  
+  // Update label and icon
+  const labelEl = document.getElementById('pomoFsLabel');
+  const iconEl = document.getElementById('pomoFsIcon');
+  const titleEl = document.getElementById('pomoFsTitle');
+  
+  if (labelEl) labelEl.textContent = typeInfo?.label || 'Fokus';
+  if (iconEl) iconEl.textContent = typeInfo?.icon || '🍅';
+  if (titleEl) titleEl.textContent = `${typeInfo?.icon || '🍅'} ${typeInfo?.label || 'Fokus'}`;
+  
+  // Update task
+  const taskNameEl = document.getElementById('pomoFsTaskName');
+  if (taskNameEl) {
+    taskNameEl.textContent = state.pomodoro.task || state.currentFocusTask?.title || '-';
+  }
+  
+  // Update play/pause button
+  const playBtn = document.getElementById('pomoFsPlayBtn');
+  if (playBtn) {
+    playBtn.textContent = state.pomodoro.isPaused ? '▶' : '⏸';
+  }
+  
+  // Update stats
+  const sessionsEl = document.getElementById('pomoFsSessions');
+  const minutesEl = document.getElementById('pomoFsMinutes');
+  if (sessionsEl) sessionsEl.textContent = state.dailySync?.stats?.pomodoro_count || 0;
+  if (minutesEl) minutesEl.textContent = (state.dailySync?.stats?.pomodoro_minutes || 0) + 'm';
+  
+  // Check if break mode
+  const fsEl = document.getElementById('pomodoroFullscreen');
+  if (fsEl) {
+    if (state.pomodoro.type?.includes('BREAK')) {
+      fsEl.classList.add('break-mode');
+    } else {
+      fsEl.classList.remove('break-mode');
+    }
+  }
+}
+
+// Toggle play/pause from fullscreen
+function togglePomodoroFs() {
+  if (!state.pomodoro?.active) return;
+  
+  state.pomodoro.isPaused = !state.pomodoro.isPaused;
+  
+  if (navigator.vibrate) navigator.vibrate(30);
+  
+  updatePomodoroFullscreenUI();
+  renderActivePomodoro();
+}
+
+// Reset pomodoro from fullscreen
+function resetPomodoroFs() {
+  if (!state.pomodoro?.active) return;
+  
+  if (confirm('Reset timer ke awal?')) {
+    state.pomodoro.remaining = state.pomodoro.duration;
+    state.pomodoro.isPaused = true;
+    updatePomodoroFullscreenUI();
+    renderActivePomodoro();
+  }
+}
+
+// Skip pomodoro from fullscreen
+function skipPomodoroFs() {
+  if (!state.pomodoro?.active) return;
+  
+  if (confirm('Lewati sesi ini?')) {
+    closePomodoroFullscreen();
+    stopPomodoro();
+  }
+}
+
+// Modify startPomodoroTimer to auto-open fullscreen
+const originalStartPomodoroTimer = startPomodoroTimer;
+startPomodoroTimer = function(type, task) {
+  originalStartPomodoroTimer(type, task);
+  
+  // Auto open fullscreen after a short delay
+  setTimeout(() => {
+    openPomodoroFullscreen();
+  }, 500);
+};
+
+// Modify completePomodoro to close fullscreen
+const originalCompletePomodoro = completePomodoro;
+completePomodoro = function() {
+  closePomodoroFullscreen();
+  originalCompletePomodoro();
+};
+
+// Modify stopPomodoro to close fullscreen  
+const originalStopPomodoro = stopPomodoro;
+stopPomodoro = function() {
+  closePomodoroFullscreen();
+  
+  if (confirm('Yakin ingin menghentikan sesi fokus?')) {
+    clearInterval(state.pomodoro.interval);
+    state.pomodoro.active = false;
+    showToast('Sesi dihentikan', 'info');
+    renderPomodoroPage();
+  }
+};
